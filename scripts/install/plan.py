@@ -43,6 +43,11 @@ RUNTIME_SURFACES = {
         },
         {
             "target": "project",
+            "path": "GEMINI.md",
+            "source": "dist/project/GEMINI.md",
+        },
+        {
+            "target": "project",
             "path": ".github/ISSUE_TEMPLATE",
             "source": "dist/project/.github/ISSUE_TEMPLATE",
         }
@@ -118,6 +123,23 @@ RUNTIME_SURFACES = {
             "source": "dist/antigravity/.agents/hooks.json",
         },
     ],
+    "antigravity-cli": [
+        {
+            "target": "antigravity-cli",
+            "path": ".agents/skills",
+            "source": "dist/antigravity-cli/.agents/skills",
+        },
+        {
+            "target": "antigravity-cli",
+            "path": ".agents/agents",
+            "source": "dist/antigravity-cli/.agents/agents",
+        },
+        {
+            "target": "antigravity-cli",
+            "path": ".agents/hooks.json",
+            "source": "dist/antigravity-cli/.agents/hooks.json",
+        },
+    ],
 }
 
 ACTIVATION_GATES = {
@@ -152,6 +174,18 @@ ACTIVATION_GATES = {
             "reason": (
                 "Antigravity project hooks execute local commands and need runtime "
                 "review before use."
+            ),
+            "required_before_apply": False,
+            "required_before_runtime": True,
+        }
+    ],
+    "antigravity-cli": [
+        {
+            "id": "antigravity-cli-hook-runtime-review",
+            "target": "antigravity-cli",
+            "reason": (
+                "Antigravity CLI project hooks execute local commands and need "
+                "runtime review before use."
             ),
             "required_before_apply": False,
             "required_before_runtime": True,
@@ -213,6 +247,8 @@ def _surface_key_for_artifact(artifact: dict[str, Any]) -> tuple[str, str] | Non
             return ("project", "AGENTS.md")
         if destination == "CLAUDE.md":
             return ("project", "CLAUDE.md")
+        if destination == "GEMINI.md":
+            return ("project", "GEMINI.md")
         if destination.startswith(".github/ISSUE_TEMPLATE/"):
             return ("project", ".github/ISSUE_TEMPLATE")
     if target == "antigravity":
@@ -224,6 +260,13 @@ def _surface_key_for_artifact(artifact: dict[str, Any]) -> tuple[str, str] | Non
             return ("antigravity", ".agents/agents")
         if destination == ".agents/hooks.json":
             return ("antigravity", ".agents/hooks.json")
+    if target == "antigravity-cli":
+        if destination.startswith(".agents/skills/"):
+            return ("antigravity-cli", ".agents/skills")
+        if destination.startswith(".agents/agents/"):
+            return ("antigravity-cli", ".agents/agents")
+        if destination == ".agents/hooks.json":
+            return ("antigravity-cli", ".agents/hooks.json")
     return None
 
 
@@ -259,6 +302,8 @@ def _activation_gates(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         gates.extend(ACTIVATION_GATES["codex"])
     if ".agents/hooks.json" in destinations_by_target.get("antigravity", set()):
         gates.extend(ACTIVATION_GATES["antigravity"])
+    if ".agents/hooks.json" in destinations_by_target.get("antigravity-cli", set()):
+        gates.extend(ACTIVATION_GATES["antigravity-cli"])
     return gates
 
 
