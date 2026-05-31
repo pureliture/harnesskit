@@ -46,7 +46,7 @@
       "description": "Target AI platforms this skill is adapted for",
       "items": {
         "type": "string",
-        "enum": ["claude", "codex", "gemini", "antigravity"]
+        "enum": ["claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       }
     },
     "review_state": {

@@ -131,7 +131,7 @@ def _hook_registration_content(
     target: str,
     target_options: dict[str, Any],
 ) -> str:
-    if target == "antigravity":
+    if target in {"antigravity", "antigravity-cli"}:
         return _antigravity_hook_registration_content(manifest, target_options)
 
     hook = manifest.get("hook") or {}
@@ -168,7 +168,10 @@ def _hook_registration_content(
 def _is_antigravity_hooks_output(output_path: Path) -> bool:
     try:
         rel_path = output_path.relative_to(REPO_ROOT).as_posix()
-        return rel_path.startswith("dist/antigravity/") and rel_path.endswith("hooks.json")
+        is_antigravity_dist = rel_path.startswith("dist/antigravity/") or rel_path.startswith(
+            "dist/antigravity-cli/"
+        )
+        return is_antigravity_dist and rel_path.endswith("hooks.json")
     except ValueError:
         return False
 

@@ -9,7 +9,7 @@
     "target": {
       "type": "string",
       "description": "Target AI platform this output is adapted for",
-      "enum": ["claude", "codex", "gemini", "antigravity"]
+      "enum": ["claude", "codex", "gemini", "antigravity", "antigravity-cli"]
     },
     "generated_at": {
       "type": "string",

@@ -58,6 +58,16 @@ Harness-maintenance components belong under `components/harness/<kind>s/<slug>/`
 - Add provenance for every component. Record source mode, copied or adapted content, attribution, license uncertainty, and review triggers.
 - Prefer concise procedure over long background. Put only content the future agent needs to do the work.
 
+## Textless Prompt-Submit Hook Contract
+
+When authoring a hook for prompt-submit, pre-invocation, or any similar user-submission lifecycle:
+
+- Treat missing, empty, whitespace-only, image-only or attachment-only input as a valid user submission.
+- If no prompt text or transcript text can be derived, specify no-op/pass-through behavior.
+- State that inability to build query/context must not block the user's main message flow.
+- Limit fatal behavior to malformed hook envelopes, wrong event wiring, broken registration, missing executable dependencies, or other wiring failures.
+- Do not encode image moderation, OCR, attachment parsing, or runtime support claims unless those are explicitly in the approved requirements and evidence gates.
+
 ## Validation
 
 Run static validation when available:

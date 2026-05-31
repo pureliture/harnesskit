@@ -49,6 +49,16 @@ It must not write live install surfaces such as `.claude/`, `.codex/`, `.agents/
 7. Define the runtime probe contract, but leave execution to a separate runtime verification gate unless the user explicitly requests live probing.
 8. Run static validation such as `uv run python scripts/adapters/build.py --check ...`, targeted pytest, and `uv run python scripts/components/validate.py --component ...` where applicable.
 
+## Prompt-Submit And Pre-Invocation Pass-Through
+
+For prompt-submit, pre-invocation, or similar user-submission hooks, adapter support must preserve the canonical textless-input contract:
+
+- missing, empty, whitespace-only, image-only, or attachment-only submissions are valid user submissions;
+- if the target payload or transcript fallback does not provide prompt text, the hook must exit/pass through without context injection;
+- failure to build optional query/context must not block the user message flow;
+- malformed hook envelope or wrong event wiring can remain fatal and should be reported as adapter/runtime wiring, not as invalid user content;
+- static adapter tests should prove generated registrations do not add unsupported project hooks, and runtime support claims still require probe evidence in `capabilities.yml`.
+
 ## Completion Claims
 
 Adapter authoring completion means static adapter generation and contracts are correct. It does not mean the target CLI loaded the skill, agent, hook, rule, or command in a real session.

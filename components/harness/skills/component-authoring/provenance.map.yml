@@ -16,9 +16,11 @@ provenance:
     - harness-maintenance placement
     - ideation exclusion
     - adapter-output prohibition
+    - textless prompt-submit hook contract
   license_notes: "Referenced public documentation only; no bundled third-party code."
   human_review_required: true
   review_triggers:
     - target_adapter_changed
     - component_schema_changed
     - provenance_schema_changed
+    - prompt_submit_hook_contract_changed
