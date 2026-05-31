@@ -1,0 +1,23 @@
+adapter_id: harnesskit.adapter.claude
+target: claude
+version: "0.1.0"
+description: Claude Code target adapter for HarnessKit components
+output_root: dist/claude
+structures:
+  skills:
+    path_template: ".claude/skills/{skill_id}/SKILL.md"
+    format: markdown
+    content_source: SKILL.md
+    frontmatter_format: yaml
+    template: templates/skill.hbs
+  agents:
+    path_template: ".claude/agents/{agent_id}.md"
+    format: markdown_with_frontmatter
+    content_source: prompt.md
+    frontmatter_format: yaml
+    template: templates/agent.hbs
+  hooks:
+    path_template: ".claude/settings.json"
+    format: json
+    content_source: hook.md
+    template: templates/settings-hook.json.hbs

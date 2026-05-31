@@ -1,0 +1,26 @@
+adapter_id: harnesskit.adapter.codex
+target: codex
+version: "0.1.0"
+description: Codex CLI target adapter for HarnessKit components
+output_root: dist/codex
+structures:
+  skills:
+    path_template: ".agents/skills/{skill_id}/SKILL.md"
+    format: markdown
+    content_source: SKILL.md
+    frontmatter_format: yaml
+    template: templates/skill.hbs
+  agents:
+    path_template: ".codex/agents/{agent_id}.toml"
+    format: toml
+    content_source: prompt.md
+    frontmatter_format: toml
+    template: templates/agent.toml.hbs
+    registration:
+      path: ".codex/config.toml"
+      template: templates/agent-config-entry.toml.hbs
+  hooks:
+    path_template: ".codex/hooks.json"
+    format: json
+    content_source: hook.md
+    template: templates/hooks.json.hbs

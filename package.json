@@ -1,0 +1,45 @@
+{
+  "name": "harnesskit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local Harnesskit CLI for harnesskit profile install plans.",
+  "type": "module",
+  "bin": {
+    "harnesskit": "bin/harnesskit.mjs"
+  },
+  "files": [
+    "adapters/claude/",
+    "adapters/codex/",
+    "bin/harnesskit.mjs",
+    "components/registry.yml",
+    "components/harness/agents/reference-curator/",
+    "components/harness/agents/harness-requirements-analyst/",
+    "components/harness/agents/harness-blueprint-author/",
+    "components/harness/agents/component-author/",
+    "components/harness/agents/adapter-author/",
+    "components/harness/skills/harness-requirements/",
+    "components/harness/skills/harness-blueprint/",
+    "components/harness/skills/component-authoring/",
+    "components/harness/skills/adapter-authoring/",
+    "components/harness/skills/skill-evaluation/",
+    "components/harness/workflows/harness-creation/",
+    "publish/",
+    "profiles/harness-maintenance.yml",
+    "schemas/",
+    "scripts/adapters/__init__.py",
+    "scripts/adapters/build.py",
+    "scripts/authoring/*.py",
+    "scripts/authoring/commands/*.py",
+    "scripts/install/*.py",
+    "scripts/projection/*.py",
+    "pyproject.toml",
+    "uv.lock",
+    "README.md"
+  ],
+  "scripts": {
+    "test:pack": "npm pack --json --dry-run"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

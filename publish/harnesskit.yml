@@ -1,0 +1,44 @@
+projection_id: harnesskit.publish.public-projection
+source_profile: harnesskit.profile.harness-maintenance
+source_profile_path: profiles/harness-maintenance.yml
+registry_path: components/registry.yml
+policy:
+  closure: profile_declared_components
+  manual_file_copying: prohibited
+  content_writes: prohibited
+support_paths:
+  - README.md
+  - package.json
+  - pyproject.toml
+  - uv.lock
+  - bin/harnesskit.mjs
+  - schemas/*.json
+  - publish/harnesskit.yml
+  - adapters/claude/adapter.yml
+  - adapters/claude/templates/*.hbs
+  - adapters/codex/adapter.yml
+  - adapters/codex/templates/*.hbs
+  - scripts/adapters/__init__.py
+  - scripts/adapters/build.py
+  - scripts/install/*.py
+  - scripts/projection/*.py
+  - scripts/authoring/*.py
+  - scripts/authoring/commands/*.py
+  - .github/workflows/projection-artifact.yml
+excluded_patterns:
+  - profiles/engineering.yml
+  - profiles/minimal.yml
+  - .codex/specs/**
+  - docs/runtime-evidence/**
+  - dist/**
+  - .harnesskit/optimal-response-out/**
+  - .harnesskit/work/**
+  - .harnesskit/private/**
+  - .agents/.optimal-response-mode
+  - .worktrees/**
+  - .venv/**
+  - .pytest_cache/**
+  - .mypy_cache/**
+  - .ruff_cache/**
+  - __pycache__/**
+  - .DS_Store
