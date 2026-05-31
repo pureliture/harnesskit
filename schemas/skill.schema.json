@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/skill.schema.json",
+  "title": "Skill Component Schema",
+  "description": "Schema for a HarnessKit skill, extending the base component schema.",
+  "type": "object",
+  "required": ["component_id", "kind", "status", "title"],
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "Canonical skill identifier. Format: harnesskit.skill.<name>",
+      "pattern": "^harnesskit\\.skill\\.[a-z][a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "skill"
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the skill",
+      "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title of the skill"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short description of what the skill does"
+    },
+    "source_refs": {
+      "type": "array",
+      "description": "References to external sources this skill depends on or is derived from",
+      "items": {
+        "type": "string",
+        "description": "source_id referencing an entry in the source registry"
+      }
+    },
+    "owned_files": {
+      "type": "array",
+      "description": "Files within this repo that are owned by this skill",
+      "items": { "type": "string" }
+    },
+    "targets": {
+      "type": "array",
+      "description": "Target AI platforms this skill is adapted for",
+      "items": {
+        "type": "string",
+        "enum": ["claude", "codex", "gemini", "antigravity"]
+      }
+    },
+    "review_state": {
+      "type": "object",
+      "description": "Current review state of the skill",
+      "properties": {
+        "upstream_sync": {
+          "type": "string",
+          "enum": ["clean", "stale", "pending", "unknown"],
+          "description": "Status relative to upstream source changes"
+        },
+        "human_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Human review approval status"
+        },
+        "license_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "License review approval status"
+        }
+      }
+    },
+    "entrypoints": {
+      "type": "object",
+      "description": "How users invoke this skill",
+      "properties": {
+        "natural_language": {
+          "type": "array",
+          "description": "Example natural-language phrases that trigger this skill",
+          "items": {
+            "type": "object",
+            "required": ["phrase", "context"],
+            "properties": {
+              "phrase": {
+                "type": "string",
+                "description": "Example phrase that invokes this skill"
+              },
+              "context": {
+                "type": "string",
+                "description": "When or in what context this phrase triggers the skill"
+              }
+            }
+          }
+        },
+        "slash_commands": {
+          "type": "array",
+          "description": "Slash commands that invoke this skill directly",
+          "items": {
+            "type": "object",
+            "required": ["command", "description"],
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "The slash command (e.g., '/help', '/review')"
+              },
+              "description": {
+                "type": "string",
+                "description": "What this slash command does"
+              },
+              "args": {
+                "type": "array",
+                "description": "Optional arguments for the slash command",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "type"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "type": { "type": "string" },
+                    "description": { "type": "string" },
+                    "required": { "type": "boolean", "default": false }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance_mode": {
+      "type": "string",
+      "description": "How this skill's provenance is tracked",
+      "enum": ["manual", "auto-detect", "declared"]
+    }
+  }
+}

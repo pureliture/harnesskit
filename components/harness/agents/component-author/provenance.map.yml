@@ -1,0 +1,23 @@
+component_id: harnesskit.agent.component-author
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent authored from the
+    approved component-authoring design and public Agent Skills/Codex/Claude
+    Code documentation references. No source text was copied verbatim.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - component author workflow
+    - authoring-only boundaries
+  new_sections:
+    - harness-maintenance placement policy
+    - final reporting discipline
+  license_notes: "Referenced public documentation only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - component_schema_changed
+    - registry_contract_changed
+    - adapter_phase_started

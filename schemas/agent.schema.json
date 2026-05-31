@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/agent.schema.json",
+  "title": "Agent Component Schema",
+  "description": "Schema for a HarnessKit agent, extending the base component schema.",
+  "type": "object",
+  "required": ["component_id", "kind", "status", "title"],
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "Canonical agent identifier. Format: harnesskit.agent.<name>",
+      "pattern": "^harnesskit\\.agent\\.[a-z][a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "const": "agent"
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the agent",
+      "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title of the agent"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short description of what the agent does"
+    },
+    "source_refs": {
+      "type": "array",
+      "description": "References to external sources this agent depends on or is derived from",
+      "items": {
+        "type": "object",
+        "required": ["source_id"],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "description": "source_id referencing an entry in the source registry"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path within the source that was used"
+          },
+          "used_for": {
+            "type": "array",
+            "description": "What this source reference was used for",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "owned_files": {
+      "type": "array",
+      "description": "Files within this repo that are owned by this agent",
+      "items": { "type": "string" }
+    },
+    "targets": {
+      "type": "object",
+      "description": "Target AI platforms this agent is adapted for, keyed by platform name",
+      "propertyNames": {
+        "enum": ["claude", "codex", "gemini", "antigravity"]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "description": "Build configuration for a single target platform",
+        "required": ["output_path"],
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "Path where the built agent is written for this target platform"
+          }
+        }
+      }
+    },
+    "review_state": {
+      "type": "object",
+      "description": "Current review state of the agent",
+      "properties": {
+        "upstream_sync": {
+          "type": "string",
+          "enum": ["clean", "stale", "pending", "unknown"],
+          "description": "Status relative to upstream source changes"
+        },
+        "human_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Human review approval status"
+        },
+        "license_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "License review approval status"
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "description": "Agent role definition",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Primary role type of this agent",
+          "enum": ["orchestrator", "specialist", "reviewer", "curator", "assistant", "monitor"]
+        },
+        "domains": {
+          "type": "array",
+          "description": "Domains this agent is responsible for",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "tool_policy": {
+      "type": "object",
+      "description": "Tool usage policies for this agent",
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "Default tool policy when not explicitly configured",
+          "enum": ["allow", "deny", "review", "log-only"]
+        }
+      }
+    },
+    "model_policy": {
+      "type": "object",
+      "description": "Model selection policy for this agent",
+      "properties": {
+        "token_efficient": {
+          "type": "string",
+          "description": "Model tier for cost-sensitive or high-volume operations"
+        },
+        "normal": {
+          "type": "string",
+          "description": "Default model tier for standard operations"
+        },
+        "max": {
+          "type": "string",
+          "description": "Model tier for complex or critical operations"
+        }
+      }
+    },
+    "output_schema_ref": {
+      "type": "string",
+      "description": "Reference to the JSON schema that defines this agent's output shape"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+component_id: harnesskit.agent.adapter-author
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent authored from the approved
+    adapter-authoring design and local adapter implementation references. No
+    external source text was copied.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - adapter author responsibilities
+    - runtime gate handoff rules
+  new_sections:
+    - static adapter versus runtime truth reporting split
+    - runtime-verifier handoff boundary
+  license_notes: "Local project references only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - capability_matrix_changed
+    - runtime_probe_policy_changed

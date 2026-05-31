@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/source.schema.json",
+  "title": "External Source Metadata",
+  "description": "Metadata for an external source tracked by HarnessKit.",
+  "type": "object",
+  "required": ["source_id", "kind", "url", "observed_commit"],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "description": "Unique identifier for the source. Lowercase letters, numbers, and hyphens only. Must start with a letter.",
+      "pattern": "^[a-z][a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Type of the external source",
+      "enum": ["git", "registry", "website", "document", "api", "package"]
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical URL for the source (repository, website, or document URL)"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Git ref to track (branch name, tag, or commit-ish). Used when kind is 'git'."
+    },
+    "observed_commit": {
+      "type": "string",
+      "description": "The commit SHA or version identifier observed at last sync"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "description": "Identifier of the snapshot taken from this source at last sync"
+    },
+    "snapshot_path": {
+      "type": "string",
+      "description": "Relative path within the HarnessKit repo where the snapshot is stored"
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Hash of the observed content for detecting changes"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier or license name"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Arbitrary tags for categorization and filtering",
+      "items": { "type": "string" }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes for human reviewers"
+    }
+  }
+}

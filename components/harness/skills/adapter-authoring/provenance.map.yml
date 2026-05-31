@@ -1,0 +1,23 @@
+component_id: harnesskit.skill.adapter-authoring
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance skill authored from the approved
+    adapter-authoring design. Existing local HarnessKit adapter docs and
+    capability matrix were referenced; no third-party source text was copied.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - adapter authoring workflow
+    - strict runtime truth boundary
+  new_sections:
+    - runtime-gated completion claims
+    - adapter-author to runtime-verifier handoff
+  license_notes: "Local project references only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - capability_matrix_changed
+    - runtime_probe_policy_changed

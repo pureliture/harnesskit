@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/install-plan.schema.json",
+  "title": "HarnessKit Install Plan Schema",
+  "description": "A dry-run/apply plan that materializes a profile into project-local AI CLI runtime surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "profile_id",
+    "scope",
+    "mode",
+    "targets",
+    "components",
+    "artifacts",
+    "runtime_surfaces",
+    "activation_gates"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "pattern": "^harnesskit\\.install-plan\\.[a-z][a-z0-9.-]+$"
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^harnesskit\\.profile\\.[a-z][a-z0-9-]+$"
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["project", "workspace", "user"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["dry-run", "apply", "verify"]
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+      },
+      "uniqueItems": true
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "runtime_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "path", "source"],
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md)$"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity)/.+$",
+            "description": "Source output or config surface that should materialize here."
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Exact generated files selected by the profile and intended for materialization.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component_id", "target", "source", "destination"],
+        "properties": {
+          "component_id": {
+            "type": "string",
+            "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+          },
+          "component_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+            },
+            "uniqueItems": true
+          },
+          "target": {
+            "type": "string",
+            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity)/.+$"
+          },
+          "destination": {
+            "type": "string",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md)$"
+          },
+          "merge_strategy": {
+            "type": "string",
+            "enum": ["managed-block"]
+          },
+          "begin_marker": {
+            "type": "string",
+            "minLength": 1
+          },
+          "end_marker": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "activation_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "target", "reason", "required_before_apply", "required_before_runtime"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "target": {
+            "type": "string",
+            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "required_before_apply": {
+            "type": "boolean"
+          },
+          "required_before_runtime": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

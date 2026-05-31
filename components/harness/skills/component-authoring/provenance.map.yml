@@ -1,0 +1,24 @@
+component_id: harnesskit.skill.component-authoring
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance skill authored from the approved
+    component-authoring design and public Agent Skills/Codex/Claude Code
+    documentation references. No source text was copied verbatim.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - component authoring workflow
+    - canonical-only guardrails
+  new_sections:
+    - harness-maintenance placement
+    - ideation exclusion
+    - adapter-output prohibition
+  license_notes: "Referenced public documentation only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - component_schema_changed
+    - provenance_schema_changed

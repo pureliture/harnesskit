@@ -1,0 +1,37 @@
+component_id: harnesskit.agent.component-author
+kind: agent
+status: draft
+title: Component Author
+summary: Specialist agent for writing HarnessKit canonical component records from approved intent and references, without ideation or adapter porting.
+source_refs: []
+owned_files:
+  - components/harness/agents/component-author/agent.yml
+  - components/harness/agents/component-author/prompt.md
+  - components/harness/agents/component-author/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/agents/component-author.md
+  codex:
+    output_path: dist/codex/.codex/agents/component_author.toml
+role:
+  type: specialist
+  domains:
+    - HarnessKit canonical components
+    - provenance records
+    - registry integrity
+tool_policy:
+  default: review
+adapter:
+  claude:
+    tools: Read, Glob, Grep, Edit, Write, Bash
+    skills:
+      - component-authoring
+    color: blue
+  codex:
+    reasoning_effort: high
+routine_harness:
+  category: harness-maintenance
+  phase: component-authoring
+  ideation_in_scope: false
+  adapter_porting_in_scope: false
+  self_adapter_outputs_in_scope: true

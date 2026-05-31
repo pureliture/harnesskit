@@ -1,0 +1,26 @@
+component_id: harnesskit.agent.reference-curator
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent authored from the
+    approved body design. It references Notion research, GitHub triage, and
+    HarnessKit provenance patterns without copied source text.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - reference packet workflow
+    - source risk and license uncertainty separation
+    - GitHub/open-source source scope routing
+    - explicit local migration boundary
+  new_sections:
+    - HarnessKit reference packet schema
+    - source scope modes
+  license_notes: "No bundled third-party code copied; GitHub/open-source references remain URL-and-fact packet inputs with license uncertainty recorded separately."
+  human_review_required: true
+  review_triggers:
+    - source_registry_schema_changed
+    - reference_packet_contract_changed
+    - source_scope_contract_changed
+    - license_policy_changed

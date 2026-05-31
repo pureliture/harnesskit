@@ -1,0 +1,22 @@
+component_id: harnesskit.workflow.harness-creation
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance workflow card authored from
+    the approved body design and local installed skill review. No source text
+    was copied verbatim.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - manual workflow sequence
+    - card-only runtime boundary
+  new_sections:
+    - HarnessKit harness creation stop conditions
+  license_notes: "Original workflow card; no bundled third-party code copied."
+  human_review_required: true
+  review_triggers:
+    - harness_creation_phase_changed
+    - workflow_runner_added
+    - runtime_claim_policy_changed

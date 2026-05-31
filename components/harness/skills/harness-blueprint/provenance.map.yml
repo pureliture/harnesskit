@@ -1,0 +1,25 @@
+component_id: harnesskit.skill.harness-blueprint
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources: []
+  attribution_note: >
+    Original HarnessKit harness-maintenance skill authored from the
+    approved body design. It references skill-creator, writing-skills, ChatGPT
+    Apps classification, and existing HarnessKit component-authoring
+    patterns without copied source text.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - component kind decision matrix
+    - blueprint handoff workflow
+  new_sections:
+    - HarnessKit blueprint output contract
+    - component authoring slice contract
+  license_notes: "Referenced local installed skill patterns only; no bundled third-party code copied."
+  human_review_required: true
+  review_triggers:
+    - component_schema_changed
+    - profile_schema_changed
+    - capabilities_matrix_changed
+    - workflow_runner_policy_changed

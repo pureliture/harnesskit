@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/publish-report.schema.json",
+  "title": "HarnessKit Publish Report Schema",
+  "description": "Machine-readable evidence for a private publish run: projection inputs, preview, gate results, and push/PR outcome.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_version", "generated_at", "source_revision",
+    "projection_policy_digest", "target", "checkout",
+    "projected_files", "tarball_contents", "gates",
+    "preview_summary", "approval"
+  ],
+  "properties": {
+    "report_version": { "type": "string", "const": "1" },
+    "generated_at": { "type": "string" },
+    "source_revision": { "type": ["string", "null"] },
+    "projection_policy_digest": { "type": "string" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "branch"],
+      "properties": {
+        "repo": { "type": "string" },
+        "branch": { "type": "string" }
+      }
+    },
+    "checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkout_path", "worktree_path"],
+      "properties": {
+        "checkout_path": { "type": ["string", "null"] },
+        "worktree_path": { "type": ["string", "null"] }
+      }
+    },
+    "projected_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "digest"],
+        "properties": {
+          "path": { "type": "string" },
+          "digest": { "type": "string" }
+        }
+      }
+    },
+    "tarball_contents": { "type": "array", "items": { "type": "string" } },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["pass", "fail", "skipped"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "preview_summary": { "type": "string" },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "decision"],
+      "properties": {
+        "requested": { "type": "boolean" },
+        "decision": { "type": "string", "enum": ["approved", "rejected", "not-requested"] }
+      }
+    },
+    "push": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["pushed", "branch"],
+      "properties": {
+        "pushed": { "type": "boolean" },
+        "branch": { "type": "string" },
+        "pr_url": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

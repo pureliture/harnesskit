@@ -1,0 +1,40 @@
+# Public repo self-validation workflow. Authored here in the SoT and projected
+# verbatim into the public repo. Validates the public repo as a projection artifact.
+name: Projection artifact verification
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-projection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+      - name: Package dry-run
+        run: npm pack --dry-run --json
+      - name: Projection manifest verification
+        run: uv run python scripts/projection/manifest.py --policy publish/harnesskit.yml --repo-root .
+      - name: Tarball install/apply/verify smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmpdir="$(mktemp -d)"
+          pack_name="$(npm pack --pack-destination "$tmpdir" | tail -n 1)"
+          tarball="$tmpdir/$pack_name"
+          target="$tmpdir/empty"; mkdir "$target"
+          plan="$tmpdir/plan.json"
+          npx --yes --package "$tarball" harnesskit plan --profile harness-maintenance --mode apply --format json > "$plan"
+          npx --yes --package "$tarball" harnesskit apply "$plan" --target-root "$target" --allow-runtime-hooks
+          npx --yes --package "$tarball" harnesskit verify "$plan" --target-root "$target"

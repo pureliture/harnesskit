@@ -1,0 +1,31 @@
+component_id: harnesskit.skill.adapter-authoring
+kind: skill
+status: draft
+title: Adapter Authoring
+summary: Use when adding or updating HarnessKit target adapter support for an approved canonical component with runtime-gated evidence requirements.
+source_refs: []
+owned_files:
+  - components/harness/skills/adapter-authoring/component.yml
+  - components/harness/skills/adapter-authoring/SKILL.md
+  - components/harness/skills/adapter-authoring/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/adapter-authoring/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/adapter-authoring/SKILL.md
+entrypoints:
+  natural_language:
+    - phrase: "이 canonical component를 codex/claude adapter에 붙이고 싶어"
+      context: "The component intent is approved and canonical records already exist."
+    - phrase: "새 target adapter 지원을 기준정보부터 설계해줘"
+      context: "The user wants adapter metadata, templates, tests, and runtime probe contract defined before runtime claims."
+provenance_mode: manual
+routine_harness:
+  category: harness-maintenance
+  phase: adapter-authoring
+  upstream_phase: component-authoring
+  runtime_gate_required: true
+  strict_runtime_truth: true
+  live_runtime_probe_in_scope: false
+  adapter_output_authoring_in_scope: true
+  self_adapter_outputs_in_scope: true

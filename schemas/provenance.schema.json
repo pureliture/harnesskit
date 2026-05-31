@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/provenance.schema.json",
+  "title": "Provenance Map Schema",
+  "description": "Schema for a component's provenance declaration, mapping dependencies on external sources.",
+  "type": "object",
+  "required": ["component_id", "provenance"],
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "Canonical component identifier being described",
+      "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "description": "How this component relates to its upstream sources",
+          "enum": ["original", "derived", "adapted", "inspired", "forked", "referenced", "unrelated"]
+        },
+        "runtime_dependency_on_sources": {
+          "type": "boolean",
+          "description": "Whether the component fetches from sources at runtime",
+          "default": false
+        },
+        "sources": {
+          "type": "array",
+          "description": "External sources this component is derived from or depends on",
+          "items": {
+            "type": "object",
+            "required": ["source_id"],
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "description": "Reference to a source registry entry"
+              },
+              "snapshot_id": {
+                "type": "string",
+                "description": "Specific snapshot of the source used by this component"
+              },
+              "source_path": {
+                "type": "string",
+                "description": "Path within the source that was used (if a subset)"
+              },
+              "influence": {
+                "type": "array",
+                "description": "How this source influenced the component, as free-form descriptive phrases",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "copied_content": {
+                "type": "boolean",
+                "description": "Whether content was copied verbatim from this source",
+                "default": false
+              },
+              "adapted_content": {
+                "type": "boolean",
+                "description": "Whether content was adapted or modified from this source",
+                "default": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "attribution_note": {
+      "type": "string",
+      "description": "Free-form attribution or credit text"
+    },
+    "review_triggers": {
+      "type": "array",
+      "description": "Conditions that should trigger a review of this component",
+      "items": {
+        "type": "object",
+        "required": ["condition"],
+        "properties": {
+          "condition": {
+            "type": "string",
+            "description": "The condition that triggers a review"
+          },
+          "action": {
+            "type": "string",
+            "description": "Recommended action when this trigger fires"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"],
+            "description": "Severity of the trigger"
+          }
+        }
+      }
+    }
+  }
+}

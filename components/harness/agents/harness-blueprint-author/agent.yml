@@ -1,0 +1,38 @@
+component_id: harnesskit.agent.harness-blueprint-author
+kind: agent
+status: draft
+title: Harness Blueprint Author
+summary: Specialist agent for converting approved HarnessKit requirements into a component blueprint and authoring slices.
+source_refs: []
+owned_files:
+  - components/harness/agents/harness-blueprint-author/agent.yml
+  - components/harness/agents/harness-blueprint-author/prompt.md
+  - components/harness/agents/harness-blueprint-author/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/agents/harness-blueprint-author.md
+  codex:
+    output_path: dist/codex/.codex/agents/harness_blueprint_author.toml
+role:
+  type: specialist
+  domains:
+    - HarnessKit component blueprints
+    - component kind decisions
+    - authoring handoff slices
+tool_policy:
+  default: review
+adapter:
+  claude:
+    tools: Read, Glob, Grep, Write, Bash
+    skills:
+      - harness-blueprint
+    color: green
+  codex:
+    reasoning_effort: high
+routine_harness:
+  category: harness-maintenance
+  phase: harness-blueprint
+  requires_approved_requirements: true
+  component_authoring_in_scope: false
+  adapter_authoring_in_scope: false
+  runtime_probe_in_scope: false

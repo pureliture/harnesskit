@@ -1,0 +1,24 @@
+profile_id: harnesskit.profile.harness-maintenance
+status: draft
+title: Harness Maintenance
+summary: HarnessKit maintenance profile for reference curation, requirements, blueprinting, canonical authoring, static adapter authoring, and evidence-bound evaluation.
+components:
+  - harnesskit.agent.reference-curator
+  - harnesskit.skill.harness-requirements
+  - harnesskit.agent.harness-requirements-analyst
+  - harnesskit.skill.harness-blueprint
+  - harnesskit.agent.harness-blueprint-author
+  - harnesskit.skill.component-authoring
+  - harnesskit.agent.component-author
+  - harnesskit.skill.adapter-authoring
+  - harnesskit.agent.adapter-author
+  - harnesskit.skill.skill-evaluation
+  - harnesskit.workflow.harness-creation
+targets:
+  - claude
+  - codex
+install_policy:
+  default_scope: project
+  allowed_scopes:
+    - project
+  activation_policy: manual

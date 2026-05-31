@@ -1,0 +1,262 @@
+version: "1"
+components:
+  # ── Skills ────────────────────────────────────────
+  harnesskit.skill.tdd:
+    kind: skill
+    status: draft
+    path: components/skills/tdd/component.yml
+
+  harnesskit.skill.writing-plans:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/writing-plans/component.yml
+
+  harnesskit.skill.executing-plans:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/executing-plans/component.yml
+
+  harnesskit.skill.requesting-code-review:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/requesting-code-review/component.yml
+
+  harnesskit.skill.receiving-code-review:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/receiving-code-review/component.yml
+
+  harnesskit.skill.verification-before-completion:
+    kind: skill
+    status: semi-concrete
+    planned: true
+    path: components/skills/verification-before-completion/component.yml
+
+  harnesskit.skill.systematic-debugging:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/systematic-debugging/component.yml
+
+  harnesskit.skill.using-git-worktrees:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/using-git-worktrees/component.yml
+
+  harnesskit.skill.finishing-a-development-branch:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/finishing-a-development-branch/component.yml
+
+  harnesskit.skill.subagent-driven-development:
+    kind: skill
+    status: skeleton
+    planned: true
+    path: components/skills/subagent-driven-development/component.yml
+
+  harnesskit.skill.human-doc-curator:
+    kind: skill
+    status: draft
+    path: components/skills/human-doc-curator/component.yml
+
+  harnesskit.skill.human-doc-bootstrap:
+    kind: skill
+    status: draft
+    path: components/skills/human-doc-bootstrap/component.yml
+
+  harnesskit.skill.human-doc-sync:
+    kind: skill
+    status: draft
+    path: components/skills/human-doc-sync/component.yml
+
+  harnesskit.skill.human-doc-audit:
+    kind: skill
+    status: draft
+    path: components/skills/human-doc-audit/component.yml
+
+  harnesskit.skill.optimal-response:
+    kind: skill
+    status: draft
+    path: components/skills/optimal-response/component.yml
+
+  harnesskit.skill.public-publisher:
+    kind: skill
+    status: draft
+    path: components/skills/harnesskit-public-publisher/component.yml
+
+  harnesskit.skill.grill-to-spec:
+    kind: skill
+    status: draft
+    path: components/skills/grill-to-spec/component.yml
+
+  harnesskit.skill.antigravity-agent-loader:
+    kind: skill
+    status: draft
+    path: components/skills/antigravity-agent-loader/component.yml
+
+  # ── SCM skills ───────────────────────────────────
+  harnesskit.skill.capture-collaboration-idea:
+    kind: skill
+    status: draft
+    path: components/scm/skills/capture-collaboration-idea/component.yml
+
+  # ── Harness maintenance skills ────────────────────
+  harnesskit.skill.component-authoring:
+    kind: skill
+    status: draft
+    path: components/harness/skills/component-authoring/component.yml
+
+  harnesskit.skill.harness-requirements:
+    kind: skill
+    status: draft
+    path: components/harness/skills/harness-requirements/component.yml
+
+  harnesskit.skill.harness-blueprint:
+    kind: skill
+    status: draft
+    path: components/harness/skills/harness-blueprint/component.yml
+
+  harnesskit.skill.adapter-authoring:
+    kind: skill
+    status: draft
+    path: components/harness/skills/adapter-authoring/component.yml
+
+  harnesskit.skill.skill-evaluation:
+    kind: skill
+    status: draft
+    path: components/harness/skills/skill-evaluation/component.yml
+
+  # ── Agents ────────────────────────────────────────
+  harnesskit.agent.requirements-analyst:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/requirements-analyst/component.yml
+
+  harnesskit.agent.spec-writer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/spec-writer/component.yml
+
+  harnesskit.agent.plan-writer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/plan-writer/component.yml
+
+  harnesskit.agent.tdd-implementer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/tdd-implementer/component.yml
+
+  harnesskit.agent.verification-agent:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/verification-agent/component.yml
+
+  harnesskit.agent.system-architecture-reviewer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/system-architecture-reviewer/component.yml
+
+  harnesskit.agent.backend-codebase-reviewer:
+    kind: agent
+    status: draft
+    path: components/agents/backend-codebase-reviewer/agent.yml
+
+  harnesskit.agent.security-reviewer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/security-reviewer/component.yml
+
+  harnesskit.agent.solid-reviewer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/solid-reviewer/component.yml
+
+  harnesskit.agent.testability-reviewer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/testability-reviewer/component.yml
+
+  harnesskit.agent.provenance-impact-reviewer:
+    kind: agent
+    status: draft
+    planned: true
+    path: components/agents/provenance-impact-reviewer/component.yml
+
+  harnesskit.agent.human-doc-curator:
+    kind: agent
+    status: draft
+    path: components/agents/human-doc-curator/agent.yml
+
+  # ── Harness maintenance agents ────────────────────
+  harnesskit.agent.component-author:
+    kind: agent
+    status: draft
+    path: components/harness/agents/component-author/agent.yml
+
+  harnesskit.agent.reference-curator:
+    kind: agent
+    status: draft
+    path: components/harness/agents/reference-curator/agent.yml
+
+  harnesskit.agent.harness-requirements-analyst:
+    kind: agent
+    status: draft
+    path: components/harness/agents/harness-requirements-analyst/agent.yml
+
+  harnesskit.agent.harness-blueprint-author:
+    kind: agent
+    status: draft
+    path: components/harness/agents/harness-blueprint-author/agent.yml
+
+  harnesskit.agent.adapter-author:
+    kind: agent
+    status: draft
+    path: components/harness/agents/adapter-author/agent.yml
+
+  # ── Hooks ────────────────────────────────────────
+  harnesskit.hook.human-doc-turn-scan:
+    kind: hook
+    status: draft
+    path: components/hooks/human-doc-turn-scan/component.yml
+
+  harnesskit.hook.optimal-response-session-start:
+    kind: hook
+    status: draft
+    path: components/hooks/optimal-response-session-start/component.yml
+
+  harnesskit.hook.optimal-response-prompt-submit:
+    kind: hook
+    status: draft
+    path: components/hooks/optimal-response-prompt-submit/component.yml
+
+  harnesskit.rule.harnesskit-project-context:
+    kind: rule
+    status: draft
+    path: components/rules/harnesskit-project-context/component.yml
+
+  # ── Workflow ────────────────────────────────────────
+  harnesskit.workflow.spec-to-tdd:
+    kind: workflow
+    status: draft-card-only
+    path: components/workflows/spec-to-tdd/workflow.yml
+
+  harnesskit.workflow.harness-creation:
+    kind: workflow
+    status: draft
+    path: components/harness/workflows/harness-creation/workflow.yml

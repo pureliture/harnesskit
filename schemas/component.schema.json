@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/component.schema.json",
+  "title": "Base Component Schema",
+  "description": "Base schema for all owned components in HarnessKit.",
+  "type": "object",
+  "required": ["component_id", "kind", "status", "title"],
+  "properties": {
+    "component_id": {
+      "type": "string",
+      "description": "Canonical component identifier. Format: harnesskit.<kind>.<name>",
+      "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Component kind",
+      "enum": ["skill", "agent", "hook", "rule", "command", "workflow"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the component",
+      "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title of the component"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short description of what the component does"
+    },
+    "source_refs": {
+      "type": "array",
+      "description": "References to external sources this component depends on or is derived from",
+      "items": {
+        "type": "object",
+        "required": ["source_id"],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "description": "source_id referencing an entry in the source registry"
+          },
+          "path": {
+            "type": "string",
+            "description": "Path within the source that was used"
+          },
+          "used_for": {
+            "type": "array",
+            "description": "What this source reference was used for",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "owned_files": {
+      "type": "array",
+      "description": "Files within this repo that are owned by this component",
+      "items": { "type": "string" }
+    },
+    "targets": {
+      "type": "object",
+      "description": "Target AI platforms this component is adapted for, keyed by platform name",
+      "propertyNames": {
+        "enum": ["claude", "codex", "gemini", "antigravity"]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "description": "Build configuration for a single target platform",
+        "required": ["output_path"],
+        "properties": {
+          "output_path": {
+            "type": "string",
+            "description": "Path where the built component is written for this target platform"
+          }
+        }
+      }
+    },
+    "review_state": {
+      "type": "object",
+      "description": "Current review state of the component",
+      "properties": {
+        "upstream_sync": {
+          "type": "string",
+          "enum": ["clean", "stale", "pending", "unknown"],
+          "description": "Status relative to upstream source changes"
+        },
+        "human_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Human review approval status"
+        },
+        "license_review": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "License review approval status"
+        }
+      }
+    }
+  }
+}

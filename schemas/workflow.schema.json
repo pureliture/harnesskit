@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/workflow.schema.json",
+  "title": "Workflow Card Schema",
+  "description": "Schema defining a HarnessKit workflow card.",
+  "type": "object",
+  "required": ["workflow_id", "status", "description"],
+  "properties": {
+    "workflow_id": {
+      "type": "string",
+      "description": "Canonical workflow identifier. Format: harnesskit.workflow.<name>",
+      "pattern": "^harnesskit\\.workflow\\.[a-z][a-z0-9-]+$"
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the workflow",
+      "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "runtime_implemented": {
+      "type": "boolean",
+      "description": "Whether the runtime implementation of this workflow exists",
+      "default": false
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the workflow's purpose"
+    },
+    "entrypoints": {
+      "type": "object",
+      "description": "How users invoke this workflow",
+      "properties": {
+        "natural_language": {
+          "type": "object",
+          "description": "Example natural-language phrases that trigger this workflow",
+          "properties": {
+            "examples": {
+              "type": "array",
+              "description": "Example phrases that invoke this workflow",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "slash_commands": {
+          "type": "object",
+          "description": "Slash commands that invoke this workflow directly",
+          "properties": {
+            "examples": {
+              "type": "array",
+              "description": "Example slash command invocations",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ordered sequence of workflow steps",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this step within the workflow"
+          },
+          "agent": {
+            "type": "string",
+            "description": "component_id of the agent that executes this step"
+          },
+          "skill": {
+            "type": "string",
+            "description": "component_id of the skill invoked in this step"
+          },
+          "output": {
+            "type": "string",
+            "description": "Named output artifact from this step, referenced by later steps"
+          },
+          "mode_fanout": {
+            "type": "object",
+            "description": "Per-mode fan-out: maps a mode name to the set of agents that run in that mode for this step",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "agents": {
+                  "type": "array",
+                  "description": "component_ids of agents that run in this mode",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of this step"
+          }
+        }
+      }
+    },
+    "mode_policy_ref": {
+      "type": "string",
+      "description": "Reference to the mode policy governing this workflow's execution"
+    }
+  }
+}
