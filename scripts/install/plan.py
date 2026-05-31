@@ -43,6 +43,11 @@ RUNTIME_SURFACES = {
         },
         {
             "target": "project",
+            "path": "GEMINI.md",
+            "source": "dist/project/GEMINI.md",
+        },
+        {
+            "target": "project",
             "path": ".github/ISSUE_TEMPLATE",
             "source": "dist/project/.github/ISSUE_TEMPLATE",
         }
@@ -213,6 +218,8 @@ def _surface_key_for_artifact(artifact: dict[str, Any]) -> tuple[str, str] | Non
             return ("project", "AGENTS.md")
         if destination == "CLAUDE.md":
             return ("project", "CLAUDE.md")
+        if destination == "GEMINI.md":
+            return ("project", "GEMINI.md")
         if destination.startswith(".github/ISSUE_TEMPLATE/"):
             return ("project", ".github/ISSUE_TEMPLATE")
     if target == "antigravity":

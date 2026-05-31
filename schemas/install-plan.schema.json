@@ -62,7 +62,7 @@
           },
           "path": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
           },
           "source": {
             "type": "string",
@@ -102,7 +102,7 @@
           },
           "destination": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
           },
           "merge_strategy": {
             "type": "string",
