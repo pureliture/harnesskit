@@ -11,10 +11,7 @@ Required references read:
 - `sources/harness-evaluation-reference.yml`
 - `sources/harness-evaluation-oss-reference.yml`
 - `components/registry.yml`
-- `profiles/engineering.yml`
 - `profiles/harness-maintenance.yml`
-- `profiles/minimal.yml`
-- `capabilities.yml`
 - `components/harness/workflows/harness-creation/workflow.yml`
 
 Approved requirement anchor:
@@ -27,7 +24,7 @@ Current registry and residue policy:
 
 - Earlier draft `rh.*` entries/files for evaluator, hook, rule, and workflow are residue relative to this blueprint.
 - Keeping those drafts is explicitly forbidden. Later authoring must remove or replace them with the approved `harnesskit.*` slice; it must not leave both namespaces or unused draft component families behind.
-- The hook/rule/command candidates are rejected for this blueprint because requirements call for an orchestrating evaluator and `capabilities.yml` keeps Codex rule/command support probe-gated.
+- The hook/rule/command candidates are rejected for this blueprint because requirements call for an orchestrating evaluator and the runtime capability matrix keeps Codex rule/command support probe-gated.
 
 ## Component Graph
 
@@ -74,7 +71,7 @@ Non-component implementation collaborators:
 Rejected alternatives:
 
 - `harnesskit.workflow.harness-evaluation`: optional human-readable card only. Not required now because the approved requirement names one top-level evaluator and the existing `harness-creation` workflow already shows the SoT-to-evaluation lifecycle. Can be reconsidered later as a non-runner card.
-- `harnesskit.command.harness-eval`: not selected. Custom command support is pending schema probe in `capabilities.yml`.
+- `harnesskit.command.harness-eval`: not selected. Custom command support is pending schema probe in the runtime capability matrix.
 - `harnesskit.hook.harness-evaluation-safety-guard`: not selected. Fixture and allowlist safety should be deterministic runner behavior, not implicit interception.
 - `harnesskit.rule.harness-evaluation-budget`: not selected. Budget and timeout policy belongs in evaluator instructions and runner configuration until rule support is proven.
 
@@ -156,8 +153,8 @@ Install plan constraints:
 
 Target intent:
 
-- Codex agent adapter: produce project-scoped agent registration and config-layer output according to `capabilities.yml` agent support.
-- Claude agent adapter: produce project-scoped `.claude/agents/<name>.md` output according to `capabilities.yml` agent support.
+- Codex agent adapter: produce project-scoped agent registration and config-layer output according to the runtime capability matrix.
+- Claude agent adapter: produce project-scoped `.claude/agents/<name>.md` output according to the runtime capability matrix.
 
 Adapter exclusions:
 
