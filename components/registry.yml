@@ -114,10 +114,71 @@ components:
     path: components/skills/antigravity-agent-loader/component.yml
 
   # ── SCM skills ───────────────────────────────────
+  harnesskit.skill.github-workflow-policy:
+    kind: skill
+    status: draft
+    path: components/scm/skills/github-workflow-policy/component.yml
+
+  harnesskit.skill.github-issue:
+    kind: skill
+    status: draft
+    path: components/scm/skills/github-issue/component.yml
+
+  harnesskit.skill.github-start:
+    kind: skill
+    status: draft
+    path: components/scm/skills/github-start/component.yml
+
+  harnesskit.skill.github-pr:
+    kind: skill
+    status: draft
+    path: components/scm/skills/github-pr/component.yml
+
+  harnesskit.skill.github-pr-followup:
+    kind: skill
+    status: draft
+    path: components/scm/skills/github-pr-followup/component.yml
+
   harnesskit.skill.capture-collaboration-idea:
     kind: skill
     status: draft
     path: components/scm/skills/capture-collaboration-idea/component.yml
+
+  # ── Work skills ──────────────────────────────────
+  harnesskit.skill.atlassian-work:
+    kind: skill
+    status: draft
+    path: components/work/skills/atlassian-work/component.yml
+
+  harnesskit.skill.acli-gateway:
+    kind: skill
+    status: draft
+    path: components/work/skills/acli-gateway/component.yml
+
+  harnesskit.skill.acli-read:
+    kind: skill
+    status: draft
+    path: components/work/skills/acli-read/component.yml
+
+  harnesskit.skill.acli-write:
+    kind: skill
+    status: draft
+    path: components/work/skills/acli-write/component.yml
+
+  harnesskit.skill.jira-ticket-management:
+    kind: skill
+    status: draft
+    path: components/work/skills/jira-ticket-management/component.yml
+
+  harnesskit.skill.confluence-page-authoring:
+    kind: skill
+    status: draft
+    path: components/work/skills/confluence-page-authoring/component.yml
+
+  harnesskit.skill.atlassian-account-diagnostics:
+    kind: skill
+    status: draft
+    path: components/work/skills/atlassian-account-diagnostics/component.yml
 
   # ── Harness maintenance skills ────────────────────
   harnesskit.skill.component-authoring:
@@ -178,13 +239,26 @@ components:
 
   harnesskit.agent.system-architecture-reviewer:
     kind: agent
+    status: deprecated
+    deprecated: true
+    replaced_by: harnesskit.agent.system-architecture-manager
+    path: components/agents/system-architecture-reviewer/agent.yml
+
+  harnesskit.agent.system-architecture-manager:
+    kind: agent
     status: draft
-    planned: true
-    path: components/agents/system-architecture-reviewer/component.yml
+    path: components/agents/system-architecture-manager/agent.yml
+
+  harnesskit.agent.codebase-architecture-manager:
+    kind: agent
+    status: draft
+    path: components/agents/codebase-architecture-manager/agent.yml
 
   harnesskit.agent.backend-codebase-reviewer:
     kind: agent
-    status: draft
+    status: deprecated
+    deprecated: true
+    replaced_by: harnesskit.agent.codebase-architecture-manager
     path: components/agents/backend-codebase-reviewer/agent.yml
 
   harnesskit.agent.security-reviewer:
@@ -211,6 +285,11 @@ components:
     planned: true
     path: components/agents/provenance-impact-reviewer/component.yml
 
+  harnesskit.agent.github-manager:
+    kind: agent
+    status: draft
+    path: components/agents/github-manager/agent.yml
+
   harnesskit.agent.human-doc-curator:
     kind: agent
     status: draft
@@ -220,6 +299,11 @@ components:
     kind: agent
     status: draft
     path: components/agents/worktree-lifecycle-manager/agent.yml
+
+  harnesskit.agent.atlassian-work-worker:
+    kind: agent
+    status: draft
+    path: components/work/agents/atlassian-work-worker/agent.yml
 
   # ── Harness maintenance agents ────────────────────
   harnesskit.agent.component-author:
@@ -246,6 +330,11 @@ components:
     kind: agent
     status: draft
     path: components/harness/agents/adapter-author/agent.yml
+
+  harnesskit.agent.harness-evaluator:
+    kind: agent
+    status: draft
+    path: components/harness/agents/harness-evaluator/agent.yml
 
   # ── Hooks ────────────────────────────────────────
   harnesskit.hook.human-doc-turn-scan:

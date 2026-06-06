@@ -1,0 +1,58 @@
+source_mode: research_requested
+sources:
+  - source_id: openai_evals
+    kind: github_repo
+    url_or_path: https://github.com/openai/evals
+    observed_ref: main
+    license: MIT License
+    relevance: High. Provides industry-standard LLM-as-a-judge evaluation frameworks and structured matchers (exact match, inclusion, regex) for prompt responses.
+    reusable_patterns:
+      - LLM-as-a-judge system prompts and standard dataset execution templates.
+      - JSON schemas representing evaluation datasets and multi-turn execution trace results.
+    copied_content_allowed: false
+    risks: Excessive OpenAI API costs (Overrun risk), potential API rate limiting during high-concurrency executions, and lack of built-in interactive visualization tools.
+
+  - source_id: promptfoo
+    kind: github_repo
+    url_or_path: https://github.com/promptfoo/promptfoo
+    observed_ref: v0.121.12
+    license: MIT License
+    relevance: Very High. Industry standard for declarative, test-driven prompt engineering, automated red teaming, and highly visual reporting tools.
+    reusable_patterns:
+      - Declarative prompt-and-test matrix specification syntax in YAML.
+      - Extensible assertion engines (semantic similarity, websearch, classification, red teaming).
+      - Self-contained, portable HTML reports for visual review and CI/CD logging.
+    copied_content_allowed: false
+    risks: LLM invocation cost overrun during large scale automated sweeps, and high release churn (requires rapid dependency upgrades).
+
+  - source_id: agentbench
+    kind: github_repo
+    url_or_path: https://github.com/THUDM/AgentBench
+    observed_ref: main
+    license: Apache License 2.0
+    relevance: Medium-High. Pioneers multi-turn interactive environment-based benchmarking (OS, DB, Web Shop) to objectively measure LLM reasoning and tool execution capabilities.
+    reusable_patterns:
+      - Multi-turn interactive harness wrapper that detaches LLM actions from execution environment states.
+      - Multi-turn system prompt injection blueprints for sequential tool-use loops.
+    copied_content_allowed: false
+    risks: Extremely high setup complexity (Docker setup for databases/OS is prone to failure), execution latency, and high resource costs.
+
+  - source_id: swebench
+    kind: github_repo
+    url_or_path: https://github.com/princeton-nlp/SWE-bench
+    observed_ref: main
+    license: MIT License
+    relevance: High. Gold standard for evaluating software engineering agents using real GitHub issues. Validates code patch correctness using gated test-suite verification.
+    reusable_patterns:
+      - Secure execution of third-party code patches via containerized sandbox runtime.
+      - golden-test-suite baseline comparison verification architecture.
+    copied_content_allowed: false
+    risks: Exceptionally high CPU/memory usage for local Docker environment execution, and maintenance complexity of runtime environments for historical codebases.
+
+exclusions:
+  - source: LangSmith / Langfuse / LangKit
+    reason: These are primarily closed-source commercial SaaS platforms or tightly coupled SDKs that require extensive vendor-hosted infrastructures and live tokens, departing from the self-hosted open-source reference framework.
+open_questions:
+  - How can we safely implement dockerized sandboxing (modeled after SWE-bench) inside Routine-Harness without introducing local host privilege escalation risks?
+  - What are the precise cost-gating mechanisms to prevent budget overrun during parallel executions of Promptfoo or OpenAI Evals?
+  - Which metric (semantic similarity vs. LLM-as-a-judge) yields the highest consistency inside Routine-Harness?

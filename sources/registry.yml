@@ -1,0 +1,75 @@
+version: "1"
+sources:
+  obra-superpowers:
+    kind: github_repository
+    url: https://github.com/obra/superpowers
+    ref: main
+    description: "Reference skill and agent definitions from obra/superpowers"
+    license_hint: unknown
+    tags: [superpowers, skills, workflow]
+    active_snapshot: null
+
+  mattpocock-skills:
+    kind: github_repository
+    url: https://github.com/mattpocock/skills
+    ref: main
+    description: "Reference engineering skills"
+    license_hint: unknown
+    tags: [skills, engineering]
+    active_snapshot: null
+
+  harness-evaluation-requirements:
+    kind: repository_local
+    path: sources/requirements.md
+    description: "Approved Harness Evaluator requirements SoT"
+    license_hint: repository-local
+    tags: [harnesskit, evaluation, requirements]
+    active_snapshot: null
+
+  harness-evaluation-blueprint:
+    kind: repository_local
+    path: sources/blueprint.md
+    description: "Approved Harness Evaluator blueprint"
+    license_hint: repository-local
+    tags: [harnesskit, evaluation, blueprint]
+    active_snapshot: null
+
+  harness-evaluation-local-reference:
+    kind: repository_local
+    path: sources/harness-evaluation-reference.yml
+    description: "Local HarnessKit evaluator reference packet"
+    license_hint: repository-local
+    tags: [harnesskit, evaluation, reference]
+    active_snapshot: null
+
+  harness-evaluation-oss-reference:
+    kind: repository_local
+    path: sources/harness-evaluation-oss-reference.yml
+    description: "OSS pattern-only evaluator reference packet"
+    license_hint: mixed-oss-pattern-only
+    tags: [harnesskit, evaluation, reference]
+    active_snapshot: null
+
+  skill-evaluation:
+    kind: repository_local
+    path: components/harness/skills/skill-evaluation/SKILL.md
+    description: "Reusable HarnessKit skill-evaluation gate procedure"
+    license_hint: repository-local
+    tags: [harnesskit, evaluation, skill]
+    active_snapshot: null
+
+  component-driven-adapter-sot-requirements:
+    kind: repository_local
+    path: sources/component-driven-adapter-sot-requirements.md
+    description: "Public projection source summary for component-driven adapter SoT requirements"
+    license_hint: repository-local
+    tags: [harnesskit, adapter, requirements]
+    active_snapshot: null
+
+  component-driven-adapter-sot-design:
+    kind: repository_local
+    path: sources/component-driven-adapter-sot-design.md
+    description: "Public projection source summary for component-driven adapter SoT design"
+    license_hint: repository-local
+    tags: [harnesskit, adapter, design]
+    active_snapshot: null

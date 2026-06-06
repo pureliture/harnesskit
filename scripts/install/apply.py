@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import json
 import shutil
 import sys
 from pathlib import Path
@@ -22,6 +24,23 @@ HARNESSKIT_MANAGED_BLOCK = (
 LEGACY_ROUTINE_HARNESS_MANAGED_BLOCK = (
     "<!-- BEGIN ROUTINE-HARNESS GENERATED CONTEXT -->",
     "<!-- END ROUTINE-HARNESS GENERATED CONTEXT -->",
+)
+CLAUDE_SETTINGS_JSON_MERGE_KEY = "claude-settings-hooks"
+CODEX_HOOKS_JSON_MERGE_KEY = "codex-hooks"
+HARNESSKIT_CLAUDE_HOOK_COMMAND_TOKENS = (
+    "human_doc_turn_scan.py",
+    ".harnesskit/scripts/human_doc_turn_scan.py",
+    ".claude/skills/optimal-response/hooks/stop-prompt-submit.cjs",
+    ".claude/skills/optimal-response/hooks/stop-session-start.cjs",
+    "/.claude/skills/optimal-response/hooks/stop-prompt-submit.cjs",
+    "/.claude/skills/optimal-response/hooks/stop-session-start.cjs",
+)
+HARNESSKIT_CODEX_HOOK_COMMAND_TOKENS = (
+    "human_doc_turn_scan.py",
+    ".harnesskit/scripts/human_doc_turn_scan.py",
+    ".codex/skills/optimal-response/hooks/stop-prompt-submit.cjs",
+    "/.codex/skills/optimal-response/hooks/stop-prompt-submit.cjs",
+    "${CODEX_HOME:-$HOME/.codex}/skills/optimal-response/hooks/stop-prompt-submit.cjs",
 )
 
 
@@ -52,11 +71,15 @@ def apply_plan(
 
     copy_pairs: list[tuple[Path, Path]] = []
     merge_pairs: list[tuple[Path, Path, dict]] = []
+    json_merge_pairs: list[tuple[Path, Path, dict]] = []
     for artifact in plan["artifacts"]:
         src = source_path(artifact)
         dest = destination_path(target_root, artifact)
         if artifact.get("merge_strategy") == "managed-block":
             merge_pairs.append((src, dest, artifact))
+            continue
+        if artifact.get("merge_strategy") == "json-deep-merge":
+            json_merge_pairs.append((src, dest, artifact))
             continue
         if dest.exists() and not overwrite and not _same_file_content(src, dest):
             # Check for exact Routine-Harness generated marker for safe auto-update
@@ -78,6 +101,12 @@ def apply_plan(
         body = src.read_text(encoding="utf-8").rstrip()
         current = dest.read_text(encoding="utf-8") if dest.exists() else ""
         dest.write_text(_merge_managed_block(current, body, artifact), encoding="utf-8")
+        count += 1
+    for src, dest, artifact in json_merge_pairs:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        body = src.read_text(encoding="utf-8")
+        current = dest.read_text(encoding="utf-8") if dest.exists() else ""
+        dest.write_text(_merge_json_deep(current, body, artifact), encoding="utf-8")
         count += 1
     print(f"applied {count} artifacts to {target_root}")
     return 0
@@ -136,6 +165,129 @@ def _find_existing_managed_block_markers(
     if not found:
         return None
     return found[0]
+
+
+def _merge_json_deep(current: str, body: str, artifact: dict) -> str:
+    json_merge_key = artifact.get("json_merge_key")
+    if json_merge_key not in {CLAUDE_SETTINGS_JSON_MERGE_KEY, CODEX_HOOKS_JSON_MERGE_KEY}:
+        raise ValueError("unsupported json merge key")
+
+    source = json.loads(body)
+    if not isinstance(source, dict):
+        raise ValueError("json-deep-merge source must be a JSON object")
+    if not current.strip():
+        return json.dumps(source, indent=2, ensure_ascii=False) + "\n"
+
+    existing = json.loads(current)
+    if not isinstance(existing, dict):
+        raise ValueError("json-deep-merge destination must be a JSON object")
+    merged = _deep_merge_settings(existing, source, json_merge_key=json_merge_key)
+    return json.dumps(merged, indent=2, ensure_ascii=False) + "\n"
+
+
+def _deep_merge_settings(existing: dict, source: dict, *, json_merge_key: str) -> dict:
+    merged = copy.deepcopy(existing)
+    for key, value in source.items():
+        if key == "hooks":
+            merged[key] = _merge_json_hooks(
+                merged.get(key),
+                value,
+                managed_command_tokens=(
+                    HARNESSKIT_CODEX_HOOK_COMMAND_TOKENS
+                    if json_merge_key == CODEX_HOOKS_JSON_MERGE_KEY
+                    else HARNESSKIT_CLAUDE_HOOK_COMMAND_TOKENS
+                ),
+            )
+            continue
+        current = merged.get(key)
+        if isinstance(current, dict) and isinstance(value, dict):
+            merged[key] = _deep_merge_settings(
+                current,
+                value,
+                json_merge_key=json_merge_key,
+            )
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
+
+
+def _merge_json_hooks(
+    existing_raw,
+    source_raw,
+    *,
+    managed_command_tokens: tuple[str, ...],
+) -> dict:
+    if not isinstance(source_raw, dict):
+        raise ValueError("json-deep-merge source hooks must be a JSON object")
+    if existing_raw is None:
+        existing = {}
+    elif isinstance(existing_raw, dict):
+        existing = copy.deepcopy(existing_raw)
+    else:
+        raise ValueError("json-deep-merge destination hooks must be a JSON object")
+    source_commands = set(_iter_hook_commands(source_raw))
+
+    merged: dict = {}
+    for event, groups in existing.items():
+        if not isinstance(groups, list):
+            raise ValueError(f"settings hooks event must be a list: {event}")
+        retained_groups = [
+            group
+            for group in groups
+            if not _hook_group_is_harnesskit_managed(
+                group,
+                source_commands,
+                managed_command_tokens=managed_command_tokens,
+            )
+        ]
+        if retained_groups:
+            merged[event] = retained_groups
+
+    for event, groups in source_raw.items():
+        if not isinstance(groups, list):
+            raise ValueError(f"settings hooks event must be a list: {event}")
+        target_groups = merged.setdefault(event, [])
+        for group in groups:
+            copied_group = copy.deepcopy(group)
+            if copied_group not in target_groups:
+                target_groups.append(copied_group)
+    return merged
+
+
+def _hook_group_is_harnesskit_managed(
+    group,
+    source_commands: set[str],
+    *,
+    managed_command_tokens: tuple[str, ...],
+) -> bool:
+    for command in _iter_hook_commands_from_group(group):
+        if command in source_commands:
+            return True
+        if any(token in command for token in managed_command_tokens):
+            return True
+    return False
+
+
+def _iter_hook_commands(hooks_map: dict):
+    for groups in hooks_map.values():
+        if not isinstance(groups, list):
+            continue
+        for group in groups:
+            yield from _iter_hook_commands_from_group(group)
+
+
+def _iter_hook_commands_from_group(group):
+    if not isinstance(group, dict):
+        return
+    hooks = group.get("hooks")
+    if not isinstance(hooks, list):
+        return
+    for hook in hooks:
+        if not isinstance(hook, dict):
+            continue
+        command = hook.get("command")
+        if isinstance(command, str):
+            yield command
 
 
 def _requires_runtime_hook_approval(plan: dict) -> bool:

@@ -8,11 +8,14 @@ policy:
   content_writes: prohibited
 support_paths:
   - README.md
+  - docs/images/*.svg
   - package.json
   - pyproject.toml
   - uv.lock
   - bin/harnesskit.mjs
   - schemas/*.json
+  - sources/*.md
+  - sources/*.yml
   - publish/harnesskit.yml
   - adapters/claude/adapter.yml
   - adapters/claude/templates/*.hbs
