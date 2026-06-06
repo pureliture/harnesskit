@@ -347,9 +347,7 @@ def _artifact_source_for_output(output_path: Path, target: str, destination: str
     if rel_output.parts[:2] == ("dist", target):
         return output_path
     if target == "project":
-        projected_source = REPO_ROOT / "dist" / target / destination
-        if projected_source.is_file():
-            return projected_source
+        return REPO_ROOT / "dist" / target / destination
     return output_path
 
 
@@ -433,7 +431,7 @@ def _component_scopes(component_id: str, entry: dict[str, Any]) -> list[str]:
         raise FileNotFoundError(f"Missing manifest for {component_id}: {rel_manifest}")
 
     manifest = _load_yaml(manifest_path)
-    scopes = manifest.get("scopes") or ["project"]
+    scopes = manifest.get("scopes") or ["project", "user"]
     if not isinstance(scopes, list) or not all(isinstance(item, str) for item in scopes):
         raise ValueError(f"{rel_manifest}: scopes must be a list of strings")
     return scopes
@@ -443,8 +441,17 @@ def _validate_components_allowed_for_scope(component_ids: list[str], scope: str)
     entries = _selected_registry_entries(component_ids)
     for component_id, entry in entries.items():
         scopes = _component_scopes(component_id, entry or {})
-        if scope == "project" and scopes == ["user"]:
+        if scope not in scopes:
             raise ValueError(f"component is not allowed for scope {scope}: {component_id}")
+
+
+def _profile_components_for_scope(component_ids: list[str], scope: str) -> list[str]:
+    entries = _selected_registry_entries(component_ids)
+    return [
+        component_id
+        for component_id, entry in entries.items()
+        if scope in _component_scopes(component_id, entry or {})
+    ]
 
 
 def _codex_user_hook_registration_artifact(component_ids: list[str]) -> dict[str, Any] | None:
@@ -582,8 +589,9 @@ def build_plan(
             f"profiles/{name}.yml: install_policy.scope_components.{scope} must be a list"
         )
 
+    scoped_profile_components = _profile_components_for_scope(profile_components, scope)
     components = _dedupe_preserving_order(
-        [*profile_components, *selected_scope_components, *(extra_components or [])]
+        [*scoped_profile_components, *selected_scope_components, *(extra_components or [])]
     )
     _validate_components_allowed_for_scope(components, scope)
     materialize_adapter_outputs = mode != "dry-run"

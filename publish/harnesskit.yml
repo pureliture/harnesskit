@@ -13,6 +13,8 @@ support_paths:
   - uv.lock
   - bin/harnesskit.mjs
   - schemas/*.json
+  - sources/*.md
+  - sources/*.yml
   - publish/harnesskit.yml
   - adapters/claude/adapter.yml
   - adapters/claude/templates/*.hbs

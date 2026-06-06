@@ -9,6 +9,10 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 JSON_DEEP_MERGE_KEYS = {"claude-settings-hooks", "codex-hooks"}
+JSON_DEEP_MERGE_DESTINATION_KEYS = {
+    ("claude", PurePosixPath(".claude/settings.json")): "claude-settings-hooks",
+    ("codex", PurePosixPath(".codex/hooks.json")): "codex-hooks",
+}
 SOURCE_DESTINATION_EQUIVALENTS = {
     (
         "codex",
@@ -99,6 +103,20 @@ def validate_plan_contract(plan: dict[str, Any]) -> None:
                 )
                 if json_merge_key not in JSON_DEEP_MERGE_KEYS:
                     raise ValueError(f"unsupported json merge key: {json_merge_key}")
+                expected_json_merge_key = JSON_DEEP_MERGE_DESTINATION_KEYS.get(
+                    (target, destination)
+                )
+                if expected_json_merge_key is None:
+                    raise ValueError(
+                        "json-deep-merge destination is not supported: "
+                        f"{target}:{destination}"
+                    )
+                if json_merge_key != expected_json_merge_key:
+                    raise ValueError(
+                        "json merge key does not match destination: "
+                        f"{json_merge_key} != {expected_json_merge_key} "
+                        f"for {target}:{destination}"
+                    )
         expected_source = PurePosixPath("dist") / target / destination
         allowed_sources = SOURCE_DESTINATION_EQUIVALENTS.get((target, destination), set())
         if source != expected_source and source not in allowed_sources:

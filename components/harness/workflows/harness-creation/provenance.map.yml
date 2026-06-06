@@ -4,14 +4,14 @@ provenance:
   runtime_dependency_on_sources: false
   sources:
     - source_id: component-driven-adapter-sot-requirements
-      source_path: .codex/specs/20260606-component-driven-adapter-sot/requirements-normalized.md
+      source_path: sources/component-driven-adapter-sot-requirements.md
       influence:
         - workflow_internal_source_only_boundary
         - non_installable_adapter_output_failure_guidance
       copied_content: false
       adapted_content: true
     - source_id: component-driven-adapter-sot-design
-      source_path: .codex/specs/20260606-component-driven-adapter-sot/design.md
+      source_path: sources/component-driven-adapter-sot-design.md
       influence:
         - workflow_to_skill_workflow_trigger_modeling_guidance
       copied_content: false

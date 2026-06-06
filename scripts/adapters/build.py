@@ -272,6 +272,8 @@ def _safe_bundle_output(raw: Any, *, rel_manifest: str) -> Path:
 def _safe_bundle_mode(raw: Any, *, rel_manifest: str) -> int | None:
     if raw is None:
         return None
+    if isinstance(raw, bool):
+        raise ValueError(f"{rel_manifest}: bundled_files.mode must be a string or integer")
     if isinstance(raw, int):
         mode = raw
     elif isinstance(raw, str):
@@ -293,15 +295,16 @@ def _safe_bundle_mode(raw: Any, *, rel_manifest: str) -> int | None:
 
 
 def _explicitly_internal_source_only(manifest: dict[str, Any]) -> bool:
-    kind = manifest.get("kind")
-    if kind == "workflow":
-        return manifest.get("runtime_implemented") is False or (
-            (manifest.get("routine_harness") or {}).get("runner_deferred") is True
-        )
-    return manifest.get("installable") is False or manifest.get("adapter_output") in {
+    generic_internal = manifest.get("installable") is False or manifest.get("adapter_output") in {
         "internal",
         "source-only",
     }
+    kind = manifest.get("kind")
+    if kind == "workflow":
+        return generic_internal or manifest.get("runtime_implemented") is False or (
+            (manifest.get("routine_harness") or {}).get("runner_deferred") is True
+        )
+    return generic_internal
 
 
 def _validate_installable_kind(component_id: str, manifest: dict[str, Any], rel_manifest: str) -> bool:

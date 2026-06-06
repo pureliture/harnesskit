@@ -1,0 +1,56 @@
+source_mode: research_requested
+sources:
+  - source_id: rh.skill.skill-evaluation
+    kind: Local Skill Reference
+    url_or_path: components/harness/skills/skill-evaluation/SKILL.md
+    observed_ref: Local Draft Component
+    license: Proprietary / Repository Local
+    relevance: 하네스 컴포넌트(스킬, 에이전트, 훅 등) 평가를 위한 8대 Evaluation Gates 및 Verdict Rules의 최상위 명세 제공
+    reusable_patterns:
+      - 8대 Evaluation Gates (requirements coverage, blueprint conformance, source/provenance, skill/agent body quality, boundary safety, adapter static proof, runtime truth, regression prompts) 정의
+      - Verdict Rules (PASS, PASS_WITH_DEFERRED, NEEDS_WORK, BLOCKED) 논리 분기
+      - evaluation.md 최종 리포트 출력 포맷 명세
+    copied_content_allowed: false
+    risks: 정적 검증과 동적 검증의 유기적인 결합 및 각 게이트별 구체적 통과 메트릭 설계 필요
+  - source_id: probe.harness-creation-runtime
+    kind: Local Adapter Script
+    url_or_path: scripts/adapters/probe_harness_creation_runtime.py
+    observed_ref: Local Script
+    license: Proprietary / Repository Local
+    relevance: Codex 및 Claude 타겟에 대한 E2E 런타임 프로브 실행 방식, 마커 검증 방식, 임시 CODEX_HOME 기반의 샌드박스 안전 검증 구현 참조
+    reusable_patterns:
+      - 임시 CODEX_HOME 설정을 통해 프로젝트를 'trusted' 상태로 동적 마운트하고 훅 활성화
+      - codex exec 및 claude CLI 실행 시 capped model, effort, budget 설정을 통한 오버런 제어
+      - JSONL 포맷을 활용한 런타임 이벤트 로깅 및 검증
+      - sandbox 내에서 registry.yml 등 금지된(forbidden) 파일 수정 탐지 안전망 구현
+    copied_content_allowed: false
+    risks: E2E 실행 시 모델 및 예산 제약 제어 실패 시 오버플로우 발생 및 비용 초과 리스크
+  - source_id: probe.codex-runtime
+    kind: Local Adapter Script
+    url_or_path: scripts/adapters/probe_codex_runtime.py
+    observed_ref: Local Script
+    license: Proprietary / Repository Local
+    relevance: codex app-server와의 JSON-RPC 통신(stdio) 인터랙션 및 UserPromptSubmit 훅 검증 방법 참조
+    reusable_patterns:
+      - codex app-server --listen stdio:// 구동 및 JSON-RPC 통신 (initialize, hooks/list, thread/start, turn/start) 구현
+      - hooks.json 내 훅 등록 여부 확인 및 훅 시작/완료 이벤트 로깅/카운팅
+      - 훅 완료 시 side-effect 플래그 파일 검증을 통한 상태 체크
+    copied_content_allowed: false
+    risks: JSON-RPC 연결 대기 시 무한 대기 방지를 위한 엄격한 타임아웃 정책 및 프로세스 자원 해제 관리 필요
+  - source_id: test.harness-creation-workflow
+    kind: Local Test Pattern
+    url_or_path: tests/smoke/test_harness_creation_workflow.py
+    observed_ref: Local Smoke Test
+    license: Proprietary / Repository Local
+    relevance: 하네스 생성 컴포넌트들의 정적 검증 도구 호출 방식 및 패키지 무결성 검증 패턴 제공
+    reusable_patterns:
+      - subprocess.run을 사용하여 scripts/components/validate.py 정적 검증기 연동 호출
+      - components/registry.yml에 등록된 컴포넌트 목록 순서 및 메타데이터 정합성 테스트
+    copied_content_allowed: false
+    risks: 로컬 환경에 의존적인 subprocess 호출 및 환경 호환성 검증 요구
+exclusions:
+  - source: tests/smoke/test_harness_creation_runtime_probe.py
+    reason: 프로브 검증을 위해 설계된 e2e 테스트 스크립트로, 평가 체계 설계에 있어 프로브 원본 코드나 정적 검증 패턴에 비해 덜 직접적임
+open_questions:
+  - 평가 체계를 자동화하기 위한 CLI/UI의 통합 수준 및 훅 기반 트리거링 구현 시 성능 오버헤드 완화 대책
+  - dynamic runtime evidence 캡처 시 가상 샌드박스의 완벽한 격리 방안

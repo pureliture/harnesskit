@@ -219,7 +219,12 @@ def _merge_json_hooks(
 ) -> dict:
     if not isinstance(source_raw, dict):
         raise ValueError("json-deep-merge source hooks must be a JSON object")
-    existing = copy.deepcopy(existing_raw) if isinstance(existing_raw, dict) else {}
+    if existing_raw is None:
+        existing = {}
+    elif isinstance(existing_raw, dict):
+        existing = copy.deepcopy(existing_raw)
+    else:
+        raise ValueError("json-deep-merge destination hooks must be a JSON object")
     source_commands = set(_iter_hook_commands(source_raw))
 
     merged: dict = {}

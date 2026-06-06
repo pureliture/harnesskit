@@ -131,7 +131,7 @@
     },
     "target_support": {
       "type": "object",
-      "description": "Target support matrix consumed by adapters without inferring support from paths.",
+      "description": "Target support and evidence matrix consumed by adapters without inferring support from paths. This declares whether a target/scope is supported; targets declares concrete build outputs.",
       "propertyNames": {
         "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       },
@@ -194,7 +194,7 @@
     },
     "targets": {
       "type": "object",
-      "description": "Target AI platforms this component is adapted for, keyed by platform name",
+      "description": "Concrete target build outputs for this component, keyed by platform name. This is intentionally separate from target_support, which records support/evidence status.",
       "propertyNames": {
         "enum": ["claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       },
@@ -286,6 +286,7 @@
         },
         "required": ["kind", "installable"]
       },
+      "$comment": "workflow and command records may exist as source/process records, but they are not installable adapter outputs.",
       "then": false
     }
   ]

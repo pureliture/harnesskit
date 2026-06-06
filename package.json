@@ -27,6 +27,8 @@
     "publish/",
     "profiles/harness-maintenance.yml",
     "schemas/",
+    "sources/*.md",
+    "sources/*.yml",
     "scripts/adapters/__init__.py",
     "scripts/adapters/build.py",
     "scripts/authoring/*.py",

@@ -51,7 +51,7 @@
     },
     "component_contracts": {
       "type": "array",
-      "description": "Scope-aware component contract records selected for this install plan.",
+      "description": "Optional scope-aware component contract metadata selected for this install plan. Artifacts remain the exact materialization list; this section carries contract/evidence context for reviewers and evaluators.",
       "items": {
         "type": "object",
         "additionalProperties": false,

@@ -48,7 +48,7 @@ If approved requirements, blueprint, target component, or selected profile are m
 ## Orchestration Workflow
 
 1. Read the approved requirements and blueprint first.
-2. Confirm the requested component id uses `harnesskit.*` naming. For this evaluator family, any stale `rh.*` evaluator, hook, rule, command, or workflow draft is a residue finding, not a valid alternative.
+2. Confirm the requested component id uses `harnesskit.*` naming. For this evaluator family, any stale legacy namespace evaluator, hook, rule, command, or workflow draft is a residue finding, not a valid alternative.
 3. Build a gate plan using `harnesskit.skill.skill-evaluation`.
 4. Separate evidence namespaces for static proof, runtime proof, fixture isolation, profile boundary, output allowlist, model/budget, and report integrity.
 5. Run or request deterministic static validators only when they do not mutate forbidden paths.
