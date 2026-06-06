@@ -2,7 +2,20 @@ component_id: harnesskit.workflow.harness-creation
 provenance:
   mode: original
   runtime_dependency_on_sources: false
-  sources: []
+  sources:
+    - source_id: component-driven-adapter-sot-requirements
+      source_path: .codex/specs/20260606-component-driven-adapter-sot/requirements-normalized.md
+      influence:
+        - workflow_internal_source_only_boundary
+        - non_installable_adapter_output_failure_guidance
+      copied_content: false
+      adapted_content: true
+    - source_id: component-driven-adapter-sot-design
+      source_path: .codex/specs/20260606-component-driven-adapter-sot/design.md
+      influence:
+        - workflow_to_skill_workflow_trigger_modeling_guidance
+      copied_content: false
+      adapted_content: true
   attribution_note: >
     Original HarnessKit harness-maintenance workflow card authored from
     the approved body design and local installed skill review. No source text
@@ -20,3 +33,4 @@ provenance:
     - harness_creation_phase_changed
     - workflow_runner_added
     - runtime_claim_policy_changed
+    - installable_kind_boundary_changed

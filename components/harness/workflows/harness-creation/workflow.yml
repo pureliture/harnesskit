@@ -1,6 +1,10 @@
 workflow_id: harnesskit.workflow.harness-creation
 status: draft
 runtime_implemented: false
+installable: false
+source_classification: internal-source-only
+adapter_output_policy: fail-if-selected
+modeling_guidance: Convert executable workflow entrypoints to a skill with subtype workflow_trigger before adapter output.
 description: Requirements SoT to blueprint to canonical authoring to adapter authoring to evaluation for HarnessKit capabilities.
 entrypoints:
   natural_language:

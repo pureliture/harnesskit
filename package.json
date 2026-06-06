@@ -17,6 +17,7 @@
     "components/harness/agents/harness-blueprint-author/",
     "components/harness/agents/component-author/",
     "components/harness/agents/adapter-author/",
+    "components/harness/agents/harness-evaluator/",
     "components/harness/skills/harness-requirements/",
     "components/harness/skills/harness-blueprint/",
     "components/harness/skills/component-authoring/",

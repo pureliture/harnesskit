@@ -29,6 +29,141 @@
       "type": "string",
       "description": "Short description of what the component does"
     },
+    "installable": {
+      "type": "boolean",
+      "description": "Whether this canonical component may be selected for adapter/install-plan materialization."
+    },
+    "subtype": {
+      "type": "string",
+      "description": "Kind-specific component subtype. Skills use primitive, workflow_trigger, or support.",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "orchestrates": {
+      "type": "object",
+      "description": "Workflow metadata required when a skill subtype is workflow_trigger.",
+      "required": ["workflow_id"],
+      "properties": {
+        "workflow_id": {
+          "type": "string",
+          "pattern": "^harnesskit\\.workflow\\.[a-z][a-z0-9-]+$"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["delegates-to-workflow-card", "inline"]
+        }
+      }
+    },
+    "scopes": {
+      "type": "array",
+      "description": "Install scopes allowed by this component contract.",
+      "items": {
+        "type": "string",
+        "enum": ["project", "user"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ownership": {
+      "type": "object",
+      "description": "Managed ownership and merge behavior for generated artifacts.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["path", "managed-block", "managed-hook-group", "managed-config-key"]
+        },
+        "managed_group_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "managed_block_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "merge_policy": {
+          "type": "string",
+          "enum": ["full-path-overwrite", "managed-block", "json-deep-merge", "managed-key-merge"]
+        },
+        "preserve_foreign_entries": {
+          "type": "boolean"
+        }
+      }
+    },
+    "runtime_contract": {
+      "type": "object",
+      "description": "Runtime event, path, loading, and support expectations without claiming live proof."
+    },
+    "evidence_status": {
+      "type": "object",
+      "description": "Current evidence status for this component contract.",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["runtime_supported", "doc_supported", "build_only", "pending_probe", "unsupported"]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "by_target": {
+          "type": "object",
+          "propertyNames": {
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["runtime_supported", "doc_supported", "build_only", "pending_probe", "unsupported"]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "target_support": {
+      "type": "object",
+      "description": "Target support matrix consumed by adapters without inferring support from paths.",
+      "propertyNames": {
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["runtime_supported", "doc_supported", "build_only", "pending_probe", "unsupported"]
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["project", "user"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "output_intent": {
+            "type": "string"
+          },
+          "runtime_contract": {
+            "type": "object"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "source_refs": {
       "type": "array",
       "description": "References to external sources this component depends on or is derived from",
@@ -71,6 +206,22 @@
           "output_path": {
             "type": "string",
             "description": "Path where the built component is written for this target platform"
+          },
+          "support_status": {
+            "type": "string",
+            "enum": ["runtime_supported", "doc_supported", "build_only", "pending_probe", "unsupported"]
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["project", "user"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "runtime_contract": {
+            "type": "object"
           }
         }
       }
@@ -96,5 +247,46 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "skill" }
+        },
+        "required": ["kind", "subtype"]
+      },
+      "then": {
+        "properties": {
+          "subtype": {
+            "enum": ["primitive", "workflow_trigger", "support"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "skill" },
+          "subtype": { "const": "workflow_trigger" }
+        },
+        "required": ["kind", "subtype"]
+      },
+      "then": {
+        "required": ["orchestrates"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": ["workflow", "command"]
+          },
+          "installable": { "const": true }
+        },
+        "required": ["kind", "installable"]
+      },
+      "then": false
+    }
+  ]
 }

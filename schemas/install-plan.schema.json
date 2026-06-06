@@ -27,7 +27,7 @@
     },
     "scope": {
       "type": "string",
-      "enum": ["project", "workspace", "user"]
+      "enum": ["project", "user"]
     },
     "mode": {
       "type": "string",
@@ -49,6 +49,51 @@
       },
       "uniqueItems": true
     },
+    "component_contracts": {
+      "type": "array",
+      "description": "Scope-aware component contract records selected for this install plan.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component_id", "kind", "scope", "evidence_status"],
+        "properties": {
+          "component_id": {
+            "type": "string",
+            "pattern": "^harnesskit\\.(skill|agent|hook|rule)\\.[a-z][a-z0-9-]+$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["skill", "agent", "hook", "rule"]
+          },
+          "subtype": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["project", "user"]
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "ownership": {
+            "$ref": "#/definitions/ownership"
+          },
+          "runtime_contract": {
+            "type": "object"
+          },
+          "evidence_status": {
+            "$ref": "#/definitions/evidence_status"
+          }
+        }
+      }
+    },
     "runtime_surfaces": {
       "type": "array",
       "items": {
@@ -62,7 +107,7 @@
           },
           "path": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "source": {
             "type": "string",
@@ -102,11 +147,11 @@
           },
           "destination": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "merge_strategy": {
             "type": "string",
-            "enum": ["managed-block"]
+            "enum": ["managed-block", "json-deep-merge"]
           },
           "begin_marker": {
             "type": "string",
@@ -115,6 +160,23 @@
           "end_marker": {
             "type": "string",
             "minLength": 1
+          },
+          "json_merge_key": {
+            "type": "string",
+            "enum": ["claude-settings-hooks", "codex-hooks"]
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["project", "user"]
+          },
+          "ownership": {
+            "$ref": "#/definitions/ownership"
+          },
+          "runtime_contract": {
+            "type": "object"
+          },
+          "evidence_status": {
+            "$ref": "#/definitions/evidence_status"
           }
         }
       }
@@ -143,6 +205,52 @@
           "required_before_runtime": {
             "type": "boolean"
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "merge_policy"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["path", "managed-block", "managed-hook-group", "managed-config-key"]
+        },
+        "managed_group_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "managed_block_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "merge_policy": {
+          "type": "string",
+          "enum": ["full-path-overwrite", "managed-block", "json-deep-merge", "managed-key-merge"]
+        },
+        "preserve_foreign_entries": {
+          "type": "boolean"
+        }
+      }
+    },
+    "evidence_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["runtime_supported", "doc_supported", "build_only", "pending_probe", "unsupported"]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" }
         }
       }
     }

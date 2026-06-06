@@ -18,6 +18,19 @@ ADAPTERS_DIR = REPO_ROOT / "adapters"
 TOKEN_RE = re.compile(r"{{\s*([a-zA-Z0-9_.-]+)\s*}}")
 PROFILE_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
+INSTALLABLE_KINDS = {"skill", "agent", "hook", "rule"}
+NON_INSTALLABLE_KINDS = {"workflow", "command"}
+CODEX_USER_HOOK_OUTPUT = "dist/codex/.codex/hooks.user.json"
+CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT = "harnesskit.hook.optimal-response-prompt-submit"
+CODEX_OPTIMAL_RESPONSE_COMMAND = (
+    'OPTIMAL_RESPONSE_FLAG="${CODEX_HOME:-$HOME/.codex}/.optimal-response-disabled" '
+    'OPTIMAL_RESPONSE_MODE="${CODEX_HOME:-$HOME/.codex}/.optimal-response-mode" '
+    'OPTIMAL_RESPONSE_STATE_DIR="${CODEX_HOME:-$HOME/.codex}/optimal-response-out/state" '
+    'OPTIMAL_RESPONSE_SQLITE_PATH="${CODEX_HOME:-$HOME/.codex}/optimal-response-out/mode-events.sqlite" '
+    'OPTIMAL_RESPONSE_SURFACE=codex '
+    'node "${CODEX_HOME:-$HOME/.codex}/skills/optimal-response/hooks/stop-prompt-submit.cjs"'
+)
+
 
 def _load_yaml(path: Path) -> dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -251,9 +264,83 @@ def _safe_bundle_source(raw: Any, *, component_id: str, rel_manifest: str) -> Pa
 
 def _safe_bundle_output(raw: Any, *, rel_manifest: str) -> Path:
     path = _safe_relative_path(raw, field_name="bundled_files.output_path", rel_manifest=rel_manifest)
-    if len(path.parts) < 3 or path.parts[0] != "dist":
-        raise ValueError(f"{rel_manifest}: bundled_files.output_path must live under dist/<target>/: {raw}")
+    if not ((len(path.parts) >= 3 and path.parts[0] == "dist") or path.parts[:1] == ("acli",)):
+        raise ValueError(f"{rel_manifest}: bundled_files.output_path must live under dist/<target>/ or acli/: {raw}")
     return REPO_ROOT / Path(*path.parts)
+
+
+def _safe_bundle_mode(raw: Any, *, rel_manifest: str) -> int | None:
+    if raw is None:
+        return None
+    if isinstance(raw, int):
+        mode = raw
+    elif isinstance(raw, str):
+        normalized = raw.strip().lower()
+        if normalized.startswith("0o"):
+            digits = normalized[2:]
+        elif len(normalized) == 4 and normalized.startswith("0"):
+            digits = normalized[1:]
+        else:
+            digits = normalized
+        if not digits or any(char not in "01234567" for char in digits):
+            raise ValueError(f"{rel_manifest}: bundled_files.mode must be an octal mode")
+        mode = int(digits, 8)
+    else:
+        raise ValueError(f"{rel_manifest}: bundled_files.mode must be a string or integer")
+    if mode < 0 or mode > 0o777:
+        raise ValueError(f"{rel_manifest}: bundled_files.mode must not exceed 0777")
+    return mode
+
+
+def _explicitly_internal_source_only(manifest: dict[str, Any]) -> bool:
+    kind = manifest.get("kind")
+    if kind == "workflow":
+        return manifest.get("runtime_implemented") is False or (
+            (manifest.get("routine_harness") or {}).get("runner_deferred") is True
+        )
+    return manifest.get("installable") is False or manifest.get("adapter_output") in {
+        "internal",
+        "source-only",
+    }
+
+
+def _validate_installable_kind(component_id: str, manifest: dict[str, Any], rel_manifest: str) -> bool:
+    kind = manifest.get("kind")
+    if kind in INSTALLABLE_KINDS:
+        return True
+    if kind in NON_INSTALLABLE_KINDS:
+        if _explicitly_internal_source_only(manifest):
+            return False
+        raise ValueError(
+            f"{rel_manifest}: {kind} is not an installable adapter kind for {component_id}; "
+            "model executable workflows as skill.kind=workflow_trigger or mark the record "
+            "internal/source-only before selecting it for adapter output"
+        )
+    raise ValueError(f"{rel_manifest}: unsupported component kind for {component_id}: {kind}")
+
+
+def _codex_user_prompt_submit_registration_content() -> str:
+    return (
+        json.dumps(
+            {
+                "hooks": {
+                    "UserPromptSubmit": [
+                        {
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": CODEX_OPTIMAL_RESPONSE_COMMAND,
+                                    "timeout": 5,
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            indent=2,
+        )
+        + "\n"
+    )
 
 
 def _context(
@@ -341,7 +428,15 @@ def _dedupe_preserving_order(values: list[str]) -> list[str]:
     return deduped
 
 
-def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list[tuple[Path, str, bool]]:
+def _unpack_rendered_output(item: tuple[Any, ...]) -> tuple[Path, str, bool, int | None]:
+    if len(item) == 3:
+        output_path, content, append = item
+        return output_path, content, append, None
+    output_path, content, append, mode = item
+    return output_path, content, append, mode
+
+
+def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list[tuple[Path, str, bool, int | None]]:
     rel_manifest = registry_entry.get("path")
     if not rel_manifest:
         raise ValueError(f"Missing path for {component_id}")
@@ -353,15 +448,18 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
         raise FileNotFoundError(f"Missing manifest for {component_id}: {rel_manifest}")
 
     manifest = _load_yaml(manifest_path)
-    kind = manifest.get("kind")
-    if kind not in {"skill", "agent", "hook", "rule"}:
+    registry_kind = registry_entry.get("kind")
+    if isinstance(registry_kind, str) and manifest.get("kind") is None:
+        manifest = {**manifest, "kind": registry_kind}
+    if not _validate_installable_kind(component_id, manifest, rel_manifest):
         return []
+    kind = manifest.get("kind")
 
     targets = manifest.get("targets") or {}
     if not isinstance(targets, dict):
         raise ValueError(f"{rel_manifest}: targets must be a mapping")
 
-    rendered: list[tuple[Path, str, bool]] = []
+    rendered: list[tuple[Path, str, bool, int | None]] = []
     if kind in {"skill", "agent", "hook"}:
         for target, target_config in targets.items():
             if not isinstance(target_config, dict):
@@ -382,7 +480,7 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
             else:
                 template = template_path.read_text(encoding="utf-8")
                 content = _render_template(template, context)
-                rendered.append((output_abs_path, content.rstrip() + "\n", False))
+                rendered.append((output_abs_path, content.rstrip() + "\n", False, None))
 
             registration = structure.get("registration")
             if kind == "hook":
@@ -399,7 +497,7 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
                         ADAPTERS_DIR / target / registration["template"]
                     ).read_text(encoding="utf-8")
                     registration_content = _render_template(registration_template, context)
-                rendered.append((registration_path, registration_content.rstrip() + "\n", True))
+                rendered.append((registration_path, registration_content.rstrip() + "\n", True, None))
     for bundle in manifest.get("bundled_files") or []:
         if not isinstance(bundle, dict):
             raise ValueError(f"{rel_manifest}: bundled_files entries must be mappings")
@@ -411,11 +509,22 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
             )
         source_path = _safe_bundle_source(source, component_id=component_id, rel_manifest=rel_manifest)
         output_abs_path = _safe_bundle_output(output_path, rel_manifest=rel_manifest)
+        mode = _safe_bundle_mode(bundle.get("mode"), rel_manifest=rel_manifest)
         rendered.append(
             (
                 output_abs_path,
                 source_path.read_text(encoding="utf-8").rstrip() + "\n",
                 False,
+                mode,
+            )
+        )
+    if component_id == CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT:
+        rendered.append(
+            (
+                _safe_bundle_output(CODEX_USER_HOOK_OUTPUT, rel_manifest=rel_manifest),
+                _codex_user_prompt_submit_registration_content(),
+                False,
+                None,
             )
         )
     return rendered
@@ -426,7 +535,8 @@ def _collect_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
     expected_outputs: dict[Path, dict[str, Any]] = {}
 
     for component_id, entry in entries.items():
-        for output_path, content, append in _render_component(component_id, entry or {}):
+        for item in _render_component(component_id, entry or {}):
+            output_path, content, append, mode = _unpack_rendered_output(item)
             if append:
                 existing = expected_outputs.get(output_path)
                 if existing is None:
@@ -434,6 +544,7 @@ def _collect_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
                         "content": content,
                         "append": True,
                         "chunks": [content],
+                        "mode": None,
                     }
                 else:
                     if not existing["append"]:
@@ -447,7 +558,7 @@ def _collect_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
                 continue
             if output_path in expected_outputs:
                 raise ValueError(f"Duplicate adapter output: {output_path}")
-            expected_outputs[output_path] = {"content": content, "append": False}
+            expected_outputs[output_path] = {"content": content, "append": False, "mode": mode}
     return expected_outputs
 
 
@@ -475,15 +586,20 @@ def build(component_ids: list[str], *, profile_ids: list[str] | None = None, che
             if append
             else expected["content"]
         )
+        mode = expected.get("mode")
         if check:
             if not output_path.exists():
                 continue
             current = output_path.read_text(encoding="utf-8")
             if current != content:
                 mismatches.append(f"stale: {output_path.relative_to(REPO_ROOT)}")
+            if mode is not None and (output_path.stat().st_mode & 0o777) != mode:
+                mismatches.append(f"stale-mode: {output_path.relative_to(REPO_ROOT)}")
         else:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(content, encoding="utf-8")
+            if mode is not None:
+                output_path.chmod(mode)
 
     if mismatches:
         print("Adapter outputs are not current:", file=sys.stderr)

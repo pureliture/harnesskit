@@ -8,6 +8,13 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+JSON_DEEP_MERGE_KEYS = {"claude-settings-hooks", "codex-hooks"}
+SOURCE_DESTINATION_EQUIVALENTS = {
+    (
+        "codex",
+        PurePosixPath(".codex/hooks.json"),
+    ): {PurePosixPath("dist/codex/.codex/hooks.user.json")},
+}
 
 
 def load_plan(path: Path) -> dict[str, Any]:
@@ -76,12 +83,25 @@ def validate_plan_contract(plan: dict[str, Any]) -> None:
         )
         merge_strategy = artifact.get("merge_strategy")
         if merge_strategy is not None:
-            if merge_strategy != "managed-block":
+            if merge_strategy not in {"managed-block", "json-deep-merge"}:
                 raise ValueError(f"unsupported merge strategy: {merge_strategy}")
-            _non_empty_string(artifact.get("begin_marker"), "Artifact begin_marker")
-            _non_empty_string(artifact.get("end_marker"), "Artifact end_marker")
+            if merge_strategy == "managed-block":
+                _non_empty_string(artifact.get("begin_marker"), "Artifact begin_marker")
+                _non_empty_string(artifact.get("end_marker"), "Artifact end_marker")
+            if merge_strategy == "json-deep-merge":
+                if destination.suffix != ".json":
+                    raise ValueError(
+                        "json-deep-merge artifacts must target JSON destinations"
+                    )
+                json_merge_key = _non_empty_string(
+                    artifact.get("json_merge_key"),
+                    "Artifact json_merge_key",
+                )
+                if json_merge_key not in JSON_DEEP_MERGE_KEYS:
+                    raise ValueError(f"unsupported json merge key: {json_merge_key}")
         expected_source = PurePosixPath("dist") / target / destination
-        if source != expected_source:
+        allowed_sources = SOURCE_DESTINATION_EQUIVALENTS.get((target, destination), set())
+        if source != expected_source and source not in allowed_sources:
             raise ValueError(
                 "artifact source must match target and destination: "
                 f"{source} != {expected_source}"
