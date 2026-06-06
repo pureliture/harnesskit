@@ -37,7 +37,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       },
       "uniqueItems": true
     },

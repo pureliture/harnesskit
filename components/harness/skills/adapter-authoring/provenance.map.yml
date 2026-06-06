@@ -15,9 +15,11 @@ provenance:
   new_sections:
     - runtime-gated completion claims
     - adapter-author to runtime-verifier handoff
+    - prompt-submit and pre-invocation pass-through contract
   license_notes: "Local project references only; no bundled third-party code."
   human_review_required: true
   review_triggers:
     - target_adapter_changed
     - capability_matrix_changed
     - runtime_probe_policy_changed
+    - prompt_submit_hook_contract_changed

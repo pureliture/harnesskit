@@ -60,7 +60,7 @@
       "type": "object",
       "description": "Target AI platforms this agent is adapted for, keyed by platform name",
       "propertyNames": {
-        "enum": ["claude", "codex", "gemini", "antigravity"]
+        "enum": ["claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       },
       "additionalProperties": {
         "type": "object",

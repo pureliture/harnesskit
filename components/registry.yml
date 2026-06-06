@@ -47,6 +47,19 @@ components:
     status: skeleton
     planned: true
     path: components/skills/using-git-worktrees/component.yml
+    deprecated: true
+    replaced_by: harnesskit.skill.worktree-lifecycle
+    compatibility:
+      mode: planned_surface_deprecated
+      note: >
+        Planned start-of-work worktree surface is superseded by the expanded
+        worktree lifecycle skill. Keep this entry explicit until downstream
+        references migrate.
+
+  harnesskit.skill.worktree-lifecycle:
+    kind: skill
+    status: draft
+    path: components/skills/worktree-lifecycle/component.yml
 
   harnesskit.skill.finishing-a-development-branch:
     kind: skill
@@ -202,6 +215,11 @@ components:
     kind: agent
     status: draft
     path: components/agents/human-doc-curator/agent.yml
+
+  harnesskit.agent.worktree-lifecycle-manager:
+    kind: agent
+    status: draft
+    path: components/agents/worktree-lifecycle-manager/agent.yml
 
   # ── Harness maintenance agents ────────────────────
   harnesskit.agent.component-author:

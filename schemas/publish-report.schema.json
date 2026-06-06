@@ -79,6 +79,19 @@
         "branch": { "type": "string" },
         "pr_url": { "type": ["string", "null"] }
       }
+    },
+    "cleanup": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["attempted", "status", "removed_worktree", "deleted_branch", "detail"],
+      "properties": {
+        "attempted": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pass", "fail", "skipped"] },
+        "removed_worktree": { "type": "boolean" },
+        "deleted_branch": { "type": "boolean" },
+        "branch_delete_error": { "type": ["string", "null"] },
+        "detail": { "type": "string" }
+      }
     }
   }
 }

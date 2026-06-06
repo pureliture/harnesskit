@@ -37,7 +37,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
       },
       "uniqueItems": true
     },
@@ -58,15 +58,15 @@
         "properties": {
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
           },
           "path": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
           },
           "source": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity)/.+$",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity)/.+$",
             "description": "Source output or config surface that should materialize here."
           }
         }
@@ -94,15 +94,15 @@
           },
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
           },
           "source": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity)/.+$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity)/.+$"
           },
           "destination": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md)$"
           },
           "merge_strategy": {
             "type": "string",
@@ -132,7 +132,7 @@
           },
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
           },
           "reason": {
             "type": "string"
