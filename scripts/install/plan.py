@@ -15,6 +15,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.adapters.build import (  # noqa: E402
+    CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT,
+    CODEX_USER_HOOK_OUTPUT,
     _combined_append_content,
     _render_component,
     _selected_registry_entries,
@@ -23,6 +25,18 @@ from scripts.adapters.build import (  # noqa: E402
 PROFILES_DIR = REPO_ROOT / "profiles"
 
 PROFILE_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+
+
+def _dedupe_preserving_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        deduped.append(value)
+    return deduped
+
 
 RUNTIME_SURFACES = {
     "project": [
@@ -50,7 +64,12 @@ RUNTIME_SURFACES = {
             "target": "project",
             "path": ".github/ISSUE_TEMPLATE",
             "source": "dist/project/.github/ISSUE_TEMPLATE",
-        }
+        },
+        {
+            "target": "project",
+            "path": "acli",
+            "source": "dist/project/acli",
+        },
     ],
     "claude": [
         {
@@ -243,6 +262,8 @@ def _surface_key_for_artifact(artifact: dict[str, Any]) -> tuple[str, str] | Non
     if target == "project":
         if destination.startswith(".harnesskit/"):
             return ("project", ".harnesskit")
+        if destination.startswith("acli/"):
+            return ("project", "acli")
         if destination == "AGENTS.md":
             return ("project", "AGENTS.md")
         if destination == "CLAUDE.md":
@@ -281,9 +302,11 @@ def _runtime_surfaces(targets: list[str], artifacts: list[dict[str, Any]]) -> li
         key = _surface_key_for_artifact(artifact)
         if key is None or key in seen or key not in surface_by_key:
             continue
+        if artifact.get("source") == CODEX_USER_HOOK_OUTPUT:
+            surface_by_key[key] = {**surface_by_key[key], "source": artifact["source"]}
         seen.add(key)
     return [
-        surface
+        surface_by_key[(surface["target"], surface["path"])]
         for target in targets
         for surface in RUNTIME_SURFACES.get(target, [])
         if (surface["target"], surface["path"]) in seen
@@ -310,6 +333,8 @@ def _activation_gates(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _artifact_target_and_destination(source_path: Path) -> tuple[str, str]:
     rel_source = source_path.relative_to(REPO_ROOT)
     parts = rel_source.parts
+    if len(parts) >= 2 and parts[0] == "acli":
+        return "project", rel_source.as_posix()
     if len(parts) < 3 or parts[0] != "dist":
         raise ValueError(f"Adapter output must live under dist/<target>: {rel_source}")
     target = parts[1]
@@ -317,8 +342,30 @@ def _artifact_target_and_destination(source_path: Path) -> tuple[str, str]:
     return target, destination
 
 
-def _artifacts(component_ids: list[str]) -> list[dict[str, Any]]:
-    _materialize_adapter_outputs(component_ids)
+def _artifact_source_for_output(output_path: Path, target: str, destination: str) -> Path:
+    rel_output = output_path.relative_to(REPO_ROOT)
+    if rel_output.parts[:2] == ("dist", target):
+        return output_path
+    if target == "project":
+        return REPO_ROOT / "dist" / target / destination
+    return output_path
+
+
+def _unpack_rendered_output(item: tuple[Any, ...]) -> tuple[Path, str, bool, int | None]:
+    if len(item) == 3:
+        output_path, content, append = item
+        return output_path, content, append, None
+    output_path, content, append, mode = item
+    return output_path, content, append, mode
+
+
+def _artifacts(
+    component_ids: list[str],
+    *,
+    materialize_adapter_outputs: bool = True,
+) -> list[dict[str, Any]]:
+    if materialize_adapter_outputs:
+        _materialize_adapter_outputs(component_ids)
     entries = _selected_registry_entries(component_ids)
     artifacts: list[dict[str, Any]] = []
     seen_destinations: dict[tuple[str, str], bool] = {}
@@ -334,8 +381,11 @@ def _artifacts(component_ids: list[str]) -> list[dict[str, Any]]:
                     for item in manifest.get("merge_artifacts") or []
                     if isinstance(item, dict) and isinstance(item.get("destination"), str)
                 }
-        for output_path, _content, append in _render_component(component_id, entry or {}):
+        for item in _render_component(component_id, entry or {}):
+            output_path, _content, append, _mode = _unpack_rendered_output(item)
             target, destination = _artifact_target_and_destination(output_path)
+            source_path = _artifact_source_for_output(output_path, target, destination)
+            source = source_path.relative_to(REPO_ROOT).as_posix()
             destination_key = (target, destination)
             if destination_key in seen_destinations:
                 if append and seen_destinations[destination_key]:
@@ -344,23 +394,95 @@ def _artifacts(component_ids: list[str]) -> list[dict[str, Any]]:
                     if component_id not in artifact["component_ids"]:
                         artifact["component_ids"].append(component_id)
                     continue
+                artifact = artifact_by_destination[destination_key]
+                if artifact.get("source") == source:
+                    continue
                 raise ValueError(f"duplicate non-append artifact destination: {destination}")
             seen_destinations[destination_key] = append
             artifact = {
                 "component_id": component_id,
                 "component_ids": [component_id],
                 "target": target,
-                "source": output_path.relative_to(REPO_ROOT).as_posix(),
+                "source": source,
                 "destination": destination,
             }
             if destination in merge_by_destination:
                 merge_config = merge_by_destination[destination]
                 artifact["merge_strategy"] = merge_config.get("strategy")
-                artifact["begin_marker"] = merge_config.get("begin_marker")
-                artifact["end_marker"] = merge_config.get("end_marker")
+                if artifact["merge_strategy"] == "managed-block":
+                    artifact["begin_marker"] = merge_config.get("begin_marker")
+                    artifact["end_marker"] = merge_config.get("end_marker")
+                if artifact["merge_strategy"] == "json-deep-merge":
+                    artifact["json_merge_key"] = merge_config.get("json_merge_key")
             artifacts.append(artifact)
             artifact_by_destination[destination_key] = artifact
     return artifacts
+
+
+def _component_scopes(component_id: str, entry: dict[str, Any]) -> list[str]:
+    rel_manifest = entry.get("path")
+    if not isinstance(rel_manifest, str) or not rel_manifest:
+        return ["project"]
+
+    manifest_path = REPO_ROOT / rel_manifest
+    if not manifest_path.is_file():
+        if entry.get("planned") is True:
+            return ["project"]
+        raise FileNotFoundError(f"Missing manifest for {component_id}: {rel_manifest}")
+
+    manifest = _load_yaml(manifest_path)
+    scopes = manifest.get("scopes") or ["project", "user"]
+    if not isinstance(scopes, list) or not all(isinstance(item, str) for item in scopes):
+        raise ValueError(f"{rel_manifest}: scopes must be a list of strings")
+    return scopes
+
+
+def _validate_components_allowed_for_scope(component_ids: list[str], scope: str) -> None:
+    entries = _selected_registry_entries(component_ids)
+    for component_id, entry in entries.items():
+        scopes = _component_scopes(component_id, entry or {})
+        if scope not in scopes:
+            raise ValueError(f"component is not allowed for scope {scope}: {component_id}")
+
+
+def _profile_components_for_scope(component_ids: list[str], scope: str) -> list[str]:
+    entries = _selected_registry_entries(component_ids)
+    return [
+        component_id
+        for component_id, entry in entries.items()
+        if scope in _component_scopes(component_id, entry or {})
+    ]
+
+
+def _codex_user_hook_registration_artifact(component_ids: list[str]) -> dict[str, Any] | None:
+    if CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT not in component_ids:
+        return None
+    return {
+        "component_id": CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT,
+        "component_ids": [CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT],
+        "target": "codex",
+        "source": CODEX_USER_HOOK_OUTPUT,
+        "destination": ".codex/hooks.json",
+        "merge_strategy": "json-deep-merge",
+        "json_merge_key": "codex-hooks",
+        "scope": "user",
+        "ownership": {
+            "type": "managed-hook-group",
+            "managed_group_id": "optimal-response.codex-user-prompt-submit",
+            "merge_policy": "json-deep-merge",
+            "preserve_foreign_entries": True,
+        },
+        "runtime_contract": {
+            "surface": "codex-user-hooks",
+            "event": "UserPromptSubmit",
+            "path": "${CODEX_HOME:-$HOME/.codex}/hooks.json",
+        },
+        "evidence_status": {
+            "status": "runtime_supported",
+            "reason": "Codex CLI 0.130.0 app-server user-scope probe observed trusted UserPromptSubmit hook start/complete and STOP-off flag side effect.",
+            "latest_evidence_dir": "docs/runtime-evidence/codex-optimal-response/20260606T040248Z",
+        },
+    }
 
 
 def _materialize_adapter_outputs(component_ids: list[str]) -> None:
@@ -371,8 +493,11 @@ def _materialize_adapter_outputs(component_ids: list[str]) -> None:
             if expected["append"]
             else expected["content"]
         )
+        mode = expected.get("mode")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content, encoding="utf-8")
+        if mode is not None:
+            output_path.chmod(mode)
 
 
 def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
@@ -380,7 +505,8 @@ def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, A
     expected_outputs: dict[Path, dict[str, Any]] = {}
 
     for component_id, entry in entries.items():
-        for output_path, content, append in _render_component(component_id, entry or {}):
+        for item in _render_component(component_id, entry or {}):
+            output_path, content, append, mode = _unpack_rendered_output(item)
             if append:
                 existing = expected_outputs.get(output_path)
                 if existing is None:
@@ -388,6 +514,7 @@ def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, A
                         "content": content,
                         "append": True,
                         "chunks": [content],
+                        "mode": None,
                     }
                 else:
                     if not existing["append"]:
@@ -401,15 +528,20 @@ def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, A
                 continue
             if output_path in expected_outputs:
                 raise ValueError(f"Duplicate adapter output: {output_path}")
-            expected_outputs[output_path] = {"content": content, "append": False}
+            expected_outputs[output_path] = {"content": content, "append": False, "mode": mode}
     return expected_outputs
 
 
-def _remap_artifact_source(artifact: dict[str, Any], destination: str) -> dict[str, Any]:
+def _remap_artifact_source(
+    artifact: dict[str, Any],
+    destination: str,
+    *,
+    materialize_adapter_outputs: bool = False,
+) -> dict[str, Any]:
     target = artifact["target"]
     source = REPO_ROOT / artifact["source"]
     remapped_source = REPO_ROOT / "dist" / target / destination
-    if source != remapped_source:
+    if materialize_adapter_outputs and source != remapped_source:
         remapped_source.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, remapped_source)
     new_artifact = artifact.copy()
@@ -418,24 +550,55 @@ def _remap_artifact_source(artifact: dict[str, Any], destination: str) -> dict[s
     return new_artifact
 
 
-def build_plan(profile: str, *, scope: str, mode: str) -> dict[str, Any]:
+def build_plan(
+    profile: str,
+    *,
+    scope: str,
+    mode: str,
+    extra_components: list[str] | None = None,
+) -> dict[str, Any]:
     name, profile_data = _load_profile(profile)
     targets = profile_data.get("targets") or []
-    components = profile_data.get("components") or []
+    profile_components = profile_data.get("components") or []
     install_policy = profile_data.get("install_policy") or {}
     allowed_scopes = install_policy.get("allowed_scopes") or []
+    scope_components = install_policy.get("scope_components") or {}
     if not isinstance(targets, list):
         raise ValueError(f"profiles/{name}.yml: targets must be a list")
-    if not isinstance(components, list):
+    if not isinstance(profile_components, list):
         raise ValueError(f"profiles/{name}.yml: components must be a list")
     if not isinstance(allowed_scopes, list) or not all(
         isinstance(allowed_scope, str) for allowed_scope in allowed_scopes
     ):
         raise ValueError(f"profiles/{name}.yml: install_policy.allowed_scopes must be a list")
+    if not isinstance(scope_components, dict):
+        raise ValueError(
+            f"profiles/{name}.yml: install_policy.scope_components must be a mapping"
+        )
     if scope not in allowed_scopes:
         raise ValueError(f"profiles/{name}.yml: scope is not allowed: {scope}")
 
-    artifacts = _artifacts(components)
+    # Scope-conditional component selection: a profile can declare components that
+    # are selected only at a specific scope (e.g. user-only optimal-response). These
+    # are resolved here, before _artifacts, so the emitted plan stays schema-clean.
+    selected_scope_components = scope_components.get(scope) or []
+    if not isinstance(selected_scope_components, list) or not all(
+        isinstance(item, str) for item in selected_scope_components
+    ):
+        raise ValueError(
+            f"profiles/{name}.yml: install_policy.scope_components.{scope} must be a list"
+        )
+
+    scoped_profile_components = _profile_components_for_scope(profile_components, scope)
+    components = _dedupe_preserving_order(
+        [*scoped_profile_components, *selected_scope_components, *(extra_components or [])]
+    )
+    _validate_components_allowed_for_scope(components, scope)
+    materialize_adapter_outputs = mode != "dry-run"
+    artifacts = _artifacts(
+        components,
+        materialize_adapter_outputs=materialize_adapter_outputs,
+    )
 
     # Filter and remap artifacts by scope
     filtered_artifacts = []
@@ -443,13 +606,19 @@ def build_plan(profile: str, *, scope: str, mode: str) -> dict[str, Any]:
         dest = artifact["destination"]
         target = artifact["target"]
 
+        if artifact.get("source") == CODEX_USER_HOOK_OUTPUT:
+            continue
+
         if scope == "user":
+            if target == "codex" and dest == ".codex/hooks.json":
+                continue
             # Remap workspace paths to global paths for Codex and Antigravity
             if target == "codex" and dest.startswith(".agents/skills/"):
                 filtered_artifacts.append(
                     _remap_artifact_source(
                         artifact,
                         dest.replace(".agents/skills/", ".codex/skills/"),
+                        materialize_adapter_outputs=materialize_adapter_outputs,
                     )
                 )
                 continue
@@ -458,14 +627,18 @@ def build_plan(profile: str, *, scope: str, mode: str) -> dict[str, Any]:
                     _remap_artifact_source(
                         artifact,
                         dest.replace(".agents/skills/", ".gemini/config/skills/"),
+                        materialize_adapter_outputs=materialize_adapter_outputs,
                     )
                 )
                 continue
-            # Drop purely workspace paths
-            if dest.startswith(".agents/") or dest.startswith(".claude/"):
+            # Drop purely workspace paths (codex/antigravity .agents/skills/ already
+            # remapped above). Claude uses the same relative path at user and project
+            # scope (~/.claude mirrors project .claude), so its .claude/ destinations
+            # need no remap and fall through to be kept at user scope.
+            if dest.startswith(".agents/"):
                 continue
             filtered_artifacts.append(artifact)
-        elif scope in ("workspace", "project"):
+        elif scope == "project":
             if dest.startswith(".codex/skills/") or dest.startswith(".gemini/"):
                 continue
             filtered_artifacts.append(artifact)
@@ -473,6 +646,19 @@ def build_plan(profile: str, *, scope: str, mode: str) -> dict[str, Any]:
             filtered_artifacts.append(artifact)
             
     artifacts = filtered_artifacts
+    codex_user_hook_artifact = (
+        _codex_user_hook_registration_artifact(components) if scope == "user" else None
+    )
+    if codex_user_hook_artifact is not None and not any(
+        artifact["target"] == "codex"
+        and artifact["destination"] == ".codex/hooks.json"
+        and CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT in artifact.get(
+            "component_ids",
+            [artifact["component_id"]],
+        )
+        for artifact in artifacts
+    ):
+        artifacts.append(codex_user_hook_artifact)
 
     return {
         "plan_id": f"harnesskit.install-plan.{name}.{scope}",
@@ -492,7 +678,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", required=True, help="Profile name or id")
     parser.add_argument(
         "--scope",
-        choices=["project", "workspace", "user"],
+        choices=["project", "user"],
         default="project",
         help="Install scope",
     )
@@ -502,11 +688,22 @@ def main(argv: list[str] | None = None) -> int:
         default="dry-run",
         help="Install plan mode",
     )
+    parser.add_argument(
+        "--component",
+        action="append",
+        default=[],
+        help="Additional component id to include in this plan.",
+    )
     parser.add_argument("--format", choices=["json", "yaml"], default="yaml")
     args = parser.parse_args(argv)
 
     try:
-        plan = build_plan(args.profile, scope=args.scope, mode=args.mode)
+        plan = build_plan(
+            args.profile,
+            scope=args.scope,
+            mode=args.mode,
+            extra_components=args.component,
+        )
     except (FileNotFoundError, ValueError, KeyError) as exc:
         print(str(exc), file=sys.stderr)
         return 1

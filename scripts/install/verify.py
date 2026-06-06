@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.install.common import destination_path, load_plan, source_path
-from scripts.install.apply import _merge_managed_block
+from scripts.install.apply import _merge_json_deep, _merge_managed_block
 
 
 def verify_plan(plan_path: Path, *, target_root: Path) -> int:
@@ -34,6 +34,12 @@ def verify_plan(plan_path: Path, *, target_root: Path) -> int:
             current = dest.read_text(encoding="utf-8")
             if _merge_managed_block(current, body, artifact) != current:
                 issues.append(f"managed block mismatch: {dest.relative_to(target_root)}")
+            continue
+        if artifact.get("merge_strategy") == "json-deep-merge":
+            body = src.read_text(encoding="utf-8")
+            current = dest.read_text(encoding="utf-8")
+            if _merge_json_deep(current, body, artifact) != current:
+                issues.append(f"json merge mismatch: {dest.relative_to(target_root)}")
             continue
         if not filecmp.cmp(src, dest, shallow=False):
             existing_content = dest.read_text(encoding="utf-8")

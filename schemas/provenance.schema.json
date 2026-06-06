@@ -18,7 +18,7 @@
         "mode": {
           "type": "string",
           "description": "How this component relates to its upstream sources",
-          "enum": ["original", "derived", "adapted", "inspired", "forked", "referenced", "unrelated"]
+          "enum": ["original", "derived", "adapted", "inspired", "forked", "referenced", "unrelated", "local_migration"]
         },
         "runtime_dependency_on_sources": {
           "type": "boolean",
@@ -29,39 +29,53 @@
           "type": "array",
           "description": "External sources this component is derived from or depends on",
           "items": {
-            "type": "object",
-            "required": ["source_id"],
-            "properties": {
-              "source_id": {
-                "type": "string",
-                "description": "Reference to a source registry entry"
-              },
-              "snapshot_id": {
-                "type": "string",
-                "description": "Specific snapshot of the source used by this component"
-              },
-              "source_path": {
-                "type": "string",
-                "description": "Path within the source that was used (if a subset)"
-              },
-              "influence": {
-                "type": "array",
-                "description": "How this source influenced the component, as free-form descriptive phrases",
-                "items": {
-                  "type": "string"
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["source_id"],
+                "properties": {
+                  "source_id": {
+                    "type": "string",
+                    "description": "Reference to a source registry entry"
+                  },
+                  "snapshot_id": {
+                    "type": "string",
+                    "description": "Specific snapshot of the source used by this component"
+                  },
+                  "source_path": {
+                    "type": "string",
+                    "description": "Path within the source that was used (if a subset)"
+                  },
+                  "influence": {
+                    "type": "array",
+                    "description": "How this source influenced the component, as free-form descriptive phrases",
+                    "items": {
+                      "oneOf": [
+                        { "type": "string" },
+                        {
+                          "type": "object",
+                          "additionalProperties": { "type": "string" }
+                        }
+                      ]
+                    }
+                  },
+                  "copied_content": {
+                    "type": "boolean",
+                    "description": "Whether content was copied verbatim from this source",
+                    "default": false
+                  },
+                  "adapted_content": {
+                    "type": "boolean",
+                    "description": "Whether content was adapted or modified from this source",
+                    "default": false
+                  }
                 }
               },
-              "copied_content": {
-                "type": "boolean",
-                "description": "Whether content was copied verbatim from this source",
-                "default": false
-              },
-              "adapted_content": {
-                "type": "boolean",
-                "description": "Whether content was adapted or modified from this source",
-                "default": false
+              {
+                "type": "string",
+                "description": "Legacy local source path reference"
               }
-            }
+            ]
           }
         }
       }

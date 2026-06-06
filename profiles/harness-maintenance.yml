@@ -13,6 +13,7 @@ components:
   - harnesskit.skill.adapter-authoring
   - harnesskit.agent.adapter-author
   - harnesskit.skill.skill-evaluation
+  - harnesskit.agent.harness-evaluator
   - harnesskit.workflow.harness-creation
 targets:
   - claude

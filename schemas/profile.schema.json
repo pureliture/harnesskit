@@ -48,19 +48,42 @@
       "properties": {
         "default_scope": {
           "type": "string",
-          "enum": ["project", "workspace", "user"]
+          "enum": ["project", "user"]
         },
         "allowed_scopes": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["project", "workspace", "user"]
+            "enum": ["project", "user"]
           },
           "uniqueItems": true
         },
         "activation_policy": {
           "type": "string",
           "enum": ["none", "manual", "deferred"]
+        },
+        "scope_components": {
+          "type": "object",
+          "description": "Components selected only at a specific install scope (e.g. user-only optimal-response). Resolved by scripts/install/plan.py in addition to the unconditional components list.",
+          "additionalProperties": false,
+          "properties": {
+            "project": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+              },
+              "uniqueItems": true
+            },
+            "user": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+              },
+              "uniqueItems": true
+            }
+          }
         }
       }
     }

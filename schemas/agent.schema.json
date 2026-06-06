@@ -102,7 +102,16 @@
         "type": {
           "type": "string",
           "description": "Primary role type of this agent",
-          "enum": ["orchestrator", "specialist", "reviewer", "curator", "assistant", "monitor"]
+          "enum": [
+            "orchestrator",
+            "specialist",
+            "reviewer",
+            "curator",
+            "assistant",
+            "monitor",
+            "router",
+            "worker"
+          ]
         },
         "domains": {
           "type": "array",
