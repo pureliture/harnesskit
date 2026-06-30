@@ -26,10 +26,10 @@
     },
     "components": {
       "type": "array",
-      "description": "Component ids selected by this profile.",
+      "description": "Component ids (or composite ids) selected by this profile. Composite ids are expanded to their member components at install time.",
       "items": {
         "type": "string",
-        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow|composite)\\.[a-z][a-z0-9-]+$"
       },
       "uniqueItems": true
     },
@@ -71,7 +71,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow|composite)\\.[a-z][a-z0-9-]+$"
               },
               "uniqueItems": true
             },
@@ -79,7 +79,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow|composite)\\.[a-z][a-z0-9-]+$"
               },
               "uniqueItems": true
             }

@@ -12,7 +12,7 @@ Required references read:
 - `sources/harness-evaluation-oss-reference.yml`
 - `components/registry.yml`
 - `profiles/harness-maintenance.yml`
-- `components/harness/workflows/harness-creation/workflow.yml`
+- `components/workflows/harness-creation/workflow.yml`
 
 Approved requirement anchor:
 
@@ -109,9 +109,9 @@ Rejected alternatives:
 
 Required canonical component files for the new agent:
 
-- `components/harness/agents/harness-evaluator/agent.yml`
-- `components/harness/agents/harness-evaluator/prompt.md`
-- `components/harness/agents/harness-evaluator/provenance.map.yml`
+- `components/agents/harness-evaluator/agent.yml`
+- `components/agents/harness-evaluator/prompt.md`
+- `components/agents/harness-evaluator/provenance.map.yml`
 
 Registry and profile follow-up after canonical authoring:
 
@@ -123,7 +123,7 @@ Files explicitly not to author in this blueprint:
 
 - `components/hooks/harness-evaluation-safety-guard/**`
 - `components/rules/harness-evaluation-budget/**`
-- `components/harness/workflows/harness-evaluation/**`
+- `components/workflows/harness-evaluation/**`
 - Command component files.
 - Adapter outputs under `.agents/**`, `.claude/**`, `.codex/**`, or `dist/**`.
 
@@ -298,7 +298,7 @@ Slice 1: evaluator agent canonical component.
 - Title: Harness Evaluator
 - Summary: Top-level HarnessKit evaluation orchestrator that calls existing gate procedure, deterministic validators, fixture isolation, allowlist/profile contamination checks, runtime proof runner, and report generation without modifying source or canonical files.
 - Source influence: approved requirements; local `skill-evaluation` gates; local runtime probe patterns; OSS evaluation architecture patterns as structure-only references.
-- Owned output family: canonical evaluator agent files under `components/harness/agents/harness-evaluator/`.
+- Owned output family: canonical evaluator agent files under `components/agents/harness-evaluator/`.
 - Files to create/update: `agent.yml`, `prompt.md`, `provenance.map.yml`.
 - Explicit non-responsibilities: hook/rule/command/workflow authoring, adapter outputs, runtime probes, script implementation, tests, registry/profile migration unless separately approved for the authoring step.
 - Evaluation gates: requirements coverage, blueprint conformance, source/provenance, agent body quality, boundary safety, profile contamination contract, output allowlist contract, deferred runtime truth reporting.

@@ -5,7 +5,7 @@ import json
 import re
 import shutil
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
@@ -14,17 +14,24 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.adapters.build import (  # noqa: E402
+from scripts.adapters.api import (  # noqa: E402
     CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT,
     CODEX_USER_HOOK_OUTPUT,
-    _combined_append_content,
-    _render_component,
-    _selected_registry_entries,
+    combined_append_content,
+    project_runtime_roots,
+    render_component,
+    selected_registry_entries,
+)
+from scripts.install.common import (  # noqa: E402
+    TOML_AGENTS_MERGE_DESTINATION_KEYS,
 )
 
 PROFILES_DIR = REPO_ROOT / "profiles"
 
 PROFILE_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+
+COMPOSITE_KIND = "composite"
+COMPOSITE_ID_PREFIX = "harnesskit.composite."
 
 
 def _dedupe_preserving_order(values: list[str]) -> list[str]:
@@ -57,18 +64,13 @@ RUNTIME_SURFACES = {
         },
         {
             "target": "project",
-            "path": "GEMINI.md",
-            "source": "dist/project/GEMINI.md",
-        },
-        {
-            "target": "project",
             "path": ".github/ISSUE_TEMPLATE",
             "source": "dist/project/.github/ISSUE_TEMPLATE",
         },
         {
             "target": "project",
-            "path": "acli",
-            "source": "dist/project/acli",
+            "path": ".acli",
+            "source": "dist/project/.acli",
         },
     ],
     "claude": [
@@ -164,10 +166,10 @@ RUNTIME_SURFACES = {
 ACTIVATION_GATES = {
     "claude": [
         {
-            "id": "claude-stop-hook-review",
+            "id": "claude-prompt-submit-hook-review",
             "target": "claude",
             "reason": (
-                "Claude Stop hook changes project runtime behavior and should be "
+                "Claude prompt-submit hook changes user runtime behavior and should be "
                 "reviewed separately from file materialization."
             ),
             "required_before_apply": False,
@@ -179,7 +181,7 @@ ACTIVATION_GATES = {
             "id": "codex-hook-trust",
             "target": "codex",
             "reason": (
-                "Codex project hooks require user-level trust state before runtime "
+                "Codex user-level hooks require trust state before runtime "
                 "execution."
             ),
             "required_before_apply": False,
@@ -262,14 +264,13 @@ def _surface_key_for_artifact(artifact: dict[str, Any]) -> tuple[str, str] | Non
     if target == "project":
         if destination.startswith(".harnesskit/"):
             return ("project", ".harnesskit")
-        if destination.startswith("acli/"):
-            return ("project", "acli")
+        for root in project_runtime_roots():
+            if destination.startswith(f"{root}/"):
+                return ("project", root)
         if destination == "AGENTS.md":
             return ("project", "AGENTS.md")
         if destination == "CLAUDE.md":
             return ("project", "CLAUDE.md")
-        if destination == "GEMINI.md":
-            return ("project", "GEMINI.md")
         if destination.startswith(".github/ISSUE_TEMPLATE/"):
             return ("project", ".github/ISSUE_TEMPLATE")
     if target == "antigravity":
@@ -333,7 +334,7 @@ def _activation_gates(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _artifact_target_and_destination(source_path: Path) -> tuple[str, str]:
     rel_source = source_path.relative_to(REPO_ROOT)
     parts = rel_source.parts
-    if len(parts) >= 2 and parts[0] == "acli":
+    if len(parts) >= 2 and parts[0] in project_runtime_roots():
         return "project", rel_source.as_posix()
     if len(parts) < 3 or parts[0] != "dist":
         raise ValueError(f"Adapter output must live under dist/<target>: {rel_source}")
@@ -359,6 +360,21 @@ def _unpack_rendered_output(item: tuple[Any, ...]) -> tuple[Path, str, bool, int
     return output_path, content, append, mode
 
 
+def _toml_agents_merge_key_for(target: str, destination: str) -> str | None:
+    """Return the toml-agents-merge key owned by ``(target, destination)``.
+
+    The codex `.codex/config.toml` registration artifact installs via the
+    preserving toml-agents-merge so a real user config is never clobbered.
+    Ownership of which `(target, destination)` carries the strategy (and which
+    merge key) lives in the contract gate's
+    ``TOML_AGENTS_MERGE_DESTINATION_KEYS`` map, reused here so the generated
+    plan and ``validate_plan_contract`` can never drift apart.
+    """
+    return TOML_AGENTS_MERGE_DESTINATION_KEYS.get(
+        (target, PurePosixPath(destination))
+    )
+
+
 def _artifacts(
     component_ids: list[str],
     *,
@@ -366,7 +382,7 @@ def _artifacts(
 ) -> list[dict[str, Any]]:
     if materialize_adapter_outputs:
         _materialize_adapter_outputs(component_ids)
-    entries = _selected_registry_entries(component_ids)
+    entries = selected_registry_entries(component_ids)
     artifacts: list[dict[str, Any]] = []
     seen_destinations: dict[tuple[str, str], bool] = {}
     artifact_by_destination: dict[tuple[str, str], dict[str, Any]] = {}
@@ -381,7 +397,7 @@ def _artifacts(
                     for item in manifest.get("merge_artifacts") or []
                     if isinstance(item, dict) and isinstance(item.get("destination"), str)
                 }
-        for item in _render_component(component_id, entry or {}):
+        for item in render_component(component_id, entry or {}):
             output_path, _content, append, _mode = _unpack_rendered_output(item)
             target, destination = _artifact_target_and_destination(output_path)
             source_path = _artifact_source_for_output(output_path, target, destination)
@@ -414,6 +430,11 @@ def _artifacts(
                     artifact["end_marker"] = merge_config.get("end_marker")
                 if artifact["merge_strategy"] == "json-deep-merge":
                     artifact["json_merge_key"] = merge_config.get("json_merge_key")
+            else:
+                toml_merge_key = _toml_agents_merge_key_for(target, destination)
+                if toml_merge_key is not None:
+                    artifact["merge_strategy"] = "toml-agents-merge"
+                    artifact["toml_merge_key"] = toml_merge_key
             artifacts.append(artifact)
             artifact_by_destination[destination_key] = artifact
     return artifacts
@@ -438,15 +459,138 @@ def _component_scopes(component_id: str, entry: dict[str, Any]) -> list[str]:
 
 
 def _validate_components_allowed_for_scope(component_ids: list[str], scope: str) -> None:
-    entries = _selected_registry_entries(component_ids)
+    entries = selected_registry_entries(component_ids)
     for component_id, entry in entries.items():
         scopes = _component_scopes(component_id, entry or {})
         if scope not in scopes:
             raise ValueError(f"component is not allowed for scope {scope}: {component_id}")
 
 
+def _is_composite_id(candidate: str) -> bool:
+    return candidate.startswith(COMPOSITE_ID_PREFIX)
+
+
+def _is_composite_entry(entry: dict[str, Any] | None) -> bool:
+    return isinstance(entry, dict) and entry.get("kind") == COMPOSITE_KIND
+
+
+def _composite_members(composite_id: str) -> list[str]:
+    """Resolve a composite id to its ordered member component ids.
+
+    A composite is registered in components/registry.yml like any other entry,
+    but with kind: composite and a composite.yml manifest carrying `members`.
+    This expands the composite to that member list (members are plain
+    component ids, never nested composites).
+    """
+    entry = selected_registry_entries([composite_id])[composite_id]
+    if not _is_composite_entry(entry):
+        raise ValueError(f"not a composite: {composite_id}")
+
+    rel_manifest = entry.get("path")
+    if not isinstance(rel_manifest, str) or not rel_manifest:
+        raise ValueError(f"{composite_id}: registry path is required")
+
+    manifest_path = REPO_ROOT / rel_manifest
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"Missing composite manifest for {composite_id}: {rel_manifest}")
+
+    manifest = _load_yaml(manifest_path)
+    members = manifest.get("members")
+    if not isinstance(members, list) or not members:
+        raise ValueError(f"{rel_manifest}: members must be a non-empty list")
+    resolved: list[str] = []
+    for member_id in members:
+        if not isinstance(member_id, str) or not member_id:
+            raise ValueError(f"{rel_manifest}: members must be non-empty strings")
+        if _is_composite_id(member_id):
+            # Multi-combination / nested-composite resolution is deferred (M9);
+            # composite members are plain component ids only.
+            raise ValueError(
+                f"{rel_manifest}: member must be a component, not a composite: {member_id}"
+            )
+        resolved.append(member_id)
+    return _dedupe_preserving_order(resolved)
+
+
+def _expand_composite_ids(component_ids: list[str]) -> list[str]:
+    """Expand any composite ids in a flat id list to their member ids in place.
+
+    Used on the --profile path: a profile MAY list composite ids alongside
+    plain component ids; those are expanded to members before scope handling.
+    Plain component ids pass through unchanged. Order is preserved.
+    """
+    expanded: list[str] = []
+    for candidate in component_ids:
+        if _is_composite_id(candidate):
+            expanded.extend(_composite_members(candidate))
+        else:
+            expanded.append(candidate)
+    return _dedupe_preserving_order(expanded)
+
+
+def _composite_shared_scope(member_ids: list[str]) -> list[str]:
+    """Shared install scope for a composite = INTERSECTION of member scopes (M9).
+
+    Multi-combination resolution is deferred; only the plain intersection is
+    computed here. Order follows the first member's scope ordering.
+    """
+    entries = selected_registry_entries(member_ids)
+    scope_sets = [
+        set(_component_scopes(member_id, entry or {}))
+        for member_id, entry in entries.items()
+    ]
+    if not scope_sets:
+        return []
+    shared = set.intersection(*scope_sets)
+    first_member = next(iter(entries))
+    first_scopes = _component_scopes(first_member, entries[first_member] or {})
+    return [scope for scope in first_scopes if scope in shared]
+
+
+def _standalone_installable(component_id: str, entry: dict[str, Any]) -> bool:
+    """Read the standalone_installable atom from a component manifest.
+
+    Absent => True (the schema default); only an explicit False blocks
+    standalone install. Composites and manifest-less entries are not subject
+    to this atom and resolve to True here.
+    """
+    rel_manifest = entry.get("path")
+    if not isinstance(rel_manifest, str) or not rel_manifest:
+        return True
+    manifest_path = REPO_ROOT / rel_manifest
+    if not manifest_path.is_file():
+        return True
+    manifest = _load_yaml(manifest_path)
+    value = manifest.get("standalone_installable")
+    if value is None:
+        return True
+    if not isinstance(value, bool):
+        raise ValueError(f"{rel_manifest}: standalone_installable must be a boolean")
+    return value
+
+
+def _validate_member_block_for_standalone(component_ids: list[str]) -> None:
+    """Refuse standalone --component install of a member-blocked atom.
+
+    ISOLATED, one-way safety constraint (M8): a component manifest with
+    standalone_installable: false may only be installed via a composite that
+    includes it (or a profile). This validator runs ONLY on the standalone
+    --component path and is deliberately NOT grafted into
+    _validate_components_allowed_for_scope, which would break profile install.
+    """
+    entries = selected_registry_entries(component_ids)
+    for component_id, entry in entries.items():
+        if _is_composite_entry(entry):
+            continue
+        if not _standalone_installable(component_id, entry or {}):
+            raise ValueError(
+                "component is not standalone-installable; "
+                f"install it via a composite or profile: {component_id}"
+            )
+
+
 def _profile_components_for_scope(component_ids: list[str], scope: str) -> list[str]:
-    entries = _selected_registry_entries(component_ids)
+    entries = selected_registry_entries(component_ids)
     return [
         component_id
         for component_id, entry in entries.items()
@@ -489,7 +633,7 @@ def _materialize_adapter_outputs(component_ids: list[str]) -> None:
     expected_outputs = _collect_adapter_outputs(component_ids)
     for output_path, expected in expected_outputs.items():
         content = (
-            _combined_append_content(output_path, expected.get("chunks", [expected["content"]]))
+            combined_append_content(output_path, expected.get("chunks", [expected["content"]]))
             if expected["append"]
             else expected["content"]
         )
@@ -501,11 +645,11 @@ def _materialize_adapter_outputs(component_ids: list[str]) -> None:
 
 
 def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
-    entries = _selected_registry_entries(component_ids)
+    entries = selected_registry_entries(component_ids)
     expected_outputs: dict[Path, dict[str, Any]] = {}
 
     for component_id, entry in entries.items():
-        for item in _render_component(component_id, entry or {}):
+        for item in render_component(component_id, entry or {}):
             output_path, content, append, mode = _unpack_rendered_output(item)
             if append:
                 existing = expected_outputs.get(output_path)
@@ -520,7 +664,7 @@ def _collect_adapter_outputs(component_ids: list[str]) -> dict[Path, dict[str, A
                     if not existing["append"]:
                         raise ValueError(f"Duplicate adapter output: {output_path}")
                     existing.setdefault("chunks", []).append(content)
-                    existing["content"] = _combined_append_content(
+                    existing["content"] = combined_append_content(
                         output_path,
                         existing["chunks"],
                     )
@@ -550,58 +694,18 @@ def _remap_artifact_source(
     return new_artifact
 
 
-def build_plan(
-    profile: str,
+def _scope_filtered_artifacts(
+    artifacts: list[dict[str, Any]],
     *,
     scope: str,
-    mode: str,
-    extra_components: list[str] | None = None,
-) -> dict[str, Any]:
-    name, profile_data = _load_profile(profile)
-    targets = profile_data.get("targets") or []
-    profile_components = profile_data.get("components") or []
-    install_policy = profile_data.get("install_policy") or {}
-    allowed_scopes = install_policy.get("allowed_scopes") or []
-    scope_components = install_policy.get("scope_components") or {}
-    if not isinstance(targets, list):
-        raise ValueError(f"profiles/{name}.yml: targets must be a list")
-    if not isinstance(profile_components, list):
-        raise ValueError(f"profiles/{name}.yml: components must be a list")
-    if not isinstance(allowed_scopes, list) or not all(
-        isinstance(allowed_scope, str) for allowed_scope in allowed_scopes
-    ):
-        raise ValueError(f"profiles/{name}.yml: install_policy.allowed_scopes must be a list")
-    if not isinstance(scope_components, dict):
-        raise ValueError(
-            f"profiles/{name}.yml: install_policy.scope_components must be a mapping"
-        )
-    if scope not in allowed_scopes:
-        raise ValueError(f"profiles/{name}.yml: scope is not allowed: {scope}")
+    materialize_adapter_outputs: bool,
+) -> list[dict[str, Any]]:
+    """Filter and remap artifacts by install scope.
 
-    # Scope-conditional component selection: a profile can declare components that
-    # are selected only at a specific scope (e.g. user-only optimal-response). These
-    # are resolved here, before _artifacts, so the emitted plan stays schema-clean.
-    selected_scope_components = scope_components.get(scope) or []
-    if not isinstance(selected_scope_components, list) or not all(
-        isinstance(item, str) for item in selected_scope_components
-    ):
-        raise ValueError(
-            f"profiles/{name}.yml: install_policy.scope_components.{scope} must be a list"
-        )
-
-    scoped_profile_components = _profile_components_for_scope(profile_components, scope)
-    components = _dedupe_preserving_order(
-        [*scoped_profile_components, *selected_scope_components, *(extra_components or [])]
-    )
-    _validate_components_allowed_for_scope(components, scope)
-    materialize_adapter_outputs = mode != "dry-run"
-    artifacts = _artifacts(
-        components,
-        materialize_adapter_outputs=materialize_adapter_outputs,
-    )
-
-    # Filter and remap artifacts by scope
-    filtered_artifacts = []
+    Shared by every selection mode (profile, composite, component) so the
+    project/user scope routing stays identical across them.
+    """
+    filtered_artifacts: list[dict[str, Any]] = []
     for artifact in artifacts:
         dest = artifact["destination"]
         target = artifact["target"]
@@ -644,8 +748,191 @@ def build_plan(
             filtered_artifacts.append(artifact)
         else:
             filtered_artifacts.append(artifact)
-            
-    artifacts = filtered_artifacts
+
+    return filtered_artifacts
+
+
+def _selection_plan(
+    component_ids: list[str],
+    *,
+    plan_id: str,
+    scope: str,
+    mode: str,
+    targets: list[str] | None = None,
+) -> dict[str, Any]:
+    """Build a non-profile install plan (component or composite selection).
+
+    Shares artifact rendering, scope filtering, and the codex user-hook
+    registration tail with the profile path, but emits a selection-shaped
+    plan (no profile_id) keyed by the supplied plan_id.
+    """
+    components = _dedupe_preserving_order(component_ids)
+    _validate_components_allowed_for_scope(components, scope)
+    materialize_adapter_outputs = mode != "dry-run"
+    artifacts = _artifacts(
+        components,
+        materialize_adapter_outputs=materialize_adapter_outputs,
+    )
+    artifacts = _scope_filtered_artifacts(
+        artifacts,
+        scope=scope,
+        materialize_adapter_outputs=materialize_adapter_outputs,
+    )
+
+    codex_user_hook_artifact = (
+        _codex_user_hook_registration_artifact(components) if scope == "user" else None
+    )
+    if codex_user_hook_artifact is not None and not any(
+        artifact["target"] == "codex"
+        and artifact["destination"] == ".codex/hooks.json"
+        and CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT
+        in artifact.get("component_ids", [artifact["component_id"]])
+        for artifact in artifacts
+    ):
+        artifacts.append(codex_user_hook_artifact)
+
+    selected_targets = list(targets or _artifact_targets(artifacts))
+
+    return {
+        "plan_id": plan_id,
+        "scope": scope,
+        "mode": mode,
+        "targets": selected_targets,
+        "components": components,
+        "artifacts": artifacts,
+        "runtime_surfaces": _runtime_surfaces(selected_targets, artifacts),
+        "activation_gates": _activation_gates(artifacts),
+    }
+
+
+def _artifact_targets(artifacts: list[dict[str, Any]]) -> list[str]:
+    targets: list[str] = []
+    seen: set[str] = set()
+    for artifact in artifacts:
+        target = artifact["target"]
+        if target in seen:
+            continue
+        seen.add(target)
+        targets.append(target)
+    return targets
+
+
+def build_component_plan(
+    component_id: str,
+    *,
+    scope: str,
+    mode: str,
+    targets: list[str] | None = None,
+) -> dict[str, Any]:
+    """Plan a single standalone --component install.
+
+    This is the ONLY path that runs the isolated member-block validator: a
+    component marked standalone_installable: false may not be installed here
+    and must go through --composite or --profile instead.
+    """
+    _validate_member_block_for_standalone([component_id])
+    return _selection_plan(
+        [component_id],
+        plan_id=f"harnesskit.install-plan.component.{scope}",
+        scope=scope,
+        mode=mode,
+        targets=targets,
+    )
+
+
+def build_composite_plan(
+    composite: str,
+    *,
+    scope: str,
+    mode: str,
+    targets: list[str] | None = None,
+) -> dict[str, Any]:
+    """Plan a --composite install: expand to members, install the group.
+
+    Shared scope is the INTERSECTION of member scopes (M9); the requested
+    scope must lie within that intersection. The member-block validator is
+    NOT invoked here — installing a standalone_installable: false member via
+    its composite is exactly the permitted path.
+    """
+    name = composite.removeprefix(COMPOSITE_ID_PREFIX)
+    members = _composite_members(composite)
+    shared_scope = _composite_shared_scope(members)
+    if scope not in shared_scope:
+        raise ValueError(
+            f"composite {composite}: scope is not in member-shared scope: {scope}"
+        )
+    return _selection_plan(
+        members,
+        plan_id=f"harnesskit.install-plan.composite.{name}.{scope}",
+        scope=scope,
+        mode=mode,
+        targets=targets,
+    )
+
+
+def build_plan(
+    profile: str,
+    *,
+    scope: str,
+    mode: str,
+    extra_components: list[str] | None = None,
+) -> dict[str, Any]:
+    name, profile_data = _load_profile(profile)
+    targets = profile_data.get("targets") or []
+    profile_components = profile_data.get("components") or []
+    install_policy = profile_data.get("install_policy") or {}
+    allowed_scopes = install_policy.get("allowed_scopes") or []
+    scope_components = install_policy.get("scope_components") or {}
+    if not isinstance(targets, list):
+        raise ValueError(f"profiles/{name}.yml: targets must be a list")
+    if not isinstance(profile_components, list):
+        raise ValueError(f"profiles/{name}.yml: components must be a list")
+    if not isinstance(allowed_scopes, list) or not all(
+        isinstance(allowed_scope, str) for allowed_scope in allowed_scopes
+    ):
+        raise ValueError(f"profiles/{name}.yml: install_policy.allowed_scopes must be a list")
+    if not isinstance(scope_components, dict):
+        raise ValueError(
+            f"profiles/{name}.yml: install_policy.scope_components must be a mapping"
+        )
+    if scope not in allowed_scopes:
+        raise ValueError(f"profiles/{name}.yml: scope is not allowed: {scope}")
+
+    # Scope-conditional component selection: a profile can declare components that
+    # are selected only at a specific scope (e.g. user-only optimal-response). These
+    # are resolved here, before _artifacts, so the emitted plan stays schema-clean.
+    selected_scope_components = scope_components.get(scope) or []
+    if not isinstance(selected_scope_components, list) or not all(
+        isinstance(item, str) for item in selected_scope_components
+    ):
+        raise ValueError(
+            f"profiles/{name}.yml: install_policy.scope_components.{scope} must be a list"
+        )
+
+    # A profile MAY list composite ids alongside plain component ids (M7);
+    # expand them to their member component ids before scope selection so the
+    # rest of the profile path is unchanged for non-composite profiles.
+    expanded_profile_components = _expand_composite_ids(profile_components)
+    expanded_scope_components = _expand_composite_ids(selected_scope_components)
+
+    scoped_profile_components = _profile_components_for_scope(
+        expanded_profile_components, scope
+    )
+    components = _dedupe_preserving_order(
+        [*scoped_profile_components, *expanded_scope_components, *(extra_components or [])]
+    )
+    _validate_components_allowed_for_scope(components, scope)
+    materialize_adapter_outputs = mode != "dry-run"
+    artifacts = _artifacts(
+        components,
+        materialize_adapter_outputs=materialize_adapter_outputs,
+    )
+
+    artifacts = _scope_filtered_artifacts(
+        artifacts,
+        scope=scope,
+        materialize_adapter_outputs=materialize_adapter_outputs,
+    )
     codex_user_hook_artifact = (
         _codex_user_hook_registration_artifact(components) if scope == "user" else None
     )
@@ -675,7 +962,15 @@ def build_plan(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Generate a HarnessKit install plan.")
-    parser.add_argument("--profile", required=True, help="Profile name or id")
+    # Three selection modes: --profile (existing), --composite (expand a
+    # composite to its members), or standalone --component. --profile is no
+    # longer required; --profile and --composite are mutually exclusive.
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--profile", help="Profile name or id")
+    selection.add_argument(
+        "--composite",
+        help="Composite id to expand to its members and install as a group.",
+    )
     parser.add_argument(
         "--scope",
         choices=["project", "user"],
@@ -692,18 +987,44 @@ def main(argv: list[str] | None = None) -> int:
         "--component",
         action="append",
         default=[],
-        help="Additional component id to include in this plan.",
+        help=(
+            "Component id. With --profile it is an additional component; with no "
+            "--profile/--composite it selects a single standalone component."
+        ),
     )
     parser.add_argument("--format", choices=["json", "yaml"], default="yaml")
     args = parser.parse_args(argv)
 
-    try:
-        plan = build_plan(
-            args.profile,
-            scope=args.scope,
-            mode=args.mode,
-            extra_components=args.component,
+    if args.composite is not None and args.component:
+        parser.error("--component cannot be combined with --composite")
+    if args.profile is None and args.composite is None and not args.component:
+        parser.error("one of --profile, --composite, or --component is required")
+    if args.profile is None and args.composite is None and len(args.component) > 1:
+        parser.error(
+            "standalone --component install accepts exactly one component; "
+            "use --profile or --composite to install a group"
         )
+
+    try:
+        if args.composite is not None:
+            plan = build_composite_plan(
+                args.composite,
+                scope=args.scope,
+                mode=args.mode,
+            )
+        elif args.profile is None:
+            plan = build_component_plan(
+                args.component[0],
+                scope=args.scope,
+                mode=args.mode,
+            )
+        else:
+            plan = build_plan(
+                args.profile,
+                scope=args.scope,
+                mode=args.mode,
+                extra_components=args.component,
+            )
     except (FileNotFoundError, ValueError, KeyError) as exc:
         print(str(exc), file=sys.stderr)
         return 1

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/composite.schema.json",
+  "title": "HarnessKit Composite Schema",
+  "description": "A composite is a first-class, named grouping of canonical components that are installed together. Composites do not introduce a new component kind or adapter output; they expand to their member component ids at install time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["composite_id", "kind", "status", "title", "members"],
+  "properties": {
+    "composite_id": {
+      "type": "string",
+      "description": "Canonical composite identifier. Format: harnesskit.composite.<name>",
+      "pattern": "^harnesskit\\.composite\\.[a-z][a-z0-9-]+$"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Manifest kind discriminator. Always composite for composite manifests.",
+      "const": "composite"
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the composite",
+      "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title of the composite",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short description of what this composite groups together"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this composite belongs to. Mirrors the component domain axis.",
+      "enum": ["core", "scm", "work", "harness"]
+    },
+    "members": {
+      "type": "array",
+      "description": "Component ids grouped by this composite. Each member must be a registered component id; install-time expansion resolves a composite to this member set.",
+      "items": {
+        "type": "string",
+        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

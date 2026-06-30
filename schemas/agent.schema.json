@@ -15,6 +15,11 @@
       "type": "string",
       "const": "agent"
     },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this agent belongs to. Preserves the grouping that flat storage would otherwise erase. Buckets map scm->scm, work->work, harness->harness; already-flat agents default to core.",
+      "enum": ["core", "scm", "work", "harness"]
+    },
     "status": {
       "type": "string",
       "description": "Lifecycle status of the agent",

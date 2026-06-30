@@ -1,0 +1,75 @@
+component_id: harnesskit.skill.component-authoring
+provenance:
+  mode: adapted
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: obra-superpowers
+      snapshot_id: obra-superpowers/2026-06-27-main-896224c
+      influence:
+        - "writing-skills craft: authoring-side prose craft rules (prose anti-patterns; pattern only)"
+        - "writing-skills craft: one-excellent-example / explicit workaround counters (pattern only)"
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/writing-great-skills
+      influence:
+        - Slice E canonical authoring quality improvement
+        - predictable process, trigger pruning, information hierarchy, completion criteria, single source of truth, and no-op pruning
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/teach
+      influence:
+        - Slice E canonical authoring quality improvement
+        - skill body should teach the future agent the technique and tie references to the mission of the component
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/handoff
+      influence:
+        - Slice E canonical authoring quality improvement
+        - compact handoff by artifact reference, sensitive-data redaction, and suggested next skills
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    HarnessKit harness-maintenance skill authored from the approved
+    component-authoring design and public Agent Skills/Codex/Claude Code
+    documentation references. No source text was copied verbatim. The M5 merge
+    adds authoring-side prose craft rules adapted from the superpowers
+    writing-skills craft (authoring-side share). Slice E adds Matt Pocock
+    skills snapshot influence for predictable skill-body structure, teaching
+    posture toward the next agent, and compact redacted handoffs when canonical
+    authoring cannot finish in one session.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - component authoring workflow
+    - canonical-only guardrails
+  new_sections:
+    - harness-maintenance placement
+    - ideation exclusion
+    - adapter-output prohibition
+    - textless prompt-submit hook contract
+    - canonical body quality gate
+    - component authoring handoff notes
+  adapted_sections:
+    - prose craft rules (prose anti-patterns; one-excellent-example; explicit workaround counters) from writing-skills craft
+    - predictable process and information hierarchy from mattpocock writing-great-skills
+    - future-agent teaching posture from mattpocock teach
+    - compact artifact-reference handoff and redaction from mattpocock handoff
+  license_notes: >
+    Referenced public documentation only; no bundled third-party code.
+    writing-skills craft influence is pattern-only with license_hint unknown on
+    obra-superpowers; runtime_dependency_on_sources is false.
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - component_schema_changed
+    - provenance_schema_changed
+    - prompt_submit_hook_contract_changed
+    - prose_craft_rules_changed
+    - mattpocock_authoring_quality_reference_changed
+    - component_authoring_handoff_contract_changed

@@ -1,0 +1,38 @@
+component_id: harnesskit.skill.skill-evaluation
+kind: skill
+status: draft
+domain: harness
+title: Skill Evaluation
+summary: Use after HarnessKit component authoring or adapter authoring to evaluate evidence against requirements, blueprint, provenance, skill authoring quality, adapter output, and runtime truth gates.
+source_refs:
+  - source_id: mattpocock-skills
+    path: skills/productivity/writing-great-skills
+    used_for: [skill_authoring_quality_rubric, trigger_scope_progressive_disclosure_checks]
+  - source_id: mattpocock-skills
+    path: skills/productivity/teach
+    used_for: [bounded_instruction_and_feedback_quality_checks]
+  - source_id: mattpocock-skills
+    path: skills/in-progress/review
+    used_for: [review_axis_separation_and_evidence_reporting_checks]
+owned_files:
+  - components/skills/skill-evaluation/component.yml
+  - components/skills/skill-evaluation/SKILL.md
+  - components/skills/skill-evaluation/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/skill-evaluation/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/skill-evaluation/SKILL.md
+entrypoints:
+  natural_language:
+    - phrase: "이 skill 구현이 requirements를 만족하는지 평가해줘"
+      context: "The user wants evidence-bound evaluation of a completed HarnessKit component."
+    - phrase: "adapter output까지 만들었는데 runtime claim 가능한지 확인해줘"
+      context: "The user wants static output and runtime evidence separated."
+provenance_mode: manual
+routine_harness:
+  category: harness-maintenance
+  phase: skill-evaluation
+  fixes_in_scope_by_default: false
+  live_runtime_probe_in_scope: false
+  strict_runtime_truth: true

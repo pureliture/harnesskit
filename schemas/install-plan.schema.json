@@ -107,7 +107,7 @@
           },
           "path": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|\\.acli)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "source": {
             "type": "string",
@@ -147,11 +147,11 @@
           },
           "destination": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|\\.acli)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "merge_strategy": {
             "type": "string",
-            "enum": ["managed-block", "json-deep-merge"]
+            "enum": ["managed-block", "json-deep-merge", "toml-agents-merge"]
           },
           "begin_marker": {
             "type": "string",
@@ -164,6 +164,10 @@
           "json_merge_key": {
             "type": "string",
             "enum": ["claude-settings-hooks", "codex-hooks"]
+          },
+          "toml_merge_key": {
+            "type": "string",
+            "enum": ["codex-agents"]
           },
           "scope": {
             "type": "string",

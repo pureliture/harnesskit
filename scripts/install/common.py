@@ -13,6 +13,14 @@ JSON_DEEP_MERGE_DESTINATION_KEYS = {
     ("claude", PurePosixPath(".claude/settings.json")): "claude-settings-hooks",
     ("codex", PurePosixPath(".codex/hooks.json")): "codex-hooks",
 }
+# TOML preserving-merge contract for codex `.codex/config.toml`. The harness owns
+# ONLY the `[agents."<name>"]` registration tables it materializes; every other
+# byte of the destination config is preserved. This mirrors the json-deep-merge
+# key/destination guard so a mis-pointed toml merge can never be applied.
+TOML_AGENTS_MERGE_KEYS = {"codex-agents"}
+TOML_AGENTS_MERGE_DESTINATION_KEYS = {
+    ("codex", PurePosixPath(".codex/config.toml")): "codex-agents",
+}
 SOURCE_DESTINATION_EQUIVALENTS = {
     (
         "codex",
@@ -87,11 +95,36 @@ def validate_plan_contract(plan: dict[str, Any]) -> None:
         )
         merge_strategy = artifact.get("merge_strategy")
         if merge_strategy is not None:
-            if merge_strategy not in {"managed-block", "json-deep-merge"}:
+            if merge_strategy not in {
+                "managed-block",
+                "json-deep-merge",
+                "toml-agents-merge",
+            }:
                 raise ValueError(f"unsupported merge strategy: {merge_strategy}")
             if merge_strategy == "managed-block":
                 _non_empty_string(artifact.get("begin_marker"), "Artifact begin_marker")
                 _non_empty_string(artifact.get("end_marker"), "Artifact end_marker")
+            if merge_strategy == "toml-agents-merge":
+                toml_merge_key = _non_empty_string(
+                    artifact.get("toml_merge_key"),
+                    "Artifact toml_merge_key",
+                )
+                if toml_merge_key not in TOML_AGENTS_MERGE_KEYS:
+                    raise ValueError(f"unsupported toml merge key: {toml_merge_key}")
+                expected_toml_merge_key = TOML_AGENTS_MERGE_DESTINATION_KEYS.get(
+                    (target, destination)
+                )
+                if expected_toml_merge_key is None:
+                    raise ValueError(
+                        "toml-agents-merge destination is not supported: "
+                        f"{target}:{destination}"
+                    )
+                if toml_merge_key != expected_toml_merge_key:
+                    raise ValueError(
+                        "toml merge key does not match destination: "
+                        f"{toml_merge_key} != {expected_toml_merge_key} "
+                        f"for {target}:{destination}"
+                    )
             if merge_strategy == "json-deep-merge":
                 if destination.suffix != ".json":
                     raise ValueError(

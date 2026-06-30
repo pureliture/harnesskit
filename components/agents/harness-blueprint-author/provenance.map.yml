@@ -1,0 +1,34 @@
+component_id: harnesskit.agent.harness-blueprint-author
+provenance:
+  mode: adapted
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/engineering/codebase-design/DESIGN-IT-TWICE.md
+      influence:
+        - alternatives and rejected-options rubric
+        - rubric-only handling for design-it-twice
+        - no standalone design-it-twice component
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+  attribution_note: >
+    HarnessKit harness-maintenance agent authored from the approved body
+    design and adapted with rubric-only alternatives analysis from the recorded
+    Matt Pocock skills snapshot. No upstream text was copied, and the agent has
+    no runtime dependency on the upstream checkout.
+  source_mode: oss
+  copied_sections: []
+  rewritten_sections:
+    - component graph workflow
+    - component kind decision handoff
+    - alternatives and rejected-options rubric
+  new_sections:
+    - HarnessKit blueprint author boundaries
+  license_notes: "Matt Pocock skills license remains unapproved here; conceptual influence only, no copied source text."
+  human_review_required: true
+  review_triggers:
+    - component_kind_policy_changed
+    - profile_contract_changed
+    - capabilities_matrix_changed

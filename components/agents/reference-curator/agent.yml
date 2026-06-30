@@ -1,0 +1,40 @@
+component_id: harnesskit.agent.reference-curator
+kind: agent
+status: draft
+domain: harness
+title: Reference Curator
+summary: Optional specialist agent for collecting GitHub/open-source reference packets before HarnessKit requirements are written; local migration evidence is explicit opt-in only.
+source_refs: []
+owned_files:
+  - components/agents/reference-curator/agent.yml
+  - components/agents/reference-curator/prompt.md
+  - components/agents/reference-curator/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/agents/reference-curator.md
+  codex:
+    output_path: dist/codex/.codex/agents/reference_curator.toml
+role:
+  type: curator
+  domains:
+    - GitHub and open-source reference assessment
+    - HarnessKit reference packets
+    - explicit local migration evidence
+tool_policy:
+  default: review
+adapter:
+  claude:
+    tools: Read, Glob, Grep, Write, Bash, WebFetch
+    model: sonnet
+    skills: []
+    color: yellow
+  codex:
+    reasoning_effort: high
+routine_harness:
+  category: harness-maintenance
+  phase: reference-curation
+  optional: true
+  requirements_authoring_in_scope: false
+  blueprint_authoring_in_scope: false
+  component_authoring_in_scope: false
+  adapter_authoring_in_scope: false

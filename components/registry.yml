@@ -6,16 +6,23 @@ components:
     status: draft
     path: components/skills/tdd/component.yml
 
+  harnesskit.skill.agentic-execution:
+    kind: skill
+    status: draft
+    path: components/skills/agentic-execution/component.yml
+
   harnesskit.skill.writing-plans:
     kind: skill
     status: skeleton
     planned: true
+    replaced_by: harnesskit.skill.agentic-execution
     path: components/skills/writing-plans/component.yml
 
   harnesskit.skill.executing-plans:
     kind: skill
     status: skeleton
     planned: true
+    replaced_by: harnesskit.skill.agentic-execution
     path: components/skills/executing-plans/component.yml
 
   harnesskit.skill.requesting-code-review:
@@ -35,11 +42,66 @@ components:
     status: semi-concrete
     planned: true
     path: components/skills/verification-before-completion/component.yml
+    deprecated: true
+    absorbed_by: harnesskit.rule.harnesskit-project-context
+    deprecation:
+      reason: >
+        The verification-before-completion honesty gate is absorbed as one managed-block
+        section in the harnesskit-project-context rule (M5); a standalone skill is not
+        authored. global core.md, STOP, and rh-tdd already enforce it. This skeleton is a
+        Deferred Work removal item; actual skeleton removal is sequenced after the rule
+        section emits.
+
+  harnesskit.skill.root-cause-debugging:
+    kind: skill
+    status: draft
+    path: components/skills/root-cause-debugging/component.yml
+
+  harnesskit.skill.domain-modeling:
+    kind: skill
+    status: draft
+    path: components/skills/domain-modeling/component.yml
+
+  harnesskit.skill.testing-strategy:
+    kind: skill
+    status: draft
+    path: components/skills/testing-strategy/component.yml
+
+  harnesskit.skill.tech-debt:
+    kind: skill
+    status: draft
+    path: components/skills/tech-debt/component.yml
+
+  harnesskit.skill.deploy-checklist:
+    kind: skill
+    status: draft
+    path: components/skills/deploy-checklist/component.yml
+
+  harnesskit.skill.incident-review:
+    kind: skill
+    status: draft
+    path: components/skills/incident-review/component.yml
+
+  harnesskit.skill.frontend-design:
+    kind: skill
+    status: draft
+    path: components/skills/frontend-design/component.yml
+
+  harnesskit.skill.accessibility-review:
+    kind: skill
+    status: draft
+    path: components/skills/accessibility-review/component.yml
+
+  harnesskit.skill.ux-copy:
+    kind: skill
+    status: draft
+    path: components/skills/ux-copy/component.yml
 
   harnesskit.skill.systematic-debugging:
     kind: skill
     status: skeleton
     planned: true
+    replaced_by: harnesskit.skill.root-cause-debugging
     path: components/skills/systematic-debugging/component.yml
 
   harnesskit.skill.using-git-worktrees:
@@ -72,26 +134,38 @@ components:
     status: skeleton
     planned: true
     path: components/skills/subagent-driven-development/component.yml
+    replaced_by: harnesskit.workflow.review-gated-implementation
+    deprecation:
+      reason: >
+        The subagent-driven-development review pattern is preserved by the
+        definition-only review-gated-implementation workflow card. This skeleton
+        is a Deferred Work removal item; actual removal is sequenced after the
+        replacement card emits.
 
-  harnesskit.skill.human-doc-curator:
+  harnesskit.skill.doc-curator:
     kind: skill
     status: draft
-    path: components/skills/human-doc-curator/component.yml
+    path: components/skills/doc-curator/component.yml
 
-  harnesskit.skill.human-doc-bootstrap:
+  harnesskit.skill.doc-bootstrap:
     kind: skill
     status: draft
-    path: components/skills/human-doc-bootstrap/component.yml
+    path: components/skills/doc-bootstrap/component.yml
 
-  harnesskit.skill.human-doc-sync:
+  harnesskit.skill.doc-sync:
     kind: skill
     status: draft
-    path: components/skills/human-doc-sync/component.yml
+    path: components/skills/doc-sync/component.yml
 
-  harnesskit.skill.human-doc-audit:
+  harnesskit.skill.doc-audit:
     kind: skill
     status: draft
-    path: components/skills/human-doc-audit/component.yml
+    path: components/skills/doc-audit/component.yml
+
+  harnesskit.skill.documentation:
+    kind: skill
+    status: draft
+    path: components/skills/documentation/component.yml
 
   harnesskit.skill.optimal-response:
     kind: skill
@@ -117,94 +191,119 @@ components:
   harnesskit.skill.github-workflow-policy:
     kind: skill
     status: draft
-    path: components/scm/skills/github-workflow-policy/component.yml
+    path: components/skills/github-workflow-policy/component.yml
 
   harnesskit.skill.github-issue:
     kind: skill
     status: draft
-    path: components/scm/skills/github-issue/component.yml
+    path: components/skills/github-issue/component.yml
 
   harnesskit.skill.github-start:
     kind: skill
     status: draft
-    path: components/scm/skills/github-start/component.yml
+    path: components/skills/github-start/component.yml
 
   harnesskit.skill.github-pr:
     kind: skill
     status: draft
-    path: components/scm/skills/github-pr/component.yml
+    path: components/skills/github-pr/component.yml
 
   harnesskit.skill.github-pr-followup:
     kind: skill
     status: draft
-    path: components/scm/skills/github-pr-followup/component.yml
+    path: components/skills/github-pr-followup/component.yml
 
   harnesskit.skill.capture-collaboration-idea:
     kind: skill
     status: draft
-    path: components/scm/skills/capture-collaboration-idea/component.yml
+    path: components/skills/capture-collaboration-idea/component.yml
 
   # ── Work skills ──────────────────────────────────
   harnesskit.skill.atlassian-work:
     kind: skill
     status: draft
-    path: components/work/skills/atlassian-work/component.yml
+    path: components/skills/atlassian-work/component.yml
 
   harnesskit.skill.acli-gateway:
     kind: skill
     status: draft
-    path: components/work/skills/acli-gateway/component.yml
+    path: components/skills/acli-gateway/component.yml
 
   harnesskit.skill.acli-read:
     kind: skill
     status: draft
-    path: components/work/skills/acli-read/component.yml
+    path: components/skills/acli-read/component.yml
 
   harnesskit.skill.acli-write:
     kind: skill
+    status: deprecated
+    path: components/skills/acli-write/component.yml
+
+  harnesskit.skill.jira-acli-write:
+    kind: skill
+    status: deprecated
+    path: components/skills/jira-acli-write/component.yml
+
+  harnesskit.skill.jira-write:
+    kind: skill
     status: draft
-    path: components/work/skills/acli-write/component.yml
+    path: components/skills/jira-write/component.yml
+
+  harnesskit.skill.confluence-rest-write:
+    kind: skill
+    status: deprecated
+    path: components/skills/confluence-rest-write/component.yml
+
+  harnesskit.skill.confluence-write:
+    kind: skill
+    status: draft
+    path: components/skills/confluence-write/component.yml
 
   harnesskit.skill.jira-ticket-management:
     kind: skill
     status: draft
-    path: components/work/skills/jira-ticket-management/component.yml
+    path: components/skills/jira-ticket-management/component.yml
 
   harnesskit.skill.confluence-page-authoring:
     kind: skill
     status: draft
-    path: components/work/skills/confluence-page-authoring/component.yml
+    path: components/skills/confluence-page-authoring/component.yml
 
   harnesskit.skill.atlassian-account-diagnostics:
     kind: skill
     status: draft
-    path: components/work/skills/atlassian-account-diagnostics/component.yml
+    path: components/skills/atlassian-account-diagnostics/component.yml
+
+  harnesskit.skill.raw-memory-sync:
+    kind: skill
+    status: draft
+    path: components/skills/raw-memory-sync/component.yml
 
   # ── Harness maintenance skills ────────────────────
   harnesskit.skill.component-authoring:
     kind: skill
     status: draft
-    path: components/harness/skills/component-authoring/component.yml
+    path: components/skills/component-authoring/component.yml
 
   harnesskit.skill.harness-requirements:
     kind: skill
     status: draft
-    path: components/harness/skills/harness-requirements/component.yml
+    path: components/skills/harness-requirements/component.yml
 
   harnesskit.skill.harness-blueprint:
     kind: skill
     status: draft
-    path: components/harness/skills/harness-blueprint/component.yml
+    path: components/skills/harness-blueprint/component.yml
 
   harnesskit.skill.adapter-authoring:
     kind: skill
     status: draft
-    path: components/harness/skills/adapter-authoring/component.yml
+    path: components/skills/adapter-authoring/component.yml
 
   harnesskit.skill.skill-evaluation:
     kind: skill
     status: draft
-    path: components/harness/skills/skill-evaluation/component.yml
+    path: components/skills/skill-evaluation/component.yml
 
   # ── Agents ────────────────────────────────────────
   harnesskit.agent.requirements-analyst:
@@ -254,6 +353,11 @@ components:
     status: draft
     path: components/agents/codebase-architecture-manager/agent.yml
 
+  harnesskit.agent.code-simplifier:
+    kind: agent
+    status: draft
+    path: components/agents/code-simplifier/agent.yml
+
   harnesskit.agent.backend-codebase-reviewer:
     kind: agent
     status: deprecated
@@ -290,10 +394,15 @@ components:
     status: draft
     path: components/agents/github-manager/agent.yml
 
-  harnesskit.agent.human-doc-curator:
+  harnesskit.agent.designer:
     kind: agent
     status: draft
-    path: components/agents/human-doc-curator/agent.yml
+    path: components/agents/designer/agent.yml
+
+  harnesskit.agent.doc-curator:
+    kind: agent
+    status: draft
+    path: components/agents/doc-curator/agent.yml
 
   harnesskit.agent.worktree-lifecycle-manager:
     kind: agent
@@ -303,50 +412,45 @@ components:
   harnesskit.agent.atlassian-work-worker:
     kind: agent
     status: draft
-    path: components/work/agents/atlassian-work-worker/agent.yml
+    path: components/agents/atlassian-work-worker/agent.yml
+
+  harnesskit.agent.raw-memory-sync:
+    kind: agent
+    status: draft
+    path: components/agents/raw-memory-sync/agent.yml
 
   # ── Harness maintenance agents ────────────────────
   harnesskit.agent.component-author:
     kind: agent
     status: draft
-    path: components/harness/agents/component-author/agent.yml
+    path: components/agents/component-author/agent.yml
 
   harnesskit.agent.reference-curator:
     kind: agent
     status: draft
-    path: components/harness/agents/reference-curator/agent.yml
+    path: components/agents/reference-curator/agent.yml
 
   harnesskit.agent.harness-requirements-analyst:
     kind: agent
     status: draft
-    path: components/harness/agents/harness-requirements-analyst/agent.yml
+    path: components/agents/harness-requirements-analyst/agent.yml
 
   harnesskit.agent.harness-blueprint-author:
     kind: agent
     status: draft
-    path: components/harness/agents/harness-blueprint-author/agent.yml
+    path: components/agents/harness-blueprint-author/agent.yml
 
   harnesskit.agent.adapter-author:
     kind: agent
     status: draft
-    path: components/harness/agents/adapter-author/agent.yml
+    path: components/agents/adapter-author/agent.yml
 
   harnesskit.agent.harness-evaluator:
     kind: agent
     status: draft
-    path: components/harness/agents/harness-evaluator/agent.yml
+    path: components/agents/harness-evaluator/agent.yml
 
   # ── Hooks ────────────────────────────────────────
-  harnesskit.hook.human-doc-turn-scan:
-    kind: hook
-    status: draft
-    path: components/hooks/human-doc-turn-scan/component.yml
-
-  harnesskit.hook.optimal-response-session-start:
-    kind: hook
-    status: draft
-    path: components/hooks/optimal-response-session-start/component.yml
-
   harnesskit.hook.optimal-response-prompt-submit:
     kind: hook
     status: draft
@@ -366,4 +470,15 @@ components:
   harnesskit.workflow.harness-creation:
     kind: workflow
     status: draft
-    path: components/harness/workflows/harness-creation/workflow.yml
+    path: components/workflows/harness-creation/workflow.yml
+
+  harnesskit.workflow.review-gated-implementation:
+    kind: workflow
+    status: draft
+    path: components/workflows/review-gated-implementation/workflow.yml
+
+  # ── Composites ───────────────────────────────────────
+  harnesskit.composite.atlassian-acli:
+    kind: composite
+    status: draft
+    path: components/composites/atlassian-acli/composite.yml

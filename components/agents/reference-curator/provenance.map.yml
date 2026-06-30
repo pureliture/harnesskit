@@ -1,0 +1,55 @@
+component_id: harnesskit.agent.reference-curator
+provenance:
+  mode: referenced
+  source_mode: local
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: reference-provenance-gates-requirements
+      role: approved_requirements_sot
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - reference_time_snapshot_model
+        - observed_identity_required_fields
+        - license_quality_runtime_claim_boundary
+    - source_id: reference-provenance-gates-blueprint
+      role: slice_1_authoring_contract
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - reference_curator_packet_contract
+        - machine_mappable_source_packet_fields
+        - registry_snapshot_authoring_handoff_boundary
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent updated from approved local
+    requirements and blueprint Slice 1 for reference-time snapshot handoff
+    fields. No reference code or prose was copied, no source registry or
+    snapshot was authored, and no license, source quality, adapter, or runtime
+    support claim is made.
+  copied_sections: []
+  rewritten_sections:
+    - reference packet workflow
+    - source risk and license uncertainty separation
+    - GitHub/open-source source scope routing
+    - explicit local migration boundary
+    - GitHub/open-source packet identity contract
+  new_sections:
+    - HarnessKit reference packet schema
+    - source scope modes
+    - reference-time snapshot model
+    - observed identity field requirements
+  license_notes: "No bundled third-party code copied; GitHub/open-source references remain URL-and-fact packet inputs with license uncertainty recorded separately."
+  human_review_required: true
+  review_triggers:
+    - requirements_changed
+    - blueprint_slice_changed
+    - source_registry_schema_changed
+    - snapshot_contract_changed
+    - reference_packet_contract_changed
+    - source_scope_contract_changed
+    - license_policy_changed
+    - runtime_support_claim_policy_changed

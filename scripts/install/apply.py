@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import re
 import shutil
 import sys
+import tomllib
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -27,17 +29,30 @@ LEGACY_ROUTINE_HARNESS_MANAGED_BLOCK = (
 )
 CLAUDE_SETTINGS_JSON_MERGE_KEY = "claude-settings-hooks"
 CODEX_HOOKS_JSON_MERGE_KEY = "codex-hooks"
-HARNESSKIT_CLAUDE_HOOK_COMMAND_TOKENS = (
+CODEX_AGENTS_TOML_MERGE_KEY = "codex-agents"
+# Matches a TOML `[agents."<name>"]` header line (allowing surrounding whitespace
+# and an optional trailing comment), capturing the quoted agent name. Only the
+# agents table family is ownable by the harness; every other table is foreign.
+_TOML_AGENTS_TABLE_HEADER = re.compile(
+    r'^[ \t]*\[agents\.("(?:[^"\\]|\\.)*"|\'[^\']*\')\][ \t]*(?:#.*)?$'
+)
+# Matches any top-level TOML table or array-of-tables header line, used to bound
+# an agents table region (it ends at the next top-level header or EOF).
+_TOML_TABLE_HEADER = re.compile(r"^[ \t]*\[\[?[^\]]")
+# Prune only previously generated HarnessKit scanner hook groups during JSON merge.
+LEGACY_HUMAN_DOC_TURN_SCAN_COMMAND_TOKENS = (
     "human_doc_turn_scan.py",
     ".harnesskit/scripts/human_doc_turn_scan.py",
+)
+HARNESSKIT_CLAUDE_HOOK_COMMAND_TOKENS = (
+    *LEGACY_HUMAN_DOC_TURN_SCAN_COMMAND_TOKENS,
     ".claude/skills/optimal-response/hooks/stop-prompt-submit.cjs",
     ".claude/skills/optimal-response/hooks/stop-session-start.cjs",
     "/.claude/skills/optimal-response/hooks/stop-prompt-submit.cjs",
     "/.claude/skills/optimal-response/hooks/stop-session-start.cjs",
 )
 HARNESSKIT_CODEX_HOOK_COMMAND_TOKENS = (
-    "human_doc_turn_scan.py",
-    ".harnesskit/scripts/human_doc_turn_scan.py",
+    *LEGACY_HUMAN_DOC_TURN_SCAN_COMMAND_TOKENS,
     ".codex/skills/optimal-response/hooks/stop-prompt-submit.cjs",
     "/.codex/skills/optimal-response/hooks/stop-prompt-submit.cjs",
     "${CODEX_HOME:-$HOME/.codex}/skills/optimal-response/hooks/stop-prompt-submit.cjs",
@@ -72,6 +87,7 @@ def apply_plan(
     copy_pairs: list[tuple[Path, Path]] = []
     merge_pairs: list[tuple[Path, Path, dict]] = []
     json_merge_pairs: list[tuple[Path, Path, dict]] = []
+    toml_merge_pairs: list[tuple[Path, Path, dict]] = []
     for artifact in plan["artifacts"]:
         src = source_path(artifact)
         dest = destination_path(target_root, artifact)
@@ -80,6 +96,9 @@ def apply_plan(
             continue
         if artifact.get("merge_strategy") == "json-deep-merge":
             json_merge_pairs.append((src, dest, artifact))
+            continue
+        if artifact.get("merge_strategy") == "toml-agents-merge":
+            toml_merge_pairs.append((src, dest, artifact))
             continue
         if dest.exists() and not overwrite and not _same_file_content(src, dest):
             # Check for exact Routine-Harness generated marker for safe auto-update
@@ -107,6 +126,12 @@ def apply_plan(
         body = src.read_text(encoding="utf-8")
         current = dest.read_text(encoding="utf-8") if dest.exists() else ""
         dest.write_text(_merge_json_deep(current, body, artifact), encoding="utf-8")
+        count += 1
+    for src, dest, artifact in toml_merge_pairs:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        body = src.read_text(encoding="utf-8")
+        current = dest.read_text(encoding="utf-8") if dest.exists() else ""
+        dest.write_text(_merge_toml_agents(current, body, artifact), encoding="utf-8")
         count += 1
     print(f"applied {count} artifacts to {target_root}")
     return 0
@@ -183,6 +208,110 @@ def _merge_json_deep(current: str, body: str, artifact: dict) -> str:
         raise ValueError("json-deep-merge destination must be a JSON object")
     merged = _deep_merge_settings(existing, source, json_merge_key=json_merge_key)
     return json.dumps(merged, indent=2, ensure_ascii=False) + "\n"
+
+
+def _merge_toml_agents(current: str, body: str, artifact: dict) -> str:
+    """Preserving TOML merge for codex `.codex/config.toml`.
+
+    The harness owns ONLY the `[agents."<name>"]` registration tables present in
+    the source ``body`` (build.py emits the source as exactly the owned tables).
+    Every other byte of ``current`` is preserved verbatim: this is a raw-text
+    region splice, NOT a parse-and-reserialize (``tomllib`` has no writer and we
+    must not lose comments, ordering, or foreign tables).
+
+    Algorithm:
+      1. Derive the owned table-name set from the source ``body``.
+      2. Remove every owned `[agents."<name>"]` region from ``current``
+         (a region runs from its header line to the next top-level table header
+         or EOF). Foreign `[agents."<x>"]` tables (names not in the owned set)
+         and all non-agents content are left untouched.
+      3. Append the source owned tables verbatim.
+      4. ``tomllib.loads`` both source and merged text as a validity gate.
+
+    Idempotent: re-applying yields a stable fixed point.
+    """
+    toml_merge_key = artifact.get("toml_merge_key")
+    if toml_merge_key != CODEX_AGENTS_TOML_MERGE_KEY:
+        raise ValueError("unsupported toml merge key")
+
+    # Validity gate: the source must be parseable TOML.
+    try:
+        tomllib.loads(body)
+    except tomllib.TOMLDecodeError as exc:
+        raise ValueError(f"toml-agents-merge source is not valid TOML: {exc}") from exc
+
+    owned_names = _toml_owned_agent_names(body)
+    source_block = body.strip("\n")
+
+    if not current.strip():
+        return source_block + "\n" if source_block else ""
+
+    # Validity gate: the destination must be parseable TOML before we splice it.
+    try:
+        tomllib.loads(current)
+    except tomllib.TOMLDecodeError as exc:
+        raise ValueError(
+            f"toml-agents-merge destination is not valid TOML: {exc}"
+        ) from exc
+
+    preserved = _toml_strip_owned_agent_regions(current, owned_names)
+    preserved_body = preserved.rstrip("\n")
+
+    if not source_block:
+        merged = (preserved_body + "\n") if preserved_body else ""
+    elif not preserved_body:
+        merged = source_block + "\n"
+    else:
+        merged = f"{preserved_body}\n{source_block}\n"
+
+    # Validity gate: the merged result must remain parseable TOML.
+    try:
+        tomllib.loads(merged)
+    except tomllib.TOMLDecodeError as exc:
+        raise ValueError(
+            f"toml-agents-merge result is not valid TOML: {exc}"
+        ) from exc
+    return merged
+
+
+def _toml_owned_agent_names(body: str) -> set[str]:
+    owned: set[str] = set()
+    for line in body.splitlines():
+        match = _TOML_AGENTS_TABLE_HEADER.match(line)
+        if match is not None:
+            owned.add(match.group(1))
+    return owned
+
+
+def _toml_strip_owned_agent_regions(current: str, owned_names: set[str]) -> str:
+    lines = current.splitlines(keepends=True)
+    kept: list[str] = []
+    index = 0
+    total = len(lines)
+    while index < total:
+        line = lines[index]
+        match = _TOML_AGENTS_TABLE_HEADER.match(line.rstrip("\n"))
+        if match is not None and match.group(1) in owned_names:
+            # Drop this owned region: from the header up to (not including) the
+            # next top-level table header or EOF.
+            index += 1
+            while index < total and not _TOML_TABLE_HEADER.match(
+                lines[index].rstrip("\n")
+            ):
+                index += 1
+            continue
+        kept.append(line)
+        index += 1
+    return "".join(kept)
+
+
+# Public aliases for the install-core merge primitives. verify.py consumes these
+# stable names so it no longer reaches into apply.py's private surface. The
+# private implementations (and their dependency cluster) intentionally stay in
+# place; these are thin name aliases with identical behavior.
+merge_managed_block = _merge_managed_block
+merge_json_deep = _merge_json_deep
+merge_toml_agents = _merge_toml_agents
 
 
 def _deep_merge_settings(existing: dict, source: dict, *, json_merge_key: str) -> dict:
