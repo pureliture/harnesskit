@@ -16,6 +16,11 @@
       "description": "Lifecycle status of the workflow",
       "enum": ["draft", "review", "stable", "deprecated", "archived"]
     },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this workflow belongs to. Preserves the grouping that flat storage would otherwise erase. Buckets map scm->scm, work->work, harness->harness; already-flat workflows default to core.",
+      "enum": ["core", "scm", "work", "harness"]
+    },
     "runtime_implemented": {
       "type": "boolean",
       "description": "Whether the runtime implementation of this workflow exists",

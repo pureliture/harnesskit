@@ -1,0 +1,170 @@
+component_id: harnesskit.agent.harness-evaluator
+provenance:
+  mode: referenced
+  source_mode: local
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: reference-provenance-gates-requirements
+      role: approved_requirements_sot
+      copied_content: false
+      adapted_content: true
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - source_provenance_static_traceability_gate
+        - registry_side_component_side_failure_split
+        - reference_time_snapshot_truth_model
+        - latest_upstream_freshness_comparison_boundary
+    - source_id: reference-provenance-gates-blueprint
+      role: approved_blueprint_slice_4
+      copied_content: false
+      adapted_content: true
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - evaluation_surface_reporting_contract
+        - static_failures_not_runtime_deferrals
+        - no_mutation_no_live_probe_boundary
+    - source_id: harness-evaluation-requirements
+      path: sources/requirements.md
+      role: approved_requirements_sot
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - top_level_orchestrator_requirement
+        - static_runtime_proof_separation
+        - output_allowlist
+        - profile_contamination_failure_contract
+        - provider_lightest_model_gate
+    - source_id: harness-evaluation-blueprint
+      path: sources/blueprint.md
+      role: slice_1_authoring_contract
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - component_id_kind_title_summary
+        - owned_output_family
+        - non_responsibilities
+        - deferred_adapter_and_runtime_work
+    - source_id: harness-evaluation-local-reference
+      path: sources/harness-evaluation-reference.yml
+      role: local_pattern_reference
+      copied_content: false
+      adapted_content: false
+      license: Proprietary / repository local references
+      runtime_support_claimed: false
+      used_for:
+        - skill_evaluation_gate_reuse
+        - static_validation_coordination_patterns
+        - runtime_evidence_requirements
+    - source_id: skill-evaluation
+      path: components/skills/skill-evaluation/SKILL.md
+      role: reused_gate_procedure
+      copied_content: false
+      adapted_content: false
+      license: Proprietary / repository local component
+      runtime_support_claimed: false
+      used_for:
+        - verdict_vocabulary
+        - gate_report_structure
+        - runtime_truth_boundary
+    - source_id: harness-evaluation-oss-reference
+      path: sources/harness-evaluation-oss-reference.yml
+      role: structure_only_oss_reference_packet
+      copied_content: false
+      adapted_content: false
+      license: Mixed OSS references; no copied code or text approved
+      runtime_support_claimed: false
+      used_for:
+        - task_solver_scorer_sandbox_log_separation
+        - isolated_runtime_fixture_pattern
+        - assertions_and_report_pattern
+        - trace_score_separation
+        - system_under_test_adapter_boundary
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/writing-great-skills
+      role: pattern_reference
+      copied_content: false
+      adapted_content: true
+      license: Unknown license_hint from source registry
+      runtime_support_claimed: false
+      runtime_dependency_on_sources: false
+      used_for:
+        - skill_authoring_quality_gate_orchestration
+        - trigger_scope_progressive_disclosure_checks
+        - examples_templates_quality_checks
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/teach
+      role: pattern_reference
+      copied_content: false
+      adapted_content: true
+      license: Unknown license_hint from source registry
+      runtime_support_claimed: false
+      runtime_dependency_on_sources: false
+      used_for:
+        - bounded_instruction_and_feedback_quality_checks
+        - reference_material_quality_checks
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/in-progress/review
+      role: pattern_reference
+      copied_content: false
+      adapted_content: true
+      license: Unknown license_hint from source registry
+      runtime_support_claimed: false
+      runtime_dependency_on_sources: false
+      used_for:
+        - review_axis_separation_and_evidence_reporting_checks
+  attribution_note: >
+    Original HarnessKit evaluator agent authored from approved local requirements
+    and blueprint Slice 1. Local and OSS references influenced only structural
+    evaluation patterns. No reference code or prose was copied, no adapter output
+    was generated, and no runtime support is claimed. The reference provenance
+    gates update adapts approved local requirements and blueprint Slice 4 into
+    static source/provenance reporting guidance. The Matt Pocock skills
+    assimilation Slice D update adds orchestration/reporting visibility for
+    skill authoring quality gates without copying source text or expanding
+    runtime responsibilities.
+  copied_sections: []
+  adapted_sections: []
+  rewritten_sections:
+    - top-level evaluation orchestration responsibilities
+    - static proof and runtime proof separation
+    - profile contamination and output allowlist gates
+    - model and budget gate requirements
+  new_sections:
+    - evaluator-specific source mutation ban
+    - runtime proof evidence-only handling
+    - harness-maintenance optimal-response contamination failure rule
+    - rh draft residue finding rule for this evaluator family
+    - reference-time snapshot traceability reporting
+    - registry-side and component-side source/provenance failure split
+    - explicit skill authoring quality gate reporting
+  license_notes: >
+    Repository-local sources are upstream SoT inputs, including the approved
+    reference provenance gates requirements and blueprint. OSS packet entries
+    are pattern-only references with mixed licenses; copied content is not
+    allowed by this component record. Matt Pocock skills references are
+    pattern-only from the registered snapshot; copied_content is false and
+    runtime_dependency_on_sources is false.
+  human_review_required: true
+  review_triggers:
+    - requirements_changed
+    - blueprint_slice_changed
+    - skill_evaluation_gate_changed
+    - source_registry_snapshot_contract_changed
+    - provenance_linkage_gate_changed
+    - static_traceability_failure_reporting_changed
+    - upstream_freshness_model_changed
+    - profile_closure_policy_changed
+    - model_budget_policy_changed
+    - runtime_probe_runner_policy_changed
+    - adapter_phase_started
+    - oss_reference_license_review_required
+    - skill_authoring_quality_gate_changed

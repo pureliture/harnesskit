@@ -7,7 +7,7 @@ sources:
     description: "Reference skill and agent definitions from obra/superpowers"
     license_hint: unknown
     tags: [superpowers, skills, workflow]
-    active_snapshot: null
+    active_snapshot: obra-superpowers/2026-06-27-main-896224c
 
   mattpocock-skills:
     kind: github_repository
@@ -16,7 +16,25 @@ sources:
     description: "Reference engineering skills"
     license_hint: unknown
     tags: [skills, engineering]
-    active_snapshot: null
+    active_snapshot: mattpocock-skills/2026-06-27-main-5d78bd0
+
+  knowledge-work-plugins:
+    kind: github_repository
+    url: https://github.com/anthropics/knowledge-work-plugins
+    ref: main
+    description: "Reference engineering and design skills from anthropics/knowledge-work-plugins (engineering + design packs): testing-strategy, tech-debt, deploy-checklist, debug, incident-response, documentation, accessibility-review, ux-copy"
+    license_hint: unknown
+    tags: [skills, engineering, design, knowledge-work]
+    active_snapshot: knowledge-work-plugins/2026-06-27-main-73b2b2d
+
+  claude-plugins-official:
+    kind: github_repository
+    url: https://github.com/anthropics/claude-plugins-official
+    ref: main
+    description: "Reference skills and agents from the claude-plugins-official marketplace: frontend-design skill (and superpowers cross-reference) and the code-simplifier agent plugin v1.0.0 (adapted into harnesskit.agent.code-simplifier)"
+    license_hint: unknown
+    tags: [skills, agents, frontend, design, code-simplifier]
+    active_snapshot: claude-plugins-official/2026-06-27-main-f42c6ed
 
   harness-evaluation-requirements:
     kind: repository_local
@@ -52,7 +70,7 @@ sources:
 
   skill-evaluation:
     kind: repository_local
-    path: components/harness/skills/skill-evaluation/SKILL.md
+    path: components/skills/skill-evaluation/SKILL.md
     description: "Reusable HarnessKit skill-evaluation gate procedure"
     license_hint: repository-local
     tags: [harnesskit, evaluation, skill]
@@ -72,4 +90,36 @@ sources:
     description: "Public projection source summary for component-driven adapter SoT design"
     license_hint: repository-local
     tags: [harnesskit, adapter, design]
+    active_snapshot: null
+
+  reference-provenance-gates-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-reference-provenance-gates/requirements.md
+    description: "Approved requirements SoT for reference-time source snapshot and provenance linkage gates"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, provenance, sources]
+    active_snapshot: null
+
+  reference-provenance-gates-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-reference-provenance-gates/blueprint.md
+    description: "Approved blueprint for reference-time source snapshot and provenance linkage gates"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, provenance, sources]
+    active_snapshot: null
+
+  mattpocock-skills-assimilation-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-mattpocock-skills-assimilation/requirements.md
+    description: "Approved requirements SoT for assimilating mattpocock/skills references into HarnessKit components"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, references, skills]
+    active_snapshot: null
+
+  mattpocock-skills-assimilation-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-mattpocock-skills-assimilation/blueprint.md
+    description: "Approved blueprint for assimilating mattpocock/skills references into HarnessKit component lanes"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, references, skills]
     active_snapshot: null

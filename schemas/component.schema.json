@@ -16,6 +16,11 @@
       "description": "Component kind",
       "enum": ["skill", "agent", "hook", "rule", "command", "workflow"]
     },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this component belongs to. Preserves the grouping that flat storage would otherwise erase. Buckets map scm->scm, work->work, harness->harness; already-flat components default to core.",
+      "enum": ["core", "scm", "work", "harness"]
+    },
     "status": {
       "type": "string",
       "description": "Lifecycle status of the component",
@@ -32,6 +37,11 @@
     "installable": {
       "type": "boolean",
       "description": "Whether this canonical component may be selected for adapter/install-plan materialization."
+    },
+    "standalone_installable": {
+      "type": "boolean",
+      "description": "Whether this component may be installed standalone via --component. When false, the component may only be installed through a composite (or a profile) that includes it. Absent means true.",
+      "default": true
     },
     "subtype": {
       "type": "string",
@@ -191,6 +201,39 @@
       "type": "array",
       "description": "Files within this repo that are owned by this component",
       "items": { "type": "string" }
+    },
+    "bundled_files": {
+      "type": "array",
+      "description": "Files copied verbatim into adapter outputs. Each entry must resolve to a named output family (dist/<target>/... or a project-runtime root such as .acli/).",
+      "items": {
+        "type": "object",
+        "required": ["source", "output_path"],
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Repo-relative source file copied into the output"
+          },
+          "output_path": {
+            "type": "string",
+            "description": "Repo-relative output file under an allowed output family"
+          },
+          "mode": {
+            "type": ["string", "integer"],
+            "description": "Optional octal file mode, for example \"0755\". Owner-only secret-like modes are rejected for tracked generated outputs."
+          },
+          "kind": {
+            "type": "string",
+            "description": "Optional output kind",
+            "enum": ["runtime-script", "config", "asset", "doc"]
+          },
+          "surface": {
+            "type": "string",
+            "description": "Optional surface classification; must be consistent with the resolved output family",
+            "enum": ["dist", "project-runtime", "project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+          }
+        }
+      }
     },
     "targets": {
       "type": "object",

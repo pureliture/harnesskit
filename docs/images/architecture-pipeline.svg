@@ -1,0 +1,114 @@
+<svg width="100%" viewBox="0 0 1200 460" xmlns="http://www.w3.org/2000/svg" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" role="img" aria-label="Routine Harness architecture pipeline: sources to components to profiles to install-plans to adapters to dist">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c1410"/>
+      <stop offset="1" stop-color="#0c0a09"/>
+    </linearGradient>
+    <radialGradient id="molten" cx="50%" cy="50%" r="60%">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#78716c"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="460" rx="20" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1198" height="458" rx="19" fill="none" stroke="#292524"/>
+  <ellipse cx="317" cy="234" rx="260" ry="170" fill="url(#molten)"/>
+
+  <!-- eyebrow -->
+  <text x="40" y="56" fill="#f59e0b" font-size="13" font-weight="700" letter-spacing="4">SOURCE-FIRST · SELF-CONTAINED · ADAPTER-DRIVEN</text>
+  <text x="40" y="92" fill="#fafaf9" font-size="30" font-weight="800" letter-spacing="-0.5">Canonical <tspan fill="#78716c">→</tspan> Adapter <tspan fill="#78716c">→</tspan> Dist</text>
+
+  <!-- connectors -->
+  <g stroke="#78716c" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="206" y1="248" x2="232" y2="248"/>
+    <line x1="401" y1="248" x2="427" y2="248"/>
+    <line x1="596" y1="248" x2="622" y2="248"/>
+    <line x1="791" y1="248" x2="817" y2="248"/>
+    <line x1="986" y1="248" x2="1012" y2="248"/>
+  </g>
+
+  <!-- ============ CARD TEMPLATE per stage ============ -->
+  <!-- 1 sources -->
+  <g>
+    <rect x="40" y="160" width="165" height="176" rx="14" fill="#171210" stroke="#44403c"/>
+    <circle cx="74" cy="198" r="20" fill="#78716c"/>
+    <text x="74" y="204" text-anchor="middle" fill="#0c0a09" font-size="15" font-weight="800">01</text>
+    <text x="58" y="262" fill="#a8a29e" font-size="16" font-weight="800" font-family="ui-monospace,Menlo,monospace">sources/</text>
+    <text x="58" y="290" fill="#d6d3d1" font-size="12.5">외부 스냅샷</text>
+    <text x="58" y="310" fill="#78716c" font-size="11.5">추적하되 런타임 비의존</text>
+  </g>
+
+  <!-- 2 components (molten core) -->
+  <g filter="url(#glow)">
+    <rect x="235" y="160" width="165" height="176" rx="14" fill="#1a120b" stroke="url(#amber)" stroke-width="2"/>
+  </g>
+  <circle cx="269" cy="198" r="20" fill="url(#amber)"/>
+  <text x="269" y="204" text-anchor="middle" fill="#0c0a09" font-size="15" font-weight="800">02</text>
+  <text x="253" y="262" fill="#fbbf24" font-size="16" font-weight="800" font-family="ui-monospace,Menlo,monospace">components/</text>
+  <text x="253" y="290" fill="#fde68a" font-size="12.5">owned canonical 정의</text>
+  <text x="253" y="310" fill="#d6a86b" font-size="11.5">타겟 독립 · provenance</text>
+
+  <!-- 3 profiles -->
+  <g>
+    <rect x="430" y="160" width="165" height="176" rx="14" fill="#171210" stroke="#7c2d12"/>
+    <circle cx="464" cy="198" r="20" fill="#fb923c"/>
+    <text x="464" y="204" text-anchor="middle" fill="#0c0a09" font-size="15" font-weight="800">03</text>
+    <text x="448" y="262" fill="#fb923c" font-size="16" font-weight="800" font-family="ui-monospace,Menlo,monospace">profiles/</text>
+    <text x="448" y="290" fill="#fed7aa" font-size="12.5">용도별 컴포넌트</text>
+    <text x="448" y="310" fill="#9a7b5f" font-size="11.5">선택 묶음</text>
+  </g>
+
+  <!-- 4 install-plans (review/safety) -->
+  <g>
+    <rect x="625" y="160" width="165" height="176" rx="14" fill="#0f1512" stroke="#10b981"/>
+    <circle cx="659" cy="198" r="20" fill="#10b981"/>
+    <text x="659" y="204" text-anchor="middle" fill="#04130d" font-size="15" font-weight="800">04</text>
+    <text x="643" y="262" fill="#34d399" font-size="14.5" font-weight="800" font-family="ui-monospace,Menlo,monospace">install-plans/</text>
+    <text x="643" y="290" fill="#a7f3d0" font-size="12.5">리뷰 계약</text>
+    <text x="643" y="310" fill="#6b9a85" font-size="11.5">dry-run → apply</text>
+  </g>
+
+  <!-- 5 adapters -->
+  <g>
+    <rect x="820" y="160" width="165" height="176" rx="14" fill="#0c141a" stroke="#0ea5e9"/>
+    <circle cx="854" cy="198" r="20" fill="#38bdf8"/>
+    <text x="854" y="204" text-anchor="middle" fill="#04121a" font-size="15" font-weight="800">05</text>
+    <text x="838" y="262" fill="#38bdf8" font-size="16" font-weight="800" font-family="ui-monospace,Menlo,monospace">adapters/</text>
+    <text x="838" y="290" fill="#bae6fd" font-size="12.5">claude · codex</text>
+    <text x="838" y="310" fill="#5f8aa0" font-size="11.5">· gemini 변환</text>
+  </g>
+
+  <!-- 6 dist -->
+  <g>
+    <rect x="1015" y="160" width="165" height="176" rx="14" fill="#0c1614" stroke="#2dd4bf" stroke-dasharray="6 5"/>
+    <circle cx="1049" cy="198" r="20" fill="#2dd4bf"/>
+    <text x="1049" y="204" text-anchor="middle" fill="#04130f" font-size="15" font-weight="800">06</text>
+    <text x="1033" y="262" fill="#5eead4" font-size="16" font-weight="800" font-family="ui-monospace,Menlo,monospace">dist/</text>
+    <text x="1033" y="290" fill="#99f6e4" font-size="12.5">타겟별 산출물</text>
+    <text x="1033" y="310" fill="#5b8f87" font-size="11.5">gitignored · 재생성</text>
+  </g>
+
+  <!-- phase ribbon -->
+  <line x1="40" y1="378" x2="1180" y2="378" stroke="#292524" stroke-width="1"/>
+  <g font-size="11" font-weight="700" letter-spacing="3" text-anchor="middle">
+    <text x="317" y="408" fill="#f59e0b">CANONICAL — 사람이 소유</text>
+    <text x="707" y="408" fill="#10b981">REVIEW CONTRACT</text>
+    <text x="1000" y="408" fill="#38bdf8">GENERATED</text>
+  </g>
+  <g stroke-width="3" stroke-linecap="round">
+    <line x1="40" y1="378" x2="595" y2="378" stroke="#f59e0b" opacity="0.6"/>
+    <line x1="625" y1="378" x2="790" y2="378" stroke="#10b981" opacity="0.6"/>
+    <line x1="820" y1="378" x2="1180" y2="378" stroke="#38bdf8" opacity="0.6"/>
+  </g>
+</svg>

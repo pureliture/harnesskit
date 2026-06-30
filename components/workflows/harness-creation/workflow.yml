@@ -1,0 +1,47 @@
+workflow_id: harnesskit.workflow.harness-creation
+status: draft
+domain: harness
+runtime_implemented: false
+installable: false
+source_classification: internal-source-only
+adapter_output_policy: fail-if-selected
+modeling_guidance: Convert executable workflow entrypoints to a skill with subtype workflow_trigger before adapter output.
+description: Requirements SoT to blueprint to canonical authoring to adapter authoring to evaluation for HarnessKit capabilities.
+entrypoints:
+  natural_language:
+    examples:
+      - "완성된 HarnessKit capability를 요구사항부터 blueprint, authoring, evaluation까지 진행해줘"
+      - "이 참고자료를 기반으로 새 harness skill/agent/workflow를 만들어줘"
+steps:
+  - id: reference-mode
+    agent: harnesskit.agent.reference-curator
+    output: reference-packet
+    description: Optional source research or local reference packet when the user requests references.
+  - id: requirements
+    skill: harnesskit.skill.harness-requirements
+    agent: harnesskit.agent.harness-requirements-analyst
+    output: requirements.md
+    description: Convert user intent and optional reference packet into an approved requirements source of truth.
+  - id: blueprint
+    skill: harnesskit.skill.harness-blueprint
+    agent: harnesskit.agent.harness-blueprint-author
+    output: blueprint.md
+    description: Decide component graph, kind split, profile plan, adapter target intent, and evaluation gates.
+  - id: canonical-authoring
+    skill: harnesskit.skill.component-authoring
+    agent: harnesskit.agent.component-author
+    output: canonical component files
+    description: Author canonical component records from approved blueprint slices.
+  - id: adapter-authoring
+    skill: harnesskit.skill.adapter-authoring
+    agent: harnesskit.agent.adapter-author
+    output: static adapter output contracts
+    description: Author static adapter metadata, templates, and tests without runtime success claims.
+  - id: evaluation
+    skill: harnesskit.skill.skill-evaluation
+    output: evaluation.md
+    description: Evaluate requirements coverage, blueprint conformance, provenance, static adapter proof, and runtime truth gates.
+routine_harness:
+  category: harness-maintenance
+  runner_deferred: true
+  hook_interception_in_scope: false

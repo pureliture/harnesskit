@@ -20,13 +20,37 @@ PROFILE_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
 INSTALLABLE_KINDS = {"skill", "agent", "hook", "rule"}
 NON_INSTALLABLE_KINDS = {"workflow", "command"}
+
+# Named adapter output families. A bundled_files output must resolve to exactly
+# one family; anything else is rejected, replacing per-path output exceptions.
+# `project-runtime` roots are tracked live-runtime paths the build is allowed to
+# own. They are declared in adapters/project/adapter.yml (data, not a code
+# literal); extend that allowlist only with explicit approval.
+PROJECT_TARGET_ADAPTER = ADAPTERS_DIR / "project" / "adapter.yml"
+ALLOWED_BUNDLE_KINDS = ("runtime-script", "config", "asset", "doc")
+ALLOWED_BUNDLE_SURFACES = (
+    "dist",
+    "project-runtime",
+    "project",
+    "claude",
+    "codex",
+    "gemini",
+    "antigravity",
+    "antigravity-cli",
+)
+# Tracked generated outputs must stay group/other readable; owner-only modes
+# (no group/other read bits) look like leaked secrets and are rejected.
+SECRET_LIKE_MODE_MASK = 0o044
+
 CODEX_USER_HOOK_OUTPUT = "dist/codex/.codex/hooks.user.json"
+STALE_PROJECT_CONTEXT_OUTPUTS = (
+    "dist/project/GEMINI.md",
+)
 CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT = "harnesskit.hook.optimal-response-prompt-submit"
 CODEX_OPTIMAL_RESPONSE_COMMAND = (
     'OPTIMAL_RESPONSE_FLAG="${CODEX_HOME:-$HOME/.codex}/.optimal-response-disabled" '
     'OPTIMAL_RESPONSE_MODE="${CODEX_HOME:-$HOME/.codex}/.optimal-response-mode" '
     'OPTIMAL_RESPONSE_STATE_DIR="${CODEX_HOME:-$HOME/.codex}/optimal-response-out/state" '
-    'OPTIMAL_RESPONSE_SQLITE_PATH="${CODEX_HOME:-$HOME/.codex}/optimal-response-out/mode-events.sqlite" '
     'OPTIMAL_RESPONSE_SURFACE=codex '
     'node "${CODEX_HOME:-$HOME/.codex}/skills/optimal-response/hooks/stop-prompt-submit.cjs"'
 )
@@ -262,10 +286,83 @@ def _safe_bundle_source(raw: Any, *, component_id: str, rel_manifest: str) -> Pa
     return source_path
 
 
+def _project_runtime_roots() -> tuple[str, ...]:
+    """Allowed project-runtime roots, declared in adapters/project/adapter.yml.
+
+    These are the tracked live-runtime directories (outside dist/) the build may
+    own. They live in config so build.py holds no path literal for them.
+    """
+    data = _load_yaml(PROJECT_TARGET_ADAPTER)
+    roots = (data.get("project_runtime") or {}).get("allowed_roots") or []
+    if not isinstance(roots, list) or not all(isinstance(r, str) and r for r in roots):
+        raise ValueError(
+            f"{PROJECT_TARGET_ADAPTER}: project_runtime.allowed_roots must be a list of non-empty strings"
+        )
+    return tuple(roots)
+
+
+def _resolve_bundle_family(
+    path: PurePosixPath, *, raw: Any, rel_manifest: str
+) -> tuple[str, str | None]:
+    """Classify a bundled output path into a named output family.
+
+    Returns ``(family, dist_target)`` where ``dist_target`` is the dist target
+    segment for ``dist`` outputs and ``None`` for ``project-runtime`` outputs.
+    Raises if the path belongs to no allowed family.
+    """
+    parts = path.parts
+    if parts[:1] == ("dist",) and len(parts) >= 3:
+        return "dist", parts[1]
+    project_runtime_roots = _project_runtime_roots()
+    if parts[:1] and parts[0] in project_runtime_roots:
+        return "project-runtime", None
+    raise ValueError(
+        f"{rel_manifest}: bundled_files.output_path is outside an allowed output family "
+        f"(dist/<target>/... or project-runtime roots {project_runtime_roots}): {raw}"
+    )
+
+
+def _validate_bundle_surface(
+    surface: Any, *, family: str, dist_target: str | None, rel_manifest: str
+) -> None:
+    if surface is None:
+        return
+    if not isinstance(surface, str) or surface not in ALLOWED_BUNDLE_SURFACES:
+        raise ValueError(
+            f"{rel_manifest}: bundled_files.surface must be one of {ALLOWED_BUNDLE_SURFACES}: {surface!r}"
+        )
+    if family == "project-runtime" and surface != "project-runtime":
+        raise ValueError(
+            f"{rel_manifest}: bundled_files.surface must be 'project-runtime' for project-runtime outputs: {surface!r}"
+        )
+    if family == "dist" and surface not in ("dist", dist_target):
+        raise ValueError(
+            f"{rel_manifest}: bundled_files.surface {surface!r} does not match dist target {dist_target!r}"
+        )
+
+
+def _validate_bundle_kind(kind: Any, *, rel_manifest: str) -> None:
+    if kind is None:
+        return
+    if not isinstance(kind, str) or kind not in ALLOWED_BUNDLE_KINDS:
+        raise ValueError(
+            f"{rel_manifest}: bundled_files.kind must be one of {ALLOWED_BUNDLE_KINDS}: {kind!r}"
+        )
+
+
+def _reject_secret_like_mode(mode: int | None, *, raw: Any, rel_manifest: str) -> None:
+    if mode is None:
+        return
+    if (mode & SECRET_LIKE_MODE_MASK) == 0:
+        raise ValueError(
+            f"{rel_manifest}: bundled_files.mode {oct(mode)} is secret-like (owner-only) for a "
+            f"tracked generated output; tracked outputs must stay group/other readable: {raw}"
+        )
+
+
 def _safe_bundle_output(raw: Any, *, rel_manifest: str) -> Path:
     path = _safe_relative_path(raw, field_name="bundled_files.output_path", rel_manifest=rel_manifest)
-    if not ((len(path.parts) >= 3 and path.parts[0] == "dist") or path.parts[:1] == ("acli",)):
-        raise ValueError(f"{rel_manifest}: bundled_files.output_path must live under dist/<target>/ or acli/: {raw}")
+    _resolve_bundle_family(path, raw=raw, rel_manifest=rel_manifest)
     return REPO_ROOT / Path(*path.parts)
 
 
@@ -417,6 +514,27 @@ def _component_ids_from_profiles(profile_ids: list[str]) -> list[str]:
                     f"{profile_path.relative_to(REPO_ROOT)}: component ids must be strings"
                 )
             component_ids.append(component_id)
+        install_policy = profile.get("install_policy") or {}
+        scope_components = install_policy.get("scope_components") or {}
+        if not isinstance(scope_components, dict):
+            raise ValueError(
+                f"{profile_path.relative_to(REPO_ROOT)}: install_policy.scope_components must be a mapping"
+            )
+        for scope, scoped_components in scope_components.items():
+            if scope not in {"project", "user"}:
+                raise ValueError(
+                    f"{profile_path.relative_to(REPO_ROOT)}: unsupported scope_components scope: {scope}"
+                )
+            if not isinstance(scoped_components, list):
+                raise ValueError(
+                    f"{profile_path.relative_to(REPO_ROOT)}: install_policy.scope_components.{scope} must be a list"
+                )
+            for component_id in scoped_components:
+                if not isinstance(component_id, str):
+                    raise ValueError(
+                        f"{profile_path.relative_to(REPO_ROOT)}: scoped component ids must be strings"
+                    )
+                component_ids.append(component_id)
     return component_ids
 
 
@@ -439,7 +557,7 @@ def _unpack_rendered_output(item: tuple[Any, ...]) -> tuple[Path, str, bool, int
     return output_path, content, append, mode
 
 
-def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list[tuple[Path, str, bool, int | None]]:
+def _render_component(component_id: str, registry_entry: dict[str, Any], *, explicit: bool = True) -> list[tuple[Path, str, bool, int | None]]:
     rel_manifest = registry_entry.get("path")
     if not rel_manifest:
         raise ValueError(f"Missing path for {component_id}")
@@ -458,6 +576,13 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
         return []
     kind = manifest.get("kind")
 
+    component_scopes = manifest.get("scopes")
+    user_scope_only = (
+        isinstance(component_scopes, list)
+        and "user" in component_scopes
+        and "project" not in component_scopes
+    )
+
     targets = manifest.get("targets") or {}
     if not isinstance(targets, dict):
         raise ValueError(f"{rel_manifest}: targets must be a mapping")
@@ -465,6 +590,12 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
     rendered: list[tuple[Path, str, bool, int | None]] = []
     if kind in {"skill", "agent", "hook"}:
         for target, target_config in targets.items():
+            if kind == "hook" and user_scope_only and not explicit:
+                # User-scope-only hooks are materialized only by the install
+                # layer (scripts/install/plan.py, per-scope) or by an explicit
+                # --component selection — never by an unscoped/profile adapter
+                # build writing into project-shared hook files.
+                continue
             if not isinstance(target_config, dict):
                 raise ValueError(f"{rel_manifest}: target config must be a mapping: {target}")
             adapter_path = ADAPTERS_DIR / target / "adapter.yml"
@@ -510,9 +641,20 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
             raise ValueError(
                 f"{rel_manifest}: bundled_files entries require source and output_path"
             )
+        rel_output = _safe_relative_path(
+            output_path, field_name="bundled_files.output_path", rel_manifest=rel_manifest
+        )
+        family, dist_target = _resolve_bundle_family(
+            rel_output, raw=output_path, rel_manifest=rel_manifest
+        )
+        _validate_bundle_surface(
+            bundle.get("surface"), family=family, dist_target=dist_target, rel_manifest=rel_manifest
+        )
+        _validate_bundle_kind(bundle.get("kind"), rel_manifest=rel_manifest)
         source_path = _safe_bundle_source(source, component_id=component_id, rel_manifest=rel_manifest)
-        output_abs_path = _safe_bundle_output(output_path, rel_manifest=rel_manifest)
+        output_abs_path = REPO_ROOT / Path(*rel_output.parts)
         mode = _safe_bundle_mode(bundle.get("mode"), rel_manifest=rel_manifest)
+        _reject_secret_like_mode(mode, raw=output_path, rel_manifest=rel_manifest)
         rendered.append(
             (
                 output_abs_path,
@@ -533,12 +675,15 @@ def _render_component(component_id: str, registry_entry: dict[str, Any]) -> list
     return rendered
 
 
-def _collect_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
+def _collect_outputs(
+    component_ids: list[str], *, explicit_ids: set[str] | None = None
+) -> dict[Path, dict[str, Any]]:
     entries = _selected_registry_entries(component_ids)
     expected_outputs: dict[Path, dict[str, Any]] = {}
 
     for component_id, entry in entries.items():
-        for item in _render_component(component_id, entry or {}):
+        explicit = explicit_ids is None or component_id in explicit_ids
+        for item in _render_component(component_id, entry or {}, explicit=explicit):
             output_path, content, append, mode = _unpack_rendered_output(item)
             if append:
                 existing = expected_outputs.get(output_path)
@@ -565,14 +710,53 @@ def _collect_outputs(component_ids: list[str]) -> dict[Path, dict[str, Any]]:
     return expected_outputs
 
 
+def _shared_hook_output_paths() -> set[Path]:
+    output_paths: set[Path] = set()
+    for adapter_path in ADAPTERS_DIR.glob("*/adapter.yml"):
+        adapter = _load_yaml(adapter_path)
+        hooks = (adapter.get("structures") or {}).get("hooks")
+        output_root = adapter.get("output_root")
+        if not isinstance(hooks, dict) or not isinstance(output_root, str):
+            continue
+        path_template = hooks.get("path_template")
+        if not isinstance(path_template, str) or "{" in path_template:
+            continue
+        output_paths.add(REPO_ROOT / output_root / path_template)
+    return output_paths
+
+
+def _cleanup_unexpected_shared_hook_outputs(expected_outputs: dict[Path, dict[str, Any]]) -> None:
+    for output_path in sorted(_shared_hook_output_paths()):
+        if output_path in expected_outputs or not output_path.is_file():
+            continue
+        output_path.unlink()
+        parent = output_path.parent
+        while parent != REPO_ROOT and parent.exists():
+            try:
+                parent.rmdir()
+            except OSError:
+                break
+            parent = parent.parent
+
+
+def _cleanup_stale_project_context_outputs(expected_outputs: dict[Path, dict[str, Any]]) -> None:
+    for rel_output in STALE_PROJECT_CONTEXT_OUTPUTS:
+        output_path = REPO_ROOT / rel_output
+        if output_path in expected_outputs or not output_path.is_file():
+            continue
+        output_path.unlink()
+
+
 def build(component_ids: list[str], *, profile_ids: list[str] | None = None, check: bool) -> int:
     selected_component_ids = _dedupe_preserving_order(
         [*component_ids, *_component_ids_from_profiles(profile_ids or [])]
     )
     mismatches: list[str] = []
-    expected_outputs = _collect_outputs(selected_component_ids)
+    expected_outputs = _collect_outputs(selected_component_ids, explicit_ids=set(component_ids))
 
     if not check:
+        _cleanup_unexpected_shared_hook_outputs(expected_outputs)
+        _cleanup_stale_project_context_outputs(expected_outputs)
         cleanup_dirs = {
             output_path.parent
             for output_path in expected_outputs
@@ -592,6 +776,7 @@ def build(component_ids: list[str], *, profile_ids: list[str] | None = None, che
         mode = expected.get("mode")
         if check:
             if not output_path.exists():
+                mismatches.append(f"missing: {output_path.relative_to(REPO_ROOT)}")
                 continue
             current = output_path.read_text(encoding="utf-8")
             if current != content:

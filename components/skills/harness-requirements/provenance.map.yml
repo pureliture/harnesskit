@@ -1,0 +1,66 @@
+component_id: harnesskit.skill.harness-requirements
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/engineering/grill-with-docs
+      influence:
+        - Slice E requirements intake improvement
+        - context-first use of supplied documents and domain material
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/grilling
+      influence:
+        - Slice E requirements intake improvement
+        - one materially changing decision at a time
+        - recommended option with alternatives
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/grill-me
+      influence:
+        - Slice E requirements intake improvement
+        - explicit user-trigger context for grilling-style requirements discovery
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/engineering/to-prd
+      influence:
+        - Slice E requirements intake improvement
+        - synthesize PRD-like user intent into HarnessKit requirements sections without issue publication
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    Original HarnessKit harness-maintenance skill authored from the
+    approved harness creation body design. It references local review findings
+    from grill-to-spec, Superpowers brainstorming, Notion research patterns, and
+    existing HarnessKit authoring skills without copied source text. Slice E
+    adds Matt Pocock skills snapshot influence for context-first requirements
+    intake and PRD-like synthesis, adapted into HarnessKit requirements SoT
+    boundaries without issue publication or upstream runtime dependency.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - source mode gate
+    - requirements source-of-truth workflow
+    - blueprint handoff contract
+  new_sections:
+    - HarnessKit source modes
+    - requirements approval status values
+  adapted_sections:
+    - context-first intake before user questioning
+    - one materially changing decision at a time
+    - PRD-like synthesis into HarnessKit requirements sections
+  license_notes: "Referenced local installed skill patterns only; no bundled third-party code copied."
+  human_review_required: true
+  review_triggers:
+    - requirements_workflow_changed
+    - blueprint_handoff_contract_changed
+    - source_mode_policy_changed
+    - mattpocock_requirements_intake_reference_changed

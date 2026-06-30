@@ -1,0 +1,95 @@
+component_id: harnesskit.skill.skill-evaluation
+provenance:
+  mode: adapted
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: reference-provenance-gates-requirements
+      role: approved_requirements_sot
+      influence:
+        - "static source/provenance traceability gate"
+        - "registry-side versus component-side failure reporting"
+        - "reference-time snapshot as durable truth"
+        - "latest upstream as freshness comparison only"
+      copied_content: false
+      adapted_content: true
+    - source_id: reference-provenance-gates-blueprint
+      role: approved_blueprint_slice_4
+      influence:
+        - "evaluation surface reporting slice"
+        - "static failures cannot be masked as runtime deferrals"
+        - "no live probe and no mutation evaluation boundary"
+      copied_content: false
+      adapted_content: true
+    - source_id: obra-superpowers
+      snapshot_id: obra-superpowers/2026-06-27-main-896224c
+      influence:
+        - "writing-skills craft: skill craft evaluation lenses (CSO description = when-not-what; pattern only)"
+        - "writing-skills craft: baseline-first / subagent pressure-testing heuristics (pattern only)"
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/writing-great-skills
+      influence:
+        - "skill authoring quality rubric for trigger clarity, bounded scope, instruction hierarchy, progressive disclosure, examples/templates, and no-op pruning (pattern only)"
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/productivity/teach
+      influence:
+        - "bounded instructional unit, mission-fit, feedback-loop, and reference-material quality checks as evaluation lenses (pattern only)"
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/in-progress/review
+      influence:
+        - "separate review axes and evidence-backed findings for evaluation reporting (pattern only)"
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+  attribution_note: >
+    HarnessKit harness-maintenance skill authored from the approved body design.
+    It references verification-before-completion, TDD, systematic-debugging,
+    code-review, and doc-audit patterns without copied source text. The M5 merge
+    adds skill craft evaluation heuristics adapted from the superpowers
+    writing-skills craft (evaluation-side share). The Matt Pocock skills
+    assimilation Slice D update adapts writing-great-skills, teach, and review
+    material into HarnessKit-native quality gates without copying upstream text.
+    The reference provenance gates update adapts approved local requirements and
+    blueprint Slice 4 into static traceability reporting guidance.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - evidence-before-claims evaluation gate
+    - pass/deferred/failure verdict rules
+  new_sections:
+    - HarnessKit requirements and blueprint conformance gates
+    - static adapter versus runtime proof split
+    - source/provenance reference-time snapshot traceability gate
+    - registry-side and component-side failure reporting
+  adapted_sections:
+    - source/provenance gate reporting from approved reference provenance gates requirements and blueprint
+    - skill craft heuristics (CSO description quality; baseline / pressure-test evidence) from writing-skills craft
+    - skill authoring quality rubric from Matt Pocock writing-great-skills, teach, and review-oriented material
+  license_notes: >
+    Referenced local installed skill patterns and approved repository-local
+    requirements/blueprint only; no bundled third-party code copied.
+    writing-skills craft influence is pattern-only with license_hint unknown on
+    obra-superpowers. Matt Pocock skills influence is pattern-only from the
+    registered snapshot with license_hint unknown; copied_content is false and
+    runtime_dependency_on_sources is false.
+  human_review_required: true
+  review_triggers:
+    - evaluation_gate_changed
+    - source_registry_snapshot_contract_changed
+    - provenance_linkage_gate_changed
+    - static_traceability_failure_reporting_changed
+    - upstream_freshness_model_changed
+    - runtime_truth_policy_changed
+    - adapter_output_contract_changed
+    - skill_craft_heuristics_changed
+    - skill_authoring_quality_gate_changed

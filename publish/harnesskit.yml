@@ -8,6 +8,7 @@ policy:
   content_writes: prohibited
 support_paths:
   - README.md
+  - docs/images/*.svg
   - package.json
   - pyproject.toml
   - uv.lock
