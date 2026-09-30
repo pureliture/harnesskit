@@ -26,10 +26,10 @@
     },
     "components": {
       "type": "array",
-      "description": "Component ids selected by this profile.",
+      "description": "Installable component ids (or composite ids) selected by this profile. Workflow identities are relation definitions and cannot be Profile members. Composite ids are expanded to their member components at install time.",
       "items": {
         "type": "string",
-        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+        "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|composite)\\.[a-z][a-z0-9-]+$"
       },
       "uniqueItems": true
     },
@@ -37,7 +37,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
       },
       "uniqueItems": true
     },
@@ -71,7 +71,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|composite)\\.[a-z][a-z0-9-]+$"
               },
               "uniqueItems": true
             },
@@ -79,10 +79,44 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|workflow)\\.[a-z][a-z0-9-]+$"
+                "pattern": "^harnesskit\\.(skill|agent|hook|rule|command|composite)\\.[a-z][a-z0-9-]+$"
               },
               "uniqueItems": true
             }
+          }
+        },
+        "retired_codex_agent_registrations": {
+          "type": "object",
+          "description": "Codex agent registrations from prior HarnessKit releases that may be safely pruned only at the declared install scope.",
+          "additionalProperties": false,
+          "properties": {
+            "project": {
+              "$ref": "#/definitions/retired_codex_agent_registration_list"
+            },
+            "user": {
+              "$ref": "#/definitions/retired_codex_agent_registration_list"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "retired_codex_agent_registration_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "config_file"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "config_file": {
+            "type": "string",
+            "minLength": 1
           }
         }
       }

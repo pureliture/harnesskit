@@ -1,0 +1,32 @@
+component_id: harnesskit.skill.harness-blueprint
+kind: skill
+status: draft
+domain: harness
+title: Harness Blueprint
+summary: 승인된 HarnessKit 요구사항이 있을 때 컴포넌트 종류, 경계, 프로파일 배치, 어댑터 대상, 평가 게이트를 결정하는 데 사용한다.
+source_refs: []
+owned_files:
+  - components/skills/harness-blueprint/component.yml
+  - components/skills/harness-blueprint/SKILL.md
+  - components/skills/harness-blueprint/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/harness-blueprint/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/harness-blueprint/SKILL.md
+  antigravity-cli:
+    output_path: dist/antigravity-cli/.agents/skills/harness-blueprint/SKILL.md
+entrypoints:
+  natural_language:
+    - phrase: "이 requirements를 skill/agent/hook 구조로 blueprint 해줘"
+      context: "The user has approved requirements and wants component kind decisions."
+    - phrase: "요구사항을 어떤 HarnessKit component들로 나눌지 설계해줘"
+      context: "The user wants component graph and authoring slices before canonical files."
+provenance_mode: manual
+routine_harness:
+  category: harness-maintenance
+  phase: harness-blueprint
+  requires_approved_requirements: true
+  component_authoring_in_scope: false
+  adapter_authoring_in_scope: false
+  runtime_probe_in_scope: false

@@ -1,0 +1,78 @@
+workflow_id: harnesskit.workflow.review-gated-implementation
+kind: workflow
+status: deprecated
+domain: core
+summary: >-
+  폐기된 과거의 순차적 구현 검토 정책을 위한 워크플로 카드다.
+runtime_implemented: false
+installable: false
+source_classification: internal-source-only
+adapter_output_policy: fail-if-selected
+modeling_guidance: >
+  Historical record only. The former ordered high-risk review policy has no
+  current execution owner in this record; this card is not an executable runner,
+  install target, user-facing entrypoint, or routing recommendation.
+description: >
+  Historical source record for the former two-stage ordered review policy.
+  New work does not route through this card or inherit its policy automatically.
+steps:
+  - id: implement
+    role: implementer
+    prompt_template: implementer
+    output: implementation-diff + implementer status (DONE | CONCERNS | NEEDS_CONTEXT | BLOCKED)
+    description: >
+      Implement the milestone in isolation against the approved spec/design and
+      report a single status signal. CONCERNS, NEEDS_CONTEXT, or BLOCKED halt the
+      gate and route back to the caller rather than proceeding to review.
+  - id: spec-compliance-review
+    role: spec-reviewer
+    prompt_template: spec-reviewer
+    gate_order: 1
+    output: spec-review verdict (PASS | CHANGES_REQUESTED) + findings
+    description: >
+      Adversarial spec-compliance reviewer checks the change against the spec and
+      acceptance criteria only. Must reach PASS before the code-quality review
+      runs. CHANGES_REQUESTED routes to the fix-and-re-review loop.
+  - id: code-quality-review
+    role: code-quality-reviewer
+    prompt_template: code-quality-reviewer
+    gate_order: 2
+    requires_pass_from: spec-compliance-review
+    output: code-quality verdict (PASS | CHANGES_REQUESTED) + findings
+    description: >
+      Adversarial code-quality reviewer runs only after spec-compliance PASS.
+      Reviews correctness, edge cases, tests, maintainability, and documented
+      repository standards without reopening spec compliance. CHANGES_REQUESTED
+      routes to the fix-and-re-review loop.
+  - id: fix-and-re-review
+    role: implementer
+    prompt_template: implementer
+    loop_back_to: spec-compliance-review
+    output: revised implementation-diff + implementer status
+    description: >
+      On any CHANGES_REQUESTED, the implementer addresses findings and the change
+      re-enters the ordered gate at spec-compliance review. The loop continues
+      until both stages PASS or the caller stops the milestone.
+implementer_status_protocol:
+  - status: DONE
+    meaning: Change is complete and ready for the ordered review gate.
+  - status: CONCERNS
+    meaning: Change is made but the implementer flags risks; caller decides whether to proceed.
+  - status: NEEDS_CONTEXT
+    meaning: Missing information blocks completion; route back to the caller for context, not to review.
+  - status: BLOCKED
+    meaning: A hard blocker prevents the change; halt the gate and surface the blocker.
+reviewer_stance: adversarial
+gate_ordering: spec-compliance must PASS before code-quality runs
+prompt_templates:
+  - id: implementer
+    location: card.md
+  - id: spec-reviewer
+    location: card.md
+  - id: code-quality-reviewer
+    location: card.md
+invocation_policy: historical-record-only
+routine_harness:
+  category: engineering
+  runner_deferred: true
+  hook_interception_in_scope: false

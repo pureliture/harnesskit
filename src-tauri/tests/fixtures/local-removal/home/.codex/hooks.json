@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "first",
+        "hooks": [
+          { "type": "command", "command": "first-command" }
+        ]
+      },
+      {
+        "matcher": "second",
+        "hooks": [
+          { "type": "command", "command": "second-command" }
+        ]
+      },
+      {
+        "matcher": "keep",
+        "hooks": [
+          { "type": "command", "command": "keep-command" }
+        ]
+      }
+    ]
+  },
+  "unrelated": {
+    "preserved": true
+  }
+}

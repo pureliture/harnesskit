@@ -1,0 +1,17 @@
+profile_id: harnesskit.profile.development
+status: draft
+title: Development
+summary: Opt-in Codex user-scope planning bundle with Intent Guide as its declared entry and three selected destinations.
+components:
+  - harnesskit.skill.intent-guide
+  - harnesskit.skill.grill
+  - harnesskit.skill.grill-to-spec
+  - harnesskit.skill.wayfinder
+  - harnesskit.skill.to-questionnaire
+targets:
+  - codex
+install_policy:
+  default_scope: user
+  allowed_scopes:
+    - user
+  activation_policy: manual

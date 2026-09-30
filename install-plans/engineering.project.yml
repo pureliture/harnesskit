@@ -1,0 +1,762 @@
+plan_id: harnesskit.install-plan.engineering.project
+profile_id: harnesskit.profile.engineering
+scope: project
+mode: dry-run
+targets:
+- project
+- claude
+- codex
+- antigravity
+- antigravity-cli
+- hermes
+components:
+- harnesskit.agent.doc-curator
+- harnesskit.skill.doc-curator
+- harnesskit.skill.doc-bootstrap
+- harnesskit.skill.doc-sync
+- harnesskit.skill.doc-audit
+- harnesskit.skill.documentation
+- harnesskit.skill.worktree-lifecycle
+- harnesskit.agent.reference-curator
+- harnesskit.skill.prototype
+- harnesskit.skill.agentic-execution
+- harnesskit.skill.local-change-review
+- harnesskit.skill.root-cause-debugging
+- harnesskit.skill.domain-modeling
+- harnesskit.skill.testing-strategy
+- harnesskit.skill.tech-debt
+- harnesskit.skill.release-readiness
+- harnesskit.skill.incident-review
+- harnesskit.skill.frontend-design
+- harnesskit.skill.accessibility-review
+- harnesskit.skill.ux-copy
+- harnesskit.agent.designer
+- harnesskit.agent.worktree-lifecycle-manager
+- harnesskit.agent.system-designer
+- harnesskit.agent.codebase-architecture-manager
+- harnesskit.agent.code-simplifier
+- harnesskit.skill.antigravity-agent-loader
+- harnesskit.rule.harnesskit-project-context
+- harnesskit.skill.public-publisher
+- harnesskit.skill.wizard
+- harnesskit.skill.writing-for-agents
+- harnesskit.skill.guided-execution
+artifacts:
+- component_id: harnesskit.agent.doc-curator
+  component_ids:
+  - harnesskit.agent.doc-curator
+  target: claude
+  source: dist/claude/.claude/agents/doc-curator.md
+  destination: .claude/agents/doc-curator.md
+- component_id: harnesskit.agent.doc-curator
+  component_ids:
+  - harnesskit.agent.doc-curator
+  target: codex
+  source: dist/codex/.codex/agents/doc_curator.toml
+  destination: .codex/agents/doc_curator.toml
+- component_id: harnesskit.agent.doc-curator
+  component_ids:
+  - harnesskit.agent.doc-curator
+  - harnesskit.agent.reference-curator
+  - harnesskit.agent.designer
+  - harnesskit.agent.worktree-lifecycle-manager
+  - harnesskit.agent.system-designer
+  - harnesskit.agent.codebase-architecture-manager
+  - harnesskit.agent.code-simplifier
+  target: codex
+  source: dist/codex/.codex/config.toml
+  destination: .codex/config.toml
+  merge_strategy: toml-agents-merge
+  toml_merge_key: codex-agents
+- component_id: harnesskit.agent.doc-curator
+  component_ids:
+  - harnesskit.agent.doc-curator
+  target: antigravity
+  source: dist/antigravity/.agents/agents/doc-curator.md
+  destination: .agents/agents/doc-curator.md
+- component_id: harnesskit.skill.doc-curator
+  component_ids:
+  - harnesskit.skill.doc-curator
+  target: claude
+  source: dist/claude/.claude/skills/doc-curator/SKILL.md
+  destination: .claude/skills/doc-curator/SKILL.md
+- component_id: harnesskit.skill.doc-curator
+  component_ids:
+  - harnesskit.skill.doc-curator
+  target: codex
+  source: dist/codex/.agents/skills/doc-curator/SKILL.md
+  destination: .agents/skills/doc-curator/SKILL.md
+- component_id: harnesskit.skill.doc-curator
+  component_ids:
+  - harnesskit.skill.doc-curator
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/doc-curator/SKILL.md
+  destination: .agents/skills/doc-curator/SKILL.md
+- component_id: harnesskit.skill.doc-bootstrap
+  component_ids:
+  - harnesskit.skill.doc-bootstrap
+  target: claude
+  source: dist/claude/.claude/skills/doc-bootstrap/SKILL.md
+  destination: .claude/skills/doc-bootstrap/SKILL.md
+- component_id: harnesskit.skill.doc-bootstrap
+  component_ids:
+  - harnesskit.skill.doc-bootstrap
+  target: codex
+  source: dist/codex/.agents/skills/doc-bootstrap/SKILL.md
+  destination: .agents/skills/doc-bootstrap/SKILL.md
+- component_id: harnesskit.skill.doc-bootstrap
+  component_ids:
+  - harnesskit.skill.doc-bootstrap
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/doc-bootstrap/SKILL.md
+  destination: .agents/skills/doc-bootstrap/SKILL.md
+- component_id: harnesskit.skill.doc-sync
+  component_ids:
+  - harnesskit.skill.doc-sync
+  target: claude
+  source: dist/claude/.claude/skills/doc-sync/SKILL.md
+  destination: .claude/skills/doc-sync/SKILL.md
+- component_id: harnesskit.skill.doc-sync
+  component_ids:
+  - harnesskit.skill.doc-sync
+  target: codex
+  source: dist/codex/.agents/skills/doc-sync/SKILL.md
+  destination: .agents/skills/doc-sync/SKILL.md
+- component_id: harnesskit.skill.doc-sync
+  component_ids:
+  - harnesskit.skill.doc-sync
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/doc-sync/SKILL.md
+  destination: .agents/skills/doc-sync/SKILL.md
+- component_id: harnesskit.skill.doc-audit
+  component_ids:
+  - harnesskit.skill.doc-audit
+  target: claude
+  source: dist/claude/.claude/skills/doc-audit/SKILL.md
+  destination: .claude/skills/doc-audit/SKILL.md
+- component_id: harnesskit.skill.doc-audit
+  component_ids:
+  - harnesskit.skill.doc-audit
+  target: codex
+  source: dist/codex/.agents/skills/doc-audit/SKILL.md
+  destination: .agents/skills/doc-audit/SKILL.md
+- component_id: harnesskit.skill.doc-audit
+  component_ids:
+  - harnesskit.skill.doc-audit
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/doc-audit/SKILL.md
+  destination: .agents/skills/doc-audit/SKILL.md
+- component_id: harnesskit.skill.documentation
+  component_ids:
+  - harnesskit.skill.documentation
+  target: claude
+  source: dist/claude/.claude/skills/documentation/SKILL.md
+  destination: .claude/skills/documentation/SKILL.md
+- component_id: harnesskit.skill.documentation
+  component_ids:
+  - harnesskit.skill.documentation
+  target: codex
+  source: dist/codex/.agents/skills/documentation/SKILL.md
+  destination: .agents/skills/documentation/SKILL.md
+- component_id: harnesskit.skill.documentation
+  component_ids:
+  - harnesskit.skill.documentation
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/documentation/SKILL.md
+  destination: .agents/skills/documentation/SKILL.md
+- component_id: harnesskit.skill.documentation
+  component_ids:
+  - harnesskit.skill.documentation
+  target: antigravity
+  source: dist/antigravity/.agents/skills/documentation/SKILL.md
+  destination: .agents/skills/documentation/SKILL.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: claude
+  source: dist/claude/.claude/skills/worktree-lifecycle/SKILL.md
+  destination: .claude/skills/worktree-lifecycle/SKILL.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: codex
+  source: dist/codex/.agents/skills/worktree-lifecycle/SKILL.md
+  destination: .agents/skills/worktree-lifecycle/SKILL.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/worktree-lifecycle/SKILL.md
+  destination: .agents/skills/worktree-lifecycle/SKILL.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity
+  source: dist/antigravity/.agents/skills/worktree-lifecycle/SKILL.md
+  destination: .agents/skills/worktree-lifecycle/SKILL.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: claude
+  source: dist/claude/.claude/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  destination: .claude/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: codex
+  source: dist/codex/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  destination: .agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  destination: .agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity
+  source: dist/antigravity/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  destination: .agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: claude
+  source: dist/claude/.claude/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  destination: .claude/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: codex
+  source: dist/codex/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  destination: .agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  destination: .agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- component_id: harnesskit.skill.worktree-lifecycle
+  component_ids:
+  - harnesskit.skill.worktree-lifecycle
+  target: antigravity
+  source: dist/antigravity/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  destination: .agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- component_id: harnesskit.agent.reference-curator
+  component_ids:
+  - harnesskit.agent.reference-curator
+  target: claude
+  source: dist/claude/.claude/agents/reference-curator.md
+  destination: .claude/agents/reference-curator.md
+- component_id: harnesskit.agent.reference-curator
+  component_ids:
+  - harnesskit.agent.reference-curator
+  target: codex
+  source: dist/codex/.codex/agents/reference_curator.toml
+  destination: .codex/agents/reference_curator.toml
+- component_id: harnesskit.skill.prototype
+  component_ids:
+  - harnesskit.skill.prototype
+  target: claude
+  source: dist/claude/.claude/skills/prototype/SKILL.md
+  destination: .claude/skills/prototype/SKILL.md
+- component_id: harnesskit.skill.prototype
+  component_ids:
+  - harnesskit.skill.prototype
+  target: codex
+  source: dist/codex/.agents/skills/prototype/SKILL.md
+  destination: .agents/skills/prototype/SKILL.md
+- component_id: harnesskit.skill.prototype
+  component_ids:
+  - harnesskit.skill.prototype
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/prototype/SKILL.md
+  destination: .agents/skills/prototype/SKILL.md
+- component_id: harnesskit.skill.agentic-execution
+  component_ids:
+  - harnesskit.skill.agentic-execution
+  target: claude
+  source: dist/claude/.claude/skills/agentic-execution/SKILL.md
+  destination: .claude/skills/agentic-execution/SKILL.md
+- component_id: harnesskit.skill.agentic-execution
+  component_ids:
+  - harnesskit.skill.agentic-execution
+  target: codex
+  source: dist/codex/.agents/skills/agentic-execution/SKILL.md
+  destination: .agents/skills/agentic-execution/SKILL.md
+- component_id: harnesskit.skill.agentic-execution
+  component_ids:
+  - harnesskit.skill.agentic-execution
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/agentic-execution/SKILL.md
+  destination: .agents/skills/agentic-execution/SKILL.md
+- component_id: harnesskit.skill.agentic-execution
+  component_ids:
+  - harnesskit.skill.agentic-execution
+  target: antigravity
+  source: dist/antigravity/.agents/skills/agentic-execution/SKILL.md
+  destination: .agents/skills/agentic-execution/SKILL.md
+- component_id: harnesskit.skill.local-change-review
+  component_ids:
+  - harnesskit.skill.local-change-review
+  target: claude
+  source: dist/claude/.claude/skills/local-change-review/SKILL.md
+  destination: .claude/skills/local-change-review/SKILL.md
+- component_id: harnesskit.skill.local-change-review
+  component_ids:
+  - harnesskit.skill.local-change-review
+  target: codex
+  source: dist/codex/.agents/skills/local-change-review/SKILL.md
+  destination: .agents/skills/local-change-review/SKILL.md
+- component_id: harnesskit.skill.local-change-review
+  component_ids:
+  - harnesskit.skill.local-change-review
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/local-change-review/SKILL.md
+  destination: .agents/skills/local-change-review/SKILL.md
+- component_id: harnesskit.skill.root-cause-debugging
+  component_ids:
+  - harnesskit.skill.root-cause-debugging
+  target: claude
+  source: dist/claude/.claude/skills/root-cause-debugging/SKILL.md
+  destination: .claude/skills/root-cause-debugging/SKILL.md
+- component_id: harnesskit.skill.root-cause-debugging
+  component_ids:
+  - harnesskit.skill.root-cause-debugging
+  target: codex
+  source: dist/codex/.agents/skills/root-cause-debugging/SKILL.md
+  destination: .agents/skills/root-cause-debugging/SKILL.md
+- component_id: harnesskit.skill.root-cause-debugging
+  component_ids:
+  - harnesskit.skill.root-cause-debugging
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/root-cause-debugging/SKILL.md
+  destination: .agents/skills/root-cause-debugging/SKILL.md
+- component_id: harnesskit.skill.root-cause-debugging
+  component_ids:
+  - harnesskit.skill.root-cause-debugging
+  target: antigravity
+  source: dist/antigravity/.agents/skills/root-cause-debugging/SKILL.md
+  destination: .agents/skills/root-cause-debugging/SKILL.md
+- component_id: harnesskit.skill.domain-modeling
+  component_ids:
+  - harnesskit.skill.domain-modeling
+  target: claude
+  source: dist/claude/.claude/skills/domain-modeling/SKILL.md
+  destination: .claude/skills/domain-modeling/SKILL.md
+- component_id: harnesskit.skill.domain-modeling
+  component_ids:
+  - harnesskit.skill.domain-modeling
+  target: codex
+  source: dist/codex/.agents/skills/domain-modeling/SKILL.md
+  destination: .agents/skills/domain-modeling/SKILL.md
+- component_id: harnesskit.skill.domain-modeling
+  component_ids:
+  - harnesskit.skill.domain-modeling
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/domain-modeling/SKILL.md
+  destination: .agents/skills/domain-modeling/SKILL.md
+- component_id: harnesskit.skill.testing-strategy
+  component_ids:
+  - harnesskit.skill.testing-strategy
+  target: claude
+  source: dist/claude/.claude/skills/testing-strategy/SKILL.md
+  destination: .claude/skills/testing-strategy/SKILL.md
+- component_id: harnesskit.skill.testing-strategy
+  component_ids:
+  - harnesskit.skill.testing-strategy
+  target: codex
+  source: dist/codex/.agents/skills/testing-strategy/SKILL.md
+  destination: .agents/skills/testing-strategy/SKILL.md
+- component_id: harnesskit.skill.testing-strategy
+  component_ids:
+  - harnesskit.skill.testing-strategy
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/testing-strategy/SKILL.md
+  destination: .agents/skills/testing-strategy/SKILL.md
+- component_id: harnesskit.skill.testing-strategy
+  component_ids:
+  - harnesskit.skill.testing-strategy
+  target: antigravity
+  source: dist/antigravity/.agents/skills/testing-strategy/SKILL.md
+  destination: .agents/skills/testing-strategy/SKILL.md
+- component_id: harnesskit.skill.tech-debt
+  component_ids:
+  - harnesskit.skill.tech-debt
+  target: claude
+  source: dist/claude/.claude/skills/tech-debt/SKILL.md
+  destination: .claude/skills/tech-debt/SKILL.md
+- component_id: harnesskit.skill.tech-debt
+  component_ids:
+  - harnesskit.skill.tech-debt
+  target: codex
+  source: dist/codex/.agents/skills/tech-debt/SKILL.md
+  destination: .agents/skills/tech-debt/SKILL.md
+- component_id: harnesskit.skill.tech-debt
+  component_ids:
+  - harnesskit.skill.tech-debt
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/tech-debt/SKILL.md
+  destination: .agents/skills/tech-debt/SKILL.md
+- component_id: harnesskit.skill.tech-debt
+  component_ids:
+  - harnesskit.skill.tech-debt
+  target: antigravity
+  source: dist/antigravity/.agents/skills/tech-debt/SKILL.md
+  destination: .agents/skills/tech-debt/SKILL.md
+- component_id: harnesskit.skill.release-readiness
+  component_ids:
+  - harnesskit.skill.release-readiness
+  target: claude
+  source: dist/claude/.claude/skills/release-readiness/SKILL.md
+  destination: .claude/skills/release-readiness/SKILL.md
+- component_id: harnesskit.skill.release-readiness
+  component_ids:
+  - harnesskit.skill.release-readiness
+  target: codex
+  source: dist/codex/.agents/skills/release-readiness/SKILL.md
+  destination: .agents/skills/release-readiness/SKILL.md
+- component_id: harnesskit.skill.release-readiness
+  component_ids:
+  - harnesskit.skill.release-readiness
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/release-readiness/SKILL.md
+  destination: .agents/skills/release-readiness/SKILL.md
+- component_id: harnesskit.skill.release-readiness
+  component_ids:
+  - harnesskit.skill.release-readiness
+  target: antigravity
+  source: dist/antigravity/.agents/skills/release-readiness/SKILL.md
+  destination: .agents/skills/release-readiness/SKILL.md
+- component_id: harnesskit.skill.incident-review
+  component_ids:
+  - harnesskit.skill.incident-review
+  target: claude
+  source: dist/claude/.claude/skills/incident-review/SKILL.md
+  destination: .claude/skills/incident-review/SKILL.md
+- component_id: harnesskit.skill.incident-review
+  component_ids:
+  - harnesskit.skill.incident-review
+  target: codex
+  source: dist/codex/.agents/skills/incident-review/SKILL.md
+  destination: .agents/skills/incident-review/SKILL.md
+- component_id: harnesskit.skill.incident-review
+  component_ids:
+  - harnesskit.skill.incident-review
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/incident-review/SKILL.md
+  destination: .agents/skills/incident-review/SKILL.md
+- component_id: harnesskit.skill.incident-review
+  component_ids:
+  - harnesskit.skill.incident-review
+  target: antigravity
+  source: dist/antigravity/.agents/skills/incident-review/SKILL.md
+  destination: .agents/skills/incident-review/SKILL.md
+- component_id: harnesskit.skill.frontend-design
+  component_ids:
+  - harnesskit.skill.frontend-design
+  target: claude
+  source: dist/claude/.claude/skills/frontend-design/SKILL.md
+  destination: .claude/skills/frontend-design/SKILL.md
+- component_id: harnesskit.skill.frontend-design
+  component_ids:
+  - harnesskit.skill.frontend-design
+  target: codex
+  source: dist/codex/.agents/skills/frontend-design/SKILL.md
+  destination: .agents/skills/frontend-design/SKILL.md
+- component_id: harnesskit.skill.frontend-design
+  component_ids:
+  - harnesskit.skill.frontend-design
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/frontend-design/SKILL.md
+  destination: .agents/skills/frontend-design/SKILL.md
+- component_id: harnesskit.skill.frontend-design
+  component_ids:
+  - harnesskit.skill.frontend-design
+  target: antigravity
+  source: dist/antigravity/.agents/skills/frontend-design/SKILL.md
+  destination: .agents/skills/frontend-design/SKILL.md
+- component_id: harnesskit.skill.accessibility-review
+  component_ids:
+  - harnesskit.skill.accessibility-review
+  target: claude
+  source: dist/claude/.claude/skills/accessibility-review/SKILL.md
+  destination: .claude/skills/accessibility-review/SKILL.md
+- component_id: harnesskit.skill.accessibility-review
+  component_ids:
+  - harnesskit.skill.accessibility-review
+  target: codex
+  source: dist/codex/.agents/skills/accessibility-review/SKILL.md
+  destination: .agents/skills/accessibility-review/SKILL.md
+- component_id: harnesskit.skill.accessibility-review
+  component_ids:
+  - harnesskit.skill.accessibility-review
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/accessibility-review/SKILL.md
+  destination: .agents/skills/accessibility-review/SKILL.md
+- component_id: harnesskit.skill.accessibility-review
+  component_ids:
+  - harnesskit.skill.accessibility-review
+  target: antigravity
+  source: dist/antigravity/.agents/skills/accessibility-review/SKILL.md
+  destination: .agents/skills/accessibility-review/SKILL.md
+- component_id: harnesskit.skill.ux-copy
+  component_ids:
+  - harnesskit.skill.ux-copy
+  target: claude
+  source: dist/claude/.claude/skills/ux-copy/SKILL.md
+  destination: .claude/skills/ux-copy/SKILL.md
+- component_id: harnesskit.skill.ux-copy
+  component_ids:
+  - harnesskit.skill.ux-copy
+  target: codex
+  source: dist/codex/.agents/skills/ux-copy/SKILL.md
+  destination: .agents/skills/ux-copy/SKILL.md
+- component_id: harnesskit.skill.ux-copy
+  component_ids:
+  - harnesskit.skill.ux-copy
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/ux-copy/SKILL.md
+  destination: .agents/skills/ux-copy/SKILL.md
+- component_id: harnesskit.skill.ux-copy
+  component_ids:
+  - harnesskit.skill.ux-copy
+  target: antigravity
+  source: dist/antigravity/.agents/skills/ux-copy/SKILL.md
+  destination: .agents/skills/ux-copy/SKILL.md
+- component_id: harnesskit.agent.designer
+  component_ids:
+  - harnesskit.agent.designer
+  target: claude
+  source: dist/claude/.claude/agents/designer.md
+  destination: .claude/agents/designer.md
+- component_id: harnesskit.agent.designer
+  component_ids:
+  - harnesskit.agent.designer
+  target: codex
+  source: dist/codex/.codex/agents/designer.toml
+  destination: .codex/agents/designer.toml
+- component_id: harnesskit.agent.designer
+  component_ids:
+  - harnesskit.agent.designer
+  target: antigravity
+  source: dist/antigravity/.agents/agents/designer.md
+  destination: .agents/agents/designer.md
+- component_id: harnesskit.agent.worktree-lifecycle-manager
+  component_ids:
+  - harnesskit.agent.worktree-lifecycle-manager
+  target: claude
+  source: dist/claude/.claude/agents/worktree-lifecycle-manager.md
+  destination: .claude/agents/worktree-lifecycle-manager.md
+- component_id: harnesskit.agent.worktree-lifecycle-manager
+  component_ids:
+  - harnesskit.agent.worktree-lifecycle-manager
+  target: codex
+  source: dist/codex/.codex/agents/worktree_lifecycle_manager.toml
+  destination: .codex/agents/worktree_lifecycle_manager.toml
+- component_id: harnesskit.agent.worktree-lifecycle-manager
+  component_ids:
+  - harnesskit.agent.worktree-lifecycle-manager
+  target: antigravity
+  source: dist/antigravity/.agents/agents/worktree-lifecycle-manager.md
+  destination: .agents/agents/worktree-lifecycle-manager.md
+- component_id: harnesskit.agent.system-designer
+  component_ids:
+  - harnesskit.agent.system-designer
+  target: claude
+  source: dist/claude/.claude/agents/system-designer.md
+  destination: .claude/agents/system-designer.md
+- component_id: harnesskit.agent.system-designer
+  component_ids:
+  - harnesskit.agent.system-designer
+  target: codex
+  source: dist/codex/.codex/agents/system_designer.toml
+  destination: .codex/agents/system_designer.toml
+- component_id: harnesskit.agent.system-designer
+  component_ids:
+  - harnesskit.agent.system-designer
+  target: antigravity
+  source: dist/antigravity/.agents/agents/system-designer.md
+  destination: .agents/agents/system-designer.md
+- component_id: harnesskit.agent.codebase-architecture-manager
+  component_ids:
+  - harnesskit.agent.codebase-architecture-manager
+  target: claude
+  source: dist/claude/.claude/agents/codebase-architecture-manager.md
+  destination: .claude/agents/codebase-architecture-manager.md
+- component_id: harnesskit.agent.codebase-architecture-manager
+  component_ids:
+  - harnesskit.agent.codebase-architecture-manager
+  target: codex
+  source: dist/codex/.codex/agents/codebase_architecture_manager.toml
+  destination: .codex/agents/codebase_architecture_manager.toml
+- component_id: harnesskit.agent.codebase-architecture-manager
+  component_ids:
+  - harnesskit.agent.codebase-architecture-manager
+  target: antigravity
+  source: dist/antigravity/.agents/agents/codebase-architecture-manager.md
+  destination: .agents/agents/codebase-architecture-manager.md
+- component_id: harnesskit.agent.code-simplifier
+  component_ids:
+  - harnesskit.agent.code-simplifier
+  target: claude
+  source: dist/claude/.claude/agents/code-simplifier.md
+  destination: .claude/agents/code-simplifier.md
+- component_id: harnesskit.agent.code-simplifier
+  component_ids:
+  - harnesskit.agent.code-simplifier
+  target: codex
+  source: dist/codex/.codex/agents/code_simplifier.toml
+  destination: .codex/agents/code_simplifier.toml
+- component_id: harnesskit.agent.code-simplifier
+  component_ids:
+  - harnesskit.agent.code-simplifier
+  target: antigravity
+  source: dist/antigravity/.agents/agents/code-simplifier.md
+  destination: .agents/agents/code-simplifier.md
+- component_id: harnesskit.skill.antigravity-agent-loader
+  component_ids:
+  - harnesskit.skill.antigravity-agent-loader
+  target: antigravity
+  source: dist/antigravity/.agents/skills/antigravity-agent-loader/SKILL.md
+  destination: .agents/skills/antigravity-agent-loader/SKILL.md
+- component_id: harnesskit.rule.harnesskit-project-context
+  component_ids:
+  - harnesskit.rule.harnesskit-project-context
+  target: project
+  source: dist/project/AGENTS.md
+  destination: AGENTS.md
+  merge_strategy: managed-block
+  begin_marker: <!-- BEGIN HARNESSKIT GENERATED CONTEXT -->
+  end_marker: <!-- END HARNESSKIT GENERATED CONTEXT -->
+- component_id: harnesskit.rule.harnesskit-project-context
+  component_ids:
+  - harnesskit.rule.harnesskit-project-context
+  target: project
+  source: dist/project/CLAUDE.md
+  destination: CLAUDE.md
+  merge_strategy: managed-block
+  begin_marker: <!-- BEGIN HARNESSKIT GENERATED CONTEXT -->
+  end_marker: <!-- END HARNESSKIT GENERATED CONTEXT -->
+- component_id: harnesskit.skill.public-publisher
+  component_ids:
+  - harnesskit.skill.public-publisher
+  target: claude
+  source: dist/claude/.claude/skills/harnesskit-public-publisher/SKILL.md
+  destination: .claude/skills/harnesskit-public-publisher/SKILL.md
+- component_id: harnesskit.skill.public-publisher
+  component_ids:
+  - harnesskit.skill.public-publisher
+  target: codex
+  source: dist/codex/.agents/skills/harnesskit-public-publisher/SKILL.md
+  destination: .agents/skills/harnesskit-public-publisher/SKILL.md
+- component_id: harnesskit.skill.public-publisher
+  component_ids:
+  - harnesskit.skill.public-publisher
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/harnesskit-public-publisher/SKILL.md
+  destination: .agents/skills/harnesskit-public-publisher/SKILL.md
+- component_id: harnesskit.skill.wizard
+  component_ids:
+  - harnesskit.skill.wizard
+  target: claude
+  source: dist/claude/.claude/skills/wizard/SKILL.md
+  destination: .claude/skills/wizard/SKILL.md
+- component_id: harnesskit.skill.wizard
+  component_ids:
+  - harnesskit.skill.wizard
+  target: codex
+  source: dist/codex/.agents/skills/wizard/SKILL.md
+  destination: .agents/skills/wizard/SKILL.md
+- component_id: harnesskit.skill.wizard
+  component_ids:
+  - harnesskit.skill.wizard
+  target: antigravity
+  source: dist/antigravity/.agents/skills/wizard/SKILL.md
+  destination: .agents/skills/wizard/SKILL.md
+- component_id: harnesskit.skill.wizard
+  component_ids:
+  - harnesskit.skill.wizard
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/wizard/SKILL.md
+  destination: .agents/skills/wizard/SKILL.md
+- component_id: harnesskit.skill.writing-for-agents
+  component_ids:
+  - harnesskit.skill.writing-for-agents
+  target: claude
+  source: dist/claude/.claude/skills/writing-for-agents/SKILL.md
+  destination: .claude/skills/writing-for-agents/SKILL.md
+- component_id: harnesskit.skill.writing-for-agents
+  component_ids:
+  - harnesskit.skill.writing-for-agents
+  target: codex
+  source: dist/codex/.agents/skills/writing-for-agents/SKILL.md
+  destination: .agents/skills/writing-for-agents/SKILL.md
+- component_id: harnesskit.skill.writing-for-agents
+  component_ids:
+  - harnesskit.skill.writing-for-agents
+  target: antigravity
+  source: dist/antigravity/.agents/skills/writing-for-agents/SKILL.md
+  destination: .agents/skills/writing-for-agents/SKILL.md
+- component_id: harnesskit.skill.writing-for-agents
+  component_ids:
+  - harnesskit.skill.writing-for-agents
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/writing-for-agents/SKILL.md
+  destination: .agents/skills/writing-for-agents/SKILL.md
+- component_id: harnesskit.skill.guided-execution
+  component_ids:
+  - harnesskit.skill.guided-execution
+  target: claude
+  source: dist/claude/.claude/skills/guided-execution/SKILL.md
+  destination: .claude/skills/guided-execution/SKILL.md
+- component_id: harnesskit.skill.guided-execution
+  component_ids:
+  - harnesskit.skill.guided-execution
+  target: codex
+  source: dist/codex/.agents/skills/guided-execution/SKILL.md
+  destination: .agents/skills/guided-execution/SKILL.md
+- component_id: harnesskit.skill.guided-execution
+  component_ids:
+  - harnesskit.skill.guided-execution
+  target: antigravity-cli
+  source: dist/antigravity-cli/.agents/skills/guided-execution/SKILL.md
+  destination: .agents/skills/guided-execution/SKILL.md
+- component_id: harnesskit.skill.guided-execution
+  component_ids:
+  - harnesskit.skill.guided-execution
+  target: antigravity
+  source: dist/antigravity/.agents/skills/guided-execution/SKILL.md
+  destination: .agents/skills/guided-execution/SKILL.md
+runtime_surfaces:
+- target: project
+  path: AGENTS.md
+  source: dist/project/AGENTS.md
+- target: project
+  path: CLAUDE.md
+  source: dist/project/CLAUDE.md
+- target: claude
+  path: .claude/skills
+  source: dist/claude/.claude/skills
+- target: claude
+  path: .claude/agents
+  source: dist/claude/.claude/agents
+- target: codex
+  path: .agents/skills
+  source: dist/codex/.agents/skills
+- target: codex
+  path: .codex/agents
+  source: dist/codex/.codex/agents
+- target: codex
+  path: .codex/config.toml
+  source: dist/codex/.codex/config.toml
+- target: antigravity
+  path: .agents/skills
+  source: dist/antigravity/.agents/skills
+- target: antigravity
+  path: .agents/agents
+  source: dist/antigravity/.agents/agents
+- target: antigravity-cli
+  path: .agents/skills
+  source: dist/antigravity-cli/.agents/skills
+activation_gates: []

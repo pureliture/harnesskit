@@ -1,0 +1,78 @@
+{
+  "install_contract_id": "harnesskit.install-target-contract.v1",
+  "install_contract_hash": "__EMBEDDED__",
+  "plan_id": "harnesskit.install-plan.m5-fixture",
+  "profile_id": "harnesskit.profile.engineering",
+  "scope": "project",
+  "mode": "dry-run",
+  "targets": ["project", "codex", "hermes"],
+  "components": [
+    "harnesskit.rule.harnesskit-project-context",
+    "harnesskit.skill.optimal-response"
+  ],
+  "runtime_surfaces": [
+    {"target": "project", "path": "AGENTS.md", "source": "dist/project/AGENTS.md"},
+    {"target": "codex", "path": ".agents/skills", "source": "dist/codex/.agents/skills"},
+    {"target": "codex", "path": ".codex/config.toml", "source": "dist/codex/.codex/config.toml"},
+    {"target": "codex", "path": ".codex/hooks.json", "source": "dist/codex/.codex/hooks.json"},
+    {"target": "hermes", "path": ".hermes/config.yaml", "source": "dist/hermes/config.yaml"},
+    {"target": "hermes", "path": ".hermes/harnesskit/hooks", "source": "dist/hermes/hooks"}
+  ],
+  "artifacts": [
+    {
+      "component_id": "harnesskit.rule.harnesskit-project-context",
+      "component_ids": ["harnesskit.rule.harnesskit-project-context"],
+      "target": "project",
+      "source": "dist/project/AGENTS.md",
+      "destination": "AGENTS.md",
+      "merge_strategy": "managed-block",
+      "begin_marker": "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->",
+      "end_marker": "<!-- END HARNESSKIT GENERATED CONTEXT -->",
+      "mode": 420
+    },
+    {
+      "component_id": "harnesskit.skill.optimal-response",
+      "component_ids": ["harnesskit.skill.optimal-response"],
+      "target": "codex",
+      "source": "dist/codex/.agents/skills/optimal-response/SKILL.md",
+      "destination": ".agents/skills/optimal-response/SKILL.md",
+      "mode": 420
+    },
+    {
+      "component_id": "harnesskit.skill.optimal-response",
+      "component_ids": ["harnesskit.skill.optimal-response"],
+      "target": "codex",
+      "source": "dist/codex/.codex/config.toml",
+      "destination": ".codex/config.toml",
+      "merge_strategy": "toml-agents-merge",
+      "toml_merge_key": "codex-agents",
+      "mode": 420
+    },
+    {
+      "component_id": "harnesskit.skill.optimal-response",
+      "component_ids": ["harnesskit.skill.optimal-response"],
+      "target": "codex",
+      "source": "dist/codex/.codex/hooks.json",
+      "destination": ".codex/hooks.json",
+      "merge_strategy": "json-deep-merge",
+      "json_merge_key": "codex-hooks",
+      "mode": 420
+    },
+    {
+      "component_id": "harnesskit.skill.optimal-response",
+      "component_ids": ["harnesskit.skill.optimal-response"],
+      "target": "hermes",
+      "source": "dist/hermes/config.yaml",
+      "destination": ".hermes/config.yaml",
+      "mode": 420
+    },
+    {
+      "component_id": "harnesskit.skill.optimal-response",
+      "component_ids": ["harnesskit.skill.optimal-response"],
+      "target": "hermes",
+      "source": "dist/hermes/hooks/optimal-response/optimal-response-pre-llm.cjs",
+      "destination": ".hermes/harnesskit/hooks/optimal-response/optimal-response-pre-llm.cjs",
+      "mode": 493
+    }
+  ]
+}

@@ -2,7 +2,7 @@ source_mode: research_requested
 sources:
   - source_id: rh.skill.skill-evaluation
     kind: Local Skill Reference
-    url_or_path: components/harness/skills/skill-evaluation/SKILL.md
+    url_or_path: components/skills/skill-evaluation/SKILL.md
     observed_ref: Local Draft Component
     license: Proprietary / Repository Local
     relevance: 하네스 컴포넌트(스킬, 에이전트, 훅 등) 평가를 위한 8대 Evaluation Gates 및 Verdict Rules의 최상위 명세 제공

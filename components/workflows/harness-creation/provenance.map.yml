@@ -1,0 +1,58 @@
+component_id: harnesskit.workflow.harness-creation
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: component-driven-adapter-sot-requirements
+      source_path: sources/component-driven-adapter-sot-requirements.md
+      influence:
+        - workflow_internal_source_only_boundary
+        - non_installable_adapter_output_failure_guidance
+      copied_content: false
+      adapted_content: true
+    - source_id: component-driven-adapter-sot-design
+      source_path: sources/component-driven-adapter-sot-design.md
+      influence:
+        - workflow_to_skill_workflow_trigger_modeling_guidance
+      copied_content: false
+      adapted_content: true
+    - source_id: harness-authoring-vertical-capability-slice-requirements
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      role: approved_requirements_sot
+      influence:
+        - one-current-slice manual workflow boundary
+        - PASS-only next-slice progression
+        - non-PASS current-slice retention
+      copied_content: false
+      adapted_content: true
+    - source_id: harness-authoring-vertical-capability-slice-blueprint
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      role: approved_blueprint_vc03
+      influence:
+        - exact select-current-slice and advance-after-pass records
+        - declarative capability slice contract
+        - no runner or persisted state boundary
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    Original HarnessKit harness-maintenance workflow card authored from
+    the approved body design and local installed skill review. No source text
+    was copied verbatim. The vertical capability slice update adapts approved
+    local requirements and blueprint VC-03 into manual selection and PASS-only
+    progression instructions.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - manual workflow sequence
+    - card-only runtime boundary
+  new_sections:
+    - HarnessKit harness creation stop conditions
+    - manual current capability slice loop and progression contract
+  license_notes: "Original workflow card; no bundled third-party code copied."
+  human_review_required: true
+  review_triggers:
+    - harness_creation_phase_changed
+    - workflow_runner_added
+    - runtime_claim_policy_changed
+    - installable_kind_boundary_changed
+    - capability_slice_contract_changed

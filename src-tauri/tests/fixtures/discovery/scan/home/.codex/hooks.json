@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "command": "RAW_HOOK_COMMAND_MUST_NOT_BE_INDEXED --token SUPER_SECRET_VALUE",
+        "api_key": "SUPER_SECRET_VALUE"
+      }
+    ]
+  }
+}

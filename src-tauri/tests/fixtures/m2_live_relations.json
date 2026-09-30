@@ -1,0 +1,378 @@
+[
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.designer",
+    "source_field": "routes.workflows[1].component_id",
+    "source_path": "components/agents/designer/agent.yml",
+    "target": "harnesskit.skill.accessibility-review"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.designer",
+    "source_field": "routes.workflows[0].component_id",
+    "source_path": "components/agents/designer/agent.yml",
+    "target": "harnesskit.skill.frontend-design"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.designer",
+    "source_field": "routes.workflows[2].component_id",
+    "source_path": "components/agents/designer/agent.yml",
+    "target": "harnesskit.skill.ux-copy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.github-manager",
+    "source_field": "routes.workflows[0].component_id",
+    "source_path": "components/agents/github-manager/agent.yml",
+    "target": "harnesskit.skill.github-issue"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.github-manager",
+    "source_field": "routes.workflows[2].component_id",
+    "source_path": "components/agents/github-manager/agent.yml",
+    "target": "harnesskit.skill.github-pr"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.github-manager",
+    "source_field": "routes.workflows[3].component_id",
+    "source_path": "components/agents/github-manager/agent.yml",
+    "target": "harnesskit.skill.github-pr-followup"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "router_workflow",
+    "source": "harnesskit.agent.github-manager",
+    "source_field": "routes.workflows[1].component_id",
+    "source_path": "components/agents/github-manager/agent.yml",
+    "target": "harnesskit.skill.github-start"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "policy_ref",
+    "source": "harnesskit.agent.github-manager",
+    "source_field": "routes.policy_ref",
+    "source_path": "components/agents/github-manager/agent.yml",
+    "target": "harnesskit.skill.github-workflow-policy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "composite_member",
+    "source": "harnesskit.composite.atlassian-acli",
+    "source_field": "members[0]",
+    "source_path": "components/composites/atlassian-acli/composite.yml",
+    "target": "harnesskit.skill.acli-gateway"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "composite_member",
+    "source": "harnesskit.composite.atlassian-acli",
+    "source_field": "members[1]",
+    "source_path": "components/composites/atlassian-acli/composite.yml",
+    "target": "harnesskit.skill.acli-read"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "composite_member",
+    "source": "harnesskit.composite.atlassian-acli",
+    "source_field": "members[2]",
+    "source_path": "components/composites/atlassian-acli/composite.yml",
+    "target": "harnesskit.skill.jira-write"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.executing-plans",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.agentic-execution"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "policy_ref",
+    "source": "harnesskit.skill.github-issue",
+    "source_field": "policy_ref",
+    "source_path": "components/skills/github-issue/component.yml",
+    "target": "harnesskit.skill.github-workflow-policy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "policy_ref",
+    "source": "harnesskit.skill.github-pr",
+    "source_field": "policy_ref",
+    "source_path": "components/skills/github-pr/component.yml",
+    "target": "harnesskit.skill.github-workflow-policy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "policy_ref",
+    "source": "harnesskit.skill.github-pr-followup",
+    "source_field": "policy_ref",
+    "source_path": "components/skills/github-pr-followup/component.yml",
+    "target": "harnesskit.skill.github-workflow-policy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "policy_ref",
+    "source": "harnesskit.skill.github-start",
+    "source_field": "policy_ref",
+    "source_path": "components/skills/github-start/component.yml",
+    "target": "harnesskit.skill.github-workflow-policy"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.receiving-code-review",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.local-change-review"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.requesting-code-review",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.local-change-review"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.subagent-driven-development",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.agentic-execution"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.using-git-worktrees",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.worktree-lifecycle"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_absorbed_by",
+    "source": "harnesskit.skill.verification-before-completion",
+    "source_field": "absorbed_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.rule.harnesskit-project-context"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "registry_replaced_by",
+    "source": "harnesskit.skill.writing-plans",
+    "source_field": "replaced_by",
+    "source_path": "components/registry.yml",
+    "target": "harnesskit.skill.agentic-execution"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[5].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.adapter-author"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[4].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.component-author"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[2].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.harness-blueprint-author"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[6].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.harness-evaluator"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[1].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.harness-requirements-analyst"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[0].agent",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.agent.reference-curator"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[5].skill",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.skill.adapter-authoring"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[4].skill",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.skill.component-authoring"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[2].skill",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.skill.harness-blueprint"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[1].skill",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.skill.harness-requirements"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.harness-creation",
+    "source_field": "steps[6].skill",
+    "source_path": "components/workflows/harness-creation/workflow.yml",
+    "target": "harnesskit.skill.skill-evaluation"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.max.agents[1]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.codebase-architecture-manager"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.normal.agents[1]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.codebase-architecture-manager"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[3].agent",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.plan-writer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[0].agent",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.requirements-analyst"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.max.agents[2]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.security-reviewer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.max.agents[3]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.solid-reviewer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[1].agent",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.spec-writer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.max.agents[0]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.system-designer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.normal.agents[0]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.system-designer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_mode_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[2].mode_fanout.token-efficient.agents[0]",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.system-designer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[4].agent",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.tdd-implementer"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_agent",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[5].agent",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.agent.verification-agent"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_rule",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[5].rule",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.rule.harnesskit-project-context"
+  },
+  {
+    "declarative_only": true,
+    "relation_type": "workflow_skill",
+    "source": "harnesskit.workflow.spec-to-tdd",
+    "source_field": "steps[4].skill",
+    "source_path": "components/workflows/spec-to-tdd/workflow.yml",
+    "target": "harnesskit.skill.tdd"
+  }
+]

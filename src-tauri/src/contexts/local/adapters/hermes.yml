@@ -1,0 +1,26 @@
+schema_version: 1
+adapter_id: hermes
+adapter_version: 1.0.0
+implementation_version: 1
+identity_namespace: harness_desktop.local.hermes
+locator_version: 1
+tool_id: hermes
+supported_os: [macos]
+qualification_id: harness-desktop.discovery.hermes.v1
+version_probe_id: hermes_dist_info_v1
+supported_tool_versions: { kind: exact, value: 0.20.6 }
+surfaces:
+  - surface_id: hermes_project
+    scope: project
+    root_enumerator_id: hermes_external_dirs_v1
+    parser_ids: [skill_frontmatter_v1, hermes_yaml_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Hook, Rule, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1
+  - surface_id: hermes_user
+    scope: user
+    root_enumerator_id: hermes_external_dirs_v1
+    parser_ids: [skill_frontmatter_v1, hermes_yaml_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Hook, Rule, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1

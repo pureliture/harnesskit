@@ -1,0 +1,26 @@
+schema_version: 1
+adapter_id: antigravity
+adapter_version: 1.0.0
+implementation_version: 1
+identity_namespace: harness_desktop.local.antigravity
+locator_version: 1
+tool_id: antigravity
+supported_os: [macos]
+qualification_id: harness-desktop.discovery.antigravity.v1
+version_probe_id: antigravity_info_plist_v1
+supported_tool_versions: { kind: exact, value: 2.8.1 }
+surfaces:
+  - surface_id: antigravity_project
+    scope: project
+    root_enumerator_id: antigravity_home_markers_v2
+    parser_ids: [skill_frontmatter_v1, antigravity_manifest_v1, hook_json_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Workflow, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1
+  - surface_id: antigravity_user
+    scope: user
+    root_enumerator_id: antigravity_home_markers_v2
+    parser_ids: [skill_frontmatter_v1, antigravity_manifest_v1, hook_json_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Workflow, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1

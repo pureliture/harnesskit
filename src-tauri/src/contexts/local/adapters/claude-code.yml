@@ -1,0 +1,26 @@
+schema_version: 1
+adapter_id: claude-code
+adapter_version: 1.0.0
+implementation_version: 1
+identity_namespace: harness_desktop.local.claude_code
+locator_version: 1
+tool_id: claude_code
+supported_os: [macos]
+qualification_id: harness-desktop.discovery.claude-code.v1
+version_probe_id: claude_cli_metadata_v1
+supported_tool_versions: { kind: exact, value: 2.1.202 }
+surfaces:
+  - surface_id: claude_code_project
+    scope: project
+    root_enumerator_id: claude_home_markers_v2
+    parser_ids: [skill_frontmatter_v1, claude_settings_v1, claude_workflow_js_metadata_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Command, Workflow, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1
+  - surface_id: claude_code_user
+    scope: user
+    root_enumerator_id: claude_home_markers_v2
+    parser_ids: [skill_frontmatter_v1, claude_settings_v1, claude_workflow_js_metadata_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Command, Workflow, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1

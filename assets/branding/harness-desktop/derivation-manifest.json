@@ -1,0 +1,218 @@
+{
+  "generator": {
+    "container_normalizer": "icns-png-chunk-v1",
+    "name": "tauri-cli",
+    "package": "@tauri-apps/cli@2.11.2",
+    "version": "2.11.2"
+  },
+  "operation": "resize_container_only",
+  "outputs": [
+    {
+      "dimensions": {
+        "height": 64,
+        "width": 64
+      },
+      "media_type": "image/png",
+      "path": "src-frontend/assets/branding/harness-desktop-64.png",
+      "sha256": "b36bf8e330314a0cfb89381cbc7ed3c5df438b1fe782e9959923534d2127d029",
+      "size": 5817
+    },
+    {
+      "dimensions": {
+        "height": 128,
+        "width": 128
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/128x128.png",
+      "sha256": "0bd671ce1b4a19fa5d7b82e3417e889aee200869242a77106d45a6799f1c9758",
+      "size": 17544
+    },
+    {
+      "dimensions": {
+        "height": 256,
+        "width": 256
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/128x128@2x.png",
+      "sha256": "f8a30bc9d0a118e206800b7e7c5d16b8c169dd62a736afccc456597c46205272",
+      "size": 58353
+    },
+    {
+      "dimensions": {
+        "height": 16,
+        "width": 16
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/16x16.png",
+      "sha256": "f96462320a118c71418a7a98f692eb799d400f49508e27e49d10ed691f77568b",
+      "size": 909
+    },
+    {
+      "dimensions": {
+        "height": 32,
+        "width": 32
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/32x32.png",
+      "sha256": "705c789a2a96f9666ae60280d59bc52f0d4ee99d27002baaa1e969c514fa5118",
+      "size": 2097
+    },
+    {
+      "dimensions": {
+        "height": 64,
+        "width": 64
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/64x64.png",
+      "sha256": "b36bf8e330314a0cfb89381cbc7ed3c5df438b1fe782e9959923534d2127d029",
+      "size": 5817
+    },
+    {
+      "dimensions": {
+        "height": 107,
+        "width": 107
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square107x107Logo.png",
+      "sha256": "3b2bdf24d8efad2b59ae9813a639cc7231a9c51ade5cb4f80d84a52776fa4720",
+      "size": 13298
+    },
+    {
+      "dimensions": {
+        "height": 142,
+        "width": 142
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square142x142Logo.png",
+      "sha256": "8166e221795ed7ffd931d45d9b9f0e37ed31633fa707fa3d4b704f837983a93a",
+      "size": 20927
+    },
+    {
+      "dimensions": {
+        "height": 150,
+        "width": 150
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square150x150Logo.png",
+      "sha256": "1203fa95b8cedc2bc88d81d463938b6e21f752afc728bab82d0a5dd066f1bb86",
+      "size": 22956
+    },
+    {
+      "dimensions": {
+        "height": 284,
+        "width": 284
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square284x284Logo.png",
+      "sha256": "b5acb5f4f43dc16f8c2f0ddb66d518f3d93a958177d3c7073cccf68d8d388fab",
+      "size": 70720
+    },
+    {
+      "dimensions": {
+        "height": 30,
+        "width": 30
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square30x30Logo.png",
+      "sha256": "f0e8a6cc5a51752d66f0206c1f0ab8444acfaa6587a6c35728e338739dccaa69",
+      "size": 1841
+    },
+    {
+      "dimensions": {
+        "height": 310,
+        "width": 310
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square310x310Logo.png",
+      "sha256": "797c9ecb29ae704838f006d587d3dac08c551d2928b602830386e5847c5e0164",
+      "size": 83946
+    },
+    {
+      "dimensions": {
+        "height": 44,
+        "width": 44
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square44x44Logo.png",
+      "sha256": "e8e61bb45d1a893c4b2ecff281ff97b24e9349259b4fe808edb368b94803f4c7",
+      "size": 3313
+    },
+    {
+      "dimensions": {
+        "height": 71,
+        "width": 71
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square71x71Logo.png",
+      "sha256": "8fd24407c78bb4548f741bff9f70b1bcef15184ba7c0b742daae243766c3d1b2",
+      "size": 6844
+    },
+    {
+      "dimensions": {
+        "height": 89,
+        "width": 89
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/Square89x89Logo.png",
+      "sha256": "81b05d50439b00ad2dc0ce504326feca7dbbe482d0b1c504d55bd4e4880f89c6",
+      "size": 9800
+    },
+    {
+      "dimensions": {
+        "height": 50,
+        "width": 50
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/StoreLogo.png",
+      "sha256": "e7b58ae56e06563273ac58d8fbf790d2765d1986efde7d32c33eb4e5be45364f",
+      "size": 3927
+    },
+    {
+      "media_type": "image/icns",
+      "path": "src-tauri/icons/icon.icns",
+      "sha256": "ab23e48d29c8b5ed9b74394b73a6b928430c529b4083bb17153e2617c717849d",
+      "size": 1674913
+    },
+    {
+      "media_type": "image/vnd.microsoft.icon",
+      "path": "src-tauri/icons/icon.ico",
+      "sha256": "8a1a56ee0caa2abf84c633435f2497affc82ad08134fb8ef0a5b38d60b75a0bd",
+      "size": 73441
+    },
+    {
+      "dimensions": {
+        "height": 512,
+        "width": 512
+      },
+      "media_type": "image/png",
+      "path": "src-tauri/icons/icon.png",
+      "sha256": "99eaec95b11ac037faca7827c228e09c74ad608941c01c64973763bae756f134",
+      "size": 234091
+    }
+  ],
+  "schema_version": 1,
+  "small_size_evidence": [
+    {
+      "path": "src-tauri/icons/16x16.png",
+      "size": 16
+    },
+    {
+      "path": "src-tauri/icons/32x32.png",
+      "size": 32
+    },
+    {
+      "path": "src-tauri/icons/64x64.png",
+      "size": 64
+    }
+  ],
+  "source": {
+    "color_mode": "RGBA",
+    "dimensions": {
+      "height": 1254,
+      "width": 1254
+    },
+    "media_type": "image/png",
+    "path": "assets/branding/harness-desktop/source/harness-desktop-cabinet.png",
+    "sha256": "c74519996e2ddefd56a77cb2c17bf6cc38a8ed954966c7a17c63a74bc93b9c5f"
+  }
+}

@@ -4,7 +4,7 @@
   "title": "Skill Component Schema",
   "description": "Schema for a HarnessKit skill, extending the base component schema.",
   "type": "object",
-  "required": ["component_id", "kind", "status", "title"],
+  "required": ["component_id", "kind", "status", "title", "summary"],
   "properties": {
     "component_id": {
       "type": "string",
@@ -26,7 +26,8 @@
     },
     "summary": {
       "type": "string",
-      "description": "Short description of what the skill does"
+      "description": "Short description of what the skill does",
+      "pattern": "\\S"
     },
     "source_refs": {
       "type": "array",

@@ -7,16 +7,42 @@ sources:
     description: "Reference skill and agent definitions from obra/superpowers"
     license_hint: unknown
     tags: [superpowers, skills, workflow]
-    active_snapshot: null
+    active_snapshot: obra-superpowers/2026-06-27-main-896224c
 
   mattpocock-skills:
     kind: github_repository
     url: https://github.com/mattpocock/skills
     ref: main
     description: "Reference engineering skills"
-    license_hint: unknown
+    license_hint: MIT-observed-context-only
     tags: [skills, engineering]
-    active_snapshot: null
+    active_snapshot: mattpocock-skills/2026-08-22-main-5b15a47
+    snapshots:
+      - mattpocock-skills/2026-06-27-main-5d78bd0
+      - mattpocock-skills/2026-07-16-main-9603c1c
+      - mattpocock-skills/2026-07-18-release-v1.2-b8fd9af
+      - mattpocock-skills/2026-08-11-main-84fdeff
+      - mattpocock-skills/2026-08-22-main-5b15a47
+    snapshot_requested_refs:
+      mattpocock-skills/2026-07-18-release-v1.2-b8fd9af: release/v1.2
+
+  knowledge-work-plugins:
+    kind: github_repository
+    url: https://github.com/anthropics/knowledge-work-plugins
+    ref: main
+    description: "Reference engineering and design skills from anthropics/knowledge-work-plugins (engineering + design packs): testing-strategy, tech-debt, deploy-checklist, debug, incident-response, documentation, accessibility-review, ux-copy"
+    license_hint: unknown
+    tags: [skills, engineering, design, knowledge-work]
+    active_snapshot: knowledge-work-plugins/2026-06-27-main-73b2b2d
+
+  claude-plugins-official:
+    kind: github_repository
+    url: https://github.com/anthropics/claude-plugins-official
+    ref: main
+    description: "Reference skills and agents from the claude-plugins-official marketplace: frontend-design skill (and superpowers cross-reference) and the code-simplifier agent plugin v1.0.0 (adapted into harnesskit.agent.code-simplifier)"
+    license_hint: unknown
+    tags: [skills, agents, frontend, design, code-simplifier]
+    active_snapshot: claude-plugins-official/2026-06-27-main-f42c6ed
 
   harness-evaluation-requirements:
     kind: repository_local
@@ -52,10 +78,26 @@ sources:
 
   skill-evaluation:
     kind: repository_local
-    path: components/harness/skills/skill-evaluation/SKILL.md
+    path: components/skills/skill-evaluation/SKILL.md
     description: "Reusable HarnessKit skill-evaluation gate procedure"
     license_hint: repository-local
     tags: [harnesskit, evaluation, skill]
+    active_snapshot: null
+
+  harness-authoring-vertical-capability-slice-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+    description: "Approved requirements SoT for vertical capability-slice authoring"
+    license_hint: repository-local
+    tags: [harnesskit, authoring, requirements, vertical-slice]
+    active_snapshot: null
+
+  harness-authoring-vertical-capability-slice-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+    description: "Approved blueprint SoT for vertical capability-slice authoring"
+    license_hint: repository-local
+    tags: [harnesskit, authoring, blueprint, vertical-slice]
     active_snapshot: null
 
   component-driven-adapter-sot-requirements:
@@ -73,3 +115,253 @@ sources:
     license_hint: repository-local
     tags: [harnesskit, adapter, design]
     active_snapshot: null
+
+  reference-provenance-gates-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-reference-provenance-gates/requirements.md
+    description: "Approved requirements SoT for reference-time source snapshot and provenance linkage gates"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, provenance, sources]
+    active_snapshot: null
+
+  reference-provenance-gates-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-reference-provenance-gates/blueprint.md
+    description: "Approved blueprint for reference-time source snapshot and provenance linkage gates"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, provenance, sources]
+    active_snapshot: null
+
+  mattpocock-skills-assimilation-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-mattpocock-skills-assimilation/requirements.md
+    description: "Approved requirements SoT for assimilating mattpocock/skills references into HarnessKit components"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, references, skills]
+    active_snapshot: null
+
+  mattpocock-skills-assimilation-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260627-mattpocock-skills-assimilation/blueprint.md
+    description: "Approved blueprint for assimilating mattpocock/skills references into HarnessKit component lanes"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, references, skills]
+    active_snapshot: null
+
+  mattpocock-engineering-refresh-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260716-mattpocock-engineering-refresh/requirements.md
+    description: "Approved requirements SoT for the Matt Pocock engineering refresh"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, engineering, references]
+    active_snapshot: null
+
+  mattpocock-engineering-refresh-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260716-mattpocock-engineering-refresh/blueprint.md
+    description: "Approved blueprint SoT for the Matt Pocock engineering refresh"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, engineering, references]
+    active_snapshot: null
+
+  mattpocock-v123-full-refresh-requirements:
+    kind: repository_local
+    path: docs/harness-requirements/20260811-mattpocock-v1-2-3-full-refresh/requirements.md
+    description: "Approved requirements SoT for the complete Matt Pocock skills v1.2.3 refresh"
+    license_hint: repository-local
+    tags: [harnesskit, requirements, references, skills, completeness]
+    active_snapshot: null
+
+  mattpocock-v123-full-refresh-blueprint:
+    kind: repository_local
+    path: docs/harness-requirements/20260811-mattpocock-v1-2-3-full-refresh/blueprint.md
+    description: "Approved blueprint SoT for the complete Matt Pocock skills v1.2.3 refresh"
+    license_hint: repository-local
+    tags: [harnesskit, blueprint, references, skills, completeness]
+    active_snapshot: null
+
+  harness-maintenance-project-context:
+    kind: repository_local
+    path: sources/harness-maintenance-project-context.yml
+    description: "Public-safe local migration summary for the HarnessKit maintenance project context"
+    license_hint: repository-local
+    tags: [harnesskit, maintenance, project-context, policy]
+    active_snapshot: null
+
+  junie-official-slash-commands:
+    kind: website
+    url: https://junie.jetbrains.com/docs/slash-commands.html
+    ref: current-documentation
+    description: "Official Junie CLI slash-command reference used for surface vocabulary"
+    license_hint: official-reference-only
+    tags: [junie, cli, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-cli-parameters:
+    kind: website
+    url: https://junie.jetbrains.com/docs/parameters.html
+    ref: current-documentation
+    description: "Official Junie CLI parameter reference used for target flag vocabulary"
+    license_hint: official-reference-only
+    tags: [junie, cli, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-model-selection:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-model-selection.html
+    ref: current-documentation
+    description: "Official Junie model-selection reference used for primary/helper model and effort vocabulary"
+    license_hint: official-reference-only
+    tags: [junie, cli, model, effort, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-headless:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-headless.html
+    ref: current-documentation
+    description: "Official Junie headless-mode reference"
+    license_hint: official-reference-only
+    tags: [junie, headless, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-plan:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-plan-mode.html
+    ref: current-documentation
+    description: "Official Junie CLI Plan mode reference"
+    license_hint: official-reference-only
+    tags: [junie, plan, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-debug:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-debug-mode.html
+    ref: current-documentation
+    description: "Official Junie CLI Debug mode reference"
+    license_hint: official-reference-only
+    tags: [junie, debug, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-review:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-review-agent.html
+    ref: current-documentation
+    description: "Official Junie review-agent reference"
+    license_hint: official-reference-only
+    tags: [junie, review, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-demo:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-demo.html
+    ref: current-documentation
+    description: "Official Junie CLI Demo reference"
+    license_hint: official-reference-only
+    tags: [junie, demo, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-remote:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-remote-mode.html
+    ref: current-documentation
+    description: "Official Junie CLI Remote mode reference"
+    license_hint: official-reference-only
+    tags: [junie, remote, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-acp:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-acp.html
+    ref: current-documentation
+    description: "Official Junie CLI ACP reference"
+    license_hint: official-reference-only
+    tags: [junie, acp, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-ide:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-ide-plugin.html
+    ref: current-documentation
+    description: "Official Junie IDE integration reference"
+    license_hint: official-reference-only
+    tags: [junie, ide, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-subagents:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-subagents.html
+    ref: current-documentation
+    description: "Official Junie CLI subagent reference"
+    license_hint: official-reference-only
+    tags: [junie, subagents, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  junie-official-worktrees:
+    kind: website
+    url: https://junie.jetbrains.com/docs/junie-cli-worktrees.html
+    ref: current-documentation
+    description: "Official Junie CLI worktree reference"
+    license_hint: official-reference-only
+    tags: [junie, worktree, documentation]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The reference was reviewed as a live website; no repository website snapshot was requested."
+
+  hermes-local-antigravity-skill:
+    kind: local_reference
+    ref: observed-local-file
+    description: "Machine-local Hermes antigravity-cli skill used only as an operator-pattern reference"
+    license_hint: local-reference-only
+    tags: [hermes, operator-reference, local]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The local reference was used as a pattern-only input; no portable snapshot was requested."
+
+  hermes-local-antigravity-cli-docs:
+    kind: local_reference
+    ref: observed-local-file
+    description: "Machine-local Hermes antigravity-cli notes used only as operator-pattern context"
+    license_hint: local-reference-only
+    tags: [hermes, operator-reference, local]
+    active_snapshot: null
+    traceability:
+      status: deferred
+      reason: "The local reference was used as a pattern-only input; no portable snapshot was requested."

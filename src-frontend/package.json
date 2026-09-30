@@ -1,0 +1,22 @@
+{
+  "name": "harnesskit-desktop-frontend",
+  "private": true,
+  "author": "HarnessKit Contributors",
+  "homepage": "https://github.com/pureliture/harnesskit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pureliture/harnesskit.git"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@pureliture/graph-workbench": "git+https://github.com/pureliture/graph-workbench.git#8f24852701282828c90eb20c54a298a3f8db4bbb",
+    "3d-force-graph": "1.80.0",
+    "three": "0.185.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

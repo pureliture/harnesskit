@@ -18,7 +18,7 @@
         "mode": {
           "type": "string",
           "description": "How this component relates to its upstream sources",
-          "enum": ["original", "derived", "adapted", "inspired", "forked", "referenced", "unrelated", "local_migration"]
+          "enum": ["original", "derived", "adapted", "inspired", "forked", "referenced", "unrelated", "local_migration", "rewritten", "newly_authored"]
         },
         "runtime_dependency_on_sources": {
           "type": "boolean",

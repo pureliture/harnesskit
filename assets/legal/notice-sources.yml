@@ -1,0 +1,42 @@
+schema_version: 1
+# Crates whose published .crate archive omits a license file. Each entry points
+# at the license text fetched from the exact upstream commit recorded in the
+# crate's .cargo_vcs_info.json, or at the SPDX text when upstream only links it.
+rust_license_overrides:
+  - crates: [objc2, block2, objc2-foundation, objc2-encode]
+    source: https://github.com/madsmtm/objc2/blob/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md
+    copyright: Copyright (c) Mads Marquart and objc2 contributors
+    files: [objc2-0.6.4.LICENSE.md, spdx.MIT.txt]
+  - crates: [dispatch2, objc2-app-kit, objc2-core-foundation, objc2-exception-helper, objc2-web-kit]
+    source: https://github.com/madsmtm/objc2/blob/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md
+    copyright: Copyright (c) Mads Marquart and objc2 contributors
+    files: [objc2-0.6.4.LICENSE.md, spdx.MIT.txt]
+  - crates: [unic-char-property, unic-char-range, unic-common, unic-ucd-ident, unic-ucd-version]
+    source: https://github.com/open-i18n/rust-unic/tree/5878605364af97a3358368a6eaef02104af2e016
+    copyright: Copyright 2017 The UNIC Project developers
+    files: [rust-unic.COPYRIGHT.md, rust-unic.LICENSE-MIT]
+  - crates: [alloc-stdlib]
+    source: https://github.com/dropbox/rust-alloc-no-stdlib/blob/ae42d22078b98549e987d2f03d12df7b984fde47/LICENSE
+    copyright: Copyright (c) 2016 Dropbox, Inc.
+    files: [rust-alloc-no-stdlib.LICENSE]
+  - crates: [selectors]
+    source: https://github.com/servo/stylo/tree/635e1a19d02960588a00e189bd4bd5bdb150ec3d/selectors
+    copyright: Copyright The Servo Project Developers
+    files: [spdx.MPL-2.0.txt]
+
+# C libraries statically linked into the python-build-standalone runtime that the
+# app bundles. Texts come from the same release's full archive (python/licenses).
+python_runtime_components:
+  - {name: CPython, version: 3.11.15, license: PSF-2.0, file: pbs.LICENSE.cpython.txt, source: https://github.com/python/cpython}
+  - {name: bzip2, version: bundled, license: bzip2-1.0.6, file: pbs.LICENSE.bzip2.txt, source: https://sourceware.org/bzip2/}
+  - {name: expat, version: bundled, license: MIT, file: pbs.LICENSE.expat.txt, source: https://github.com/libexpat/libexpat}
+  - {name: libedit, version: bundled, license: BSD-3-Clause, file: pbs.LICENSE.libedit.txt, source: https://thrysoee.dk/editline/}
+  - {name: libffi, version: bundled, license: MIT, file: pbs.LICENSE.libffi.txt, source: https://github.com/libffi/libffi}
+  - {name: liblzma, version: bundled, license: 0BSD, file: pbs.LICENSE.liblzma.txt, source: https://tukaani.org/xz/}
+  - {name: libuuid, version: bundled, license: BSD-3-Clause, file: pbs.LICENSE.libuuid.txt, source: https://sourceforge.net/projects/libuuid/}
+  - {name: mpdecimal, version: bundled, license: BSD-2-Clause, file: pbs.LICENSE.mpdecimal.txt, source: https://www.bytereef.org/mpdecimal/}
+  - {name: ncurses, version: bundled, license: X11-distribute-modifications-variant, file: pbs.LICENSE.ncurses.txt, source: https://invisible-island.net/ncurses/}
+  - {name: OpenSSL, version: 3.5.6, license: Apache-2.0, file: pbs.LICENSE.openssl-3.txt, source: https://www.openssl.org/}
+  - {name: SQLite, version: bundled, license: blessing, file: pbs.LICENSE.sqlite.txt, source: https://www.sqlite.org/}
+  - {name: Tcl/Tk, version: 9.0, license: TCL, file: pbs.LICENSE.tcl.txt, source: https://www.tcl-lang.org/}
+  - {name: zlib, version: bundled, license: Zlib, file: pbs.LICENSE.zlib.txt, source: https://zlib.net/}

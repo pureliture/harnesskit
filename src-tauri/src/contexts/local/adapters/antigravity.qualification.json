@@ -1,0 +1,15 @@
+{
+  "qualification_id": "harness-desktop.discovery.antigravity.v1",
+  "adapter_id": "antigravity",
+  "adapter_version": "1.0.0",
+  "descriptor_canonical_sha256": "b98e2a2e3182fe44fe9ac8646ddd2c0013e7d7d76c107bd43945fafdbf9a45bb",
+  "fixture_manifest_sha256": "c5fe3b0336e059edddecf94f43bdee0b17afc8bf449b44cb77e7b110f40756d1",
+  "evidence_sources": [
+    {"source_id":"https://antigravity.google/docs/skills","source_kind":"official_documentation","source_revision":"accessed-2026-07-12","captured_at":"2026-07-12T00:00:00+09:00"},
+    {"source_id":"local-metadata:antigravity-info-plist","source_kind":"local_version_metadata","source_revision":"2.8.1","captured_at":"2026-08-31T07:24:11+09:00"}
+  ],
+  "observed_runtime": {"tool_version":"2.8.1","macos_version":"26.6.2","architecture":"arm64"},
+  "probe_results": [
+    {"probe_id":"antigravity_info_plist_v1","surface_id":null,"observed_tool_version":"2.8.1","status":"Passed","observed_schema_digest":null,"evidence_algorithm":"sha256","evidence_digest":"e0e37ca2408cd9776dd4dee2cc6f18ac01bb6dcf6419f9c19ed381d085e5af62","safe_failure_code":null}
+  ]
+}

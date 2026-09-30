@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "BeforeAgent": [
+      {
+        "command": "ANTIGRAVITY_RAW_HOOK_MUST_NOT_BE_INDEXED"
+      }
+    ]
+  }
+}

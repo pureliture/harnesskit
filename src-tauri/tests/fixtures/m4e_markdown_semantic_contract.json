@@ -1,0 +1,135 @@
+{
+  "source": "# Safe Preview\nUse **strong**, *emphasis*, [Guide](https://private.invalid/path), and `code`.\n- first\n- second\n",
+  "content": {
+    "format": "markdown",
+    "block_fragments": [
+      {
+        "block_id": "markdown-block-0",
+        "kind": "heading",
+        "nodes": [
+          {
+            "kind": "heading",
+            "level": 1,
+            "children": [
+              { "kind": "text", "text": "Safe Preview" }
+            ]
+          }
+        ],
+        "starts_block": true,
+        "ends_block": true
+      },
+      {
+        "block_id": "markdown-block-15",
+        "kind": "paragraph",
+        "nodes": [
+          {
+            "kind": "paragraph",
+            "children": [
+              { "kind": "text", "text": "Use " },
+              {
+                "kind": "strong",
+                "children": [
+                  { "kind": "text", "text": "strong" }
+                ]
+              },
+              { "kind": "text", "text": ", " },
+              {
+                "kind": "emphasis",
+                "children": [
+                  { "kind": "text", "text": "emphasis" }
+                ]
+              },
+              { "kind": "text", "text": ", " },
+              {
+                "kind": "link_text",
+                "children": [
+                  { "kind": "text", "text": "Guide" }
+                ]
+              },
+              { "kind": "text", "text": ", and " },
+              { "kind": "inline_code", "text": "code" },
+              { "kind": "text", "text": ".\n" }
+            ]
+          }
+        ],
+        "starts_block": true,
+        "ends_block": false
+      },
+      {
+        "block_id": "markdown-block-15",
+        "kind": "inline_code",
+        "nodes": [],
+        "starts_block": false,
+        "ends_block": false
+      },
+      {
+        "block_id": "markdown-block-15",
+        "kind": "paragraph",
+        "nodes": [],
+        "starts_block": false,
+        "ends_block": true
+      },
+      {
+        "block_id": "markdown-block-94",
+        "kind": "list",
+        "nodes": [
+          {
+            "kind": "unordered_list",
+            "children": [
+              {
+                "kind": "list_item",
+                "children": [
+                  { "kind": "text", "text": "first" }
+                ]
+              }
+            ]
+          }
+        ],
+        "starts_block": true,
+        "ends_block": false
+      },
+      {
+        "block_id": "markdown-block-94",
+        "kind": "list",
+        "nodes": [
+          {
+            "kind": "unordered_list",
+            "children": [
+              {
+                "kind": "list_item",
+                "children": [
+                  { "kind": "text", "text": "second" }
+                ]
+              }
+            ]
+          }
+        ],
+        "starts_block": false,
+        "ends_block": true
+      }
+    ]
+  },
+  "expected_dom_tags": [
+    "DIV",
+    "DIV",
+    "H1",
+    "P",
+    "STRONG",
+    "EM",
+    "SPAN",
+    "CODE",
+    "UL",
+    "LI",
+    "LI"
+  ],
+  "expected_visible_text": "Safe PreviewUse strong, emphasis, Guide, and code.\nfirstsecond",
+  "forbidden_schema_keys": [
+    "destination",
+    "url",
+    "href",
+    "src",
+    "raw_html",
+    "attributes",
+    "onclick"
+  ]
+}

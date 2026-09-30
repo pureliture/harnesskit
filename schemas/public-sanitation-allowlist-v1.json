@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pureliture/harnesskit/schemas/public-sanitation-allowlist-v1.json",
+  "title": "HarnessKit Public Sanitation Exact Allowlist v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "surface",
+          "locator_sha256",
+          "value_sha256",
+          "justification_sha256",
+          "approved_by"
+        ],
+        "properties": {
+          "rule_id": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "surface": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+          "locator_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "value_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "justification_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "approved_by": {"type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9._-]*$"}
+        }
+      }
+    }
+  }
+}

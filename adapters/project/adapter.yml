@@ -1,0 +1,12 @@
+# Project target adapter config.
+#
+# project_runtime.allowed_roots lists the tracked live-runtime directories the
+# adapter build is allowed to own outside dist/ (the `project-runtime` output
+# family). A bundled_files output whose first path segment is one of these roots
+# is accepted; anything else is rejected.
+#
+# Adding a root here is the explicit-approval step for a new project-runtime
+# location. The build never hard-codes these roots; it reads them from this file.
+project_runtime:
+  allowed_roots:
+    - .acli

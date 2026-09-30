@@ -1,0 +1,52 @@
+workflow_id: harnesskit.workflow.spec-to-tdd
+kind: workflow
+status: draft
+domain: core
+summary: >-
+  이전 자동 요구사항-TDD 경로를 위한 실행할 수 없는 과거 워크플로 기록이다.
+runtime_implemented: false
+installable: false
+source_classification: internal-source-only
+adapter_output_policy: fail-if-selected
+modeling_guidance: >
+  Historical record only. This card has no runner, user-facing entrypoint, or
+  authority to select, start, or authorize TDD.
+description: >
+  Historical source record for the former requirements-to-spec-to-TDD chain.
+  Current TDD requires an explicit user choice or an already known mandatory
+  repository policy; this card cannot provide that authority.
+invocation_policy: historical-record-only
+historical_steps_only: true
+activation_authority: none
+steps:
+  - id: requirements
+    agent: harnesskit.agent.requirements-analyst
+    output: requirements.md
+  - id: spec
+    agent: harnesskit.agent.spec-writer
+    output: spec.md
+  - id: spec-review
+    mode_fanout:
+      token-efficient:
+        agents: [harnesskit.agent.system-designer]
+      normal:
+        agents: [harnesskit.agent.system-designer, harnesskit.agent.codebase-architecture-manager]
+      max:
+        agents:
+          - harnesskit.agent.system-designer
+          - harnesskit.agent.codebase-architecture-manager
+          - harnesskit.agent.security-reviewer
+          - harnesskit.agent.solid-reviewer
+    output: spec-review.md
+  - id: plan
+    agent: harnesskit.agent.plan-writer
+    output: implementation-plan.md
+  - id: tdd-execution
+    agent: harnesskit.agent.tdd-implementer
+    skill: harnesskit.skill.tdd
+    output: implementation-diff
+  - id: verification
+    agent: harnesskit.agent.verification-agent
+    rule: harnesskit.rule.harnesskit-project-context
+    output: verification.md
+mode_policy_ref: harnesskit.mode.default

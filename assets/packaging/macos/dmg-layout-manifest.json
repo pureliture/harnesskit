@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "window": {
+    "width": 660,
+    "height": 400
+  },
+  "items": {
+    "app": {
+      "name": "HarnessKit.app",
+      "x": 180,
+      "y": 190
+    },
+    "applications_alias": {
+      "name": "Applications",
+      "target": "/Applications",
+      "x": 480,
+      "y": 190
+    }
+  },
+  "instruction": {
+    "text": "HarnessKit을 Applications로 드래그"
+  },
+  "background": {
+    "path": "assets/packaging/macos/dmg-background.png",
+    "sha256": "166c8b7c234e5f612b07641226ef82b0e437d92d84898153fc7ab8511622283d",
+    "logical_dimensions": {
+      "width": 660,
+      "height": 400
+    },
+    "pixel_dimensions": {
+      "width": 1320,
+      "height": 800
+    },
+    "dpi": {
+      "x": 144,
+      "y": 144
+    }
+  }
+}

@@ -1,0 +1,41 @@
+component_id: harnesskit.skill.adapter-authoring
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: harness-authoring-vertical-capability-slice-requirements
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      influence:
+        - validated same-slice adapter input boundary
+        - future output and horizontal batching prohibition
+      copied_content: false
+      adapted_content: true
+    - source_id: harness-authoring-vertical-capability-slice-blueprint
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      influence:
+        - VC-02 current-slice adapter target contract
+        - component-scoped static output evidence
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    Original HarnessKit harness-maintenance skill authored from the approved
+    adapter-authoring design. Existing local HarnessKit adapter docs and
+    capability matrix were referenced; no third-party source text was copied.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - adapter authoring workflow
+    - strict runtime truth boundary
+  new_sections:
+    - runtime-gated completion claims
+    - adapter-author to runtime-verifier handoff
+    - prompt-submit and pre-invocation pass-through contract
+    - current capability slice adapter contract
+  license_notes: "Local project references only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - capability_matrix_changed
+    - runtime_probe_policy_changed
+    - prompt_submit_hook_contract_changed
+    - capability_slice_contract_changed

@@ -5,7 +5,7 @@ name: Projection artifact verification
 "on":
   pull_request:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
 
 permissions:
   contents: read

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harnesskit.dev/schemas/project-surface-removal.schema.json",
+  "title": "HarnessKit Project Surface Removal Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "repository_root_identity",
+    "profile_id",
+    "scope",
+    "source_plan",
+    "allowed_install_surface_roots",
+    "protected_prefixes",
+    "expected_destinations",
+    "remove_files",
+    "remove_codex_agent_tables",
+    "counts"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "repository_root_identity": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\]+@[0-9a-f]{40}$"
+    },
+    "profile_id": {"const": "harnesskit.profile.harness-maintenance"},
+    "scope": {"const": "project"},
+    "source_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_id", "sha256"],
+      "properties": {
+        "plan_id": {"const": "harnesskit.install-plan.harness-maintenance.project"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "allowed_install_surface_roots": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/safeRelativePath"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "protected_prefixes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/safeRelativePath"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "expected_destinations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/safeRelativePath"},
+      "uniqueItems": true
+    },
+    "remove_files": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/fileEvidence"}
+    },
+    "remove_codex_agent_tables": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/tableEvidence"}
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected",
+        "observed",
+        "missing",
+        "extra",
+        "content_mismatch",
+        "registration_mismatch"
+      ],
+      "properties": {
+        "expected": {"type": "integer", "minimum": 0},
+        "observed": {"type": "integer", "minimum": 0},
+        "missing": {"type": "integer", "minimum": 0},
+        "extra": {"type": "integer", "minimum": 0},
+        "content_mismatch": {"type": "integer", "minimum": 0},
+        "registration_mismatch": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*\\u0000)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[*?\\[\\]{}]).+$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "owner_profile_id",
+        "component_id",
+        "target",
+        "source",
+        "content_sha256"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/safeRelativePath"},
+        "owner_profile_id": {"type": "string", "pattern": "^harnesskit\\.profile\\.[a-z][a-z0-9-]+$"},
+        "component_id": {"type": "string", "pattern": "^harnesskit\\.(?:skill|agent|rule|workflow)\\.[a-z][a-z0-9-]+$"},
+        "target": {"enum": ["project", "claude", "codex"]},
+        "source": {"$ref": "#/$defs/safeRelativePath"},
+        "content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "tableEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config_path",
+        "table",
+        "owner_profile_id",
+        "component_id",
+        "content_sha256"
+      ],
+      "properties": {
+        "config_path": {"const": ".codex/config.toml"},
+        "table": {"type": "string", "pattern": "^[a-z][a-z0-9_]+$"},
+        "owner_profile_id": {"type": "string", "pattern": "^harnesskit\\.profile\\.[a-z][a-z0-9-]+$"},
+        "component_id": {"type": "string", "pattern": "^harnesskit\\.agent\\.[a-z][a-z0-9-]+$"},
+        "content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

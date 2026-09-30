@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "asset_id": "tool.codex",
+      "canonical_tool_id": "codex",
+      "aliases": ["codex"],
+      "display_name": "Codex",
+      "sourceUrl": "https://openai.com/brand/",
+      "repository_path": "src-frontend/assets/tool-identities/codex.png",
+      "bundled_relative_url": "./assets/tool-identities/codex.png",
+      "source": {
+        "kind": "vendor_downloaded",
+        "source_sha256": "01485e70cea6df8422f5abc643fbbd3c153442cc41da0e7d8e7451801ebf26e2"
+      },
+      "repository_sha256": "033bcda93ec990cb4a465d27b5d4f2d53af263eac703d1e73b2048d7b7e694af",
+      "media_type": "image/png",
+      "dimensions": { "width": 640, "height": 640 },
+      "derivation": "aspect_ratio_containment_rasterized_png",
+      "copyright_status": "not_asserted",
+      "license_status": "not_asserted",
+      "trademark_review_status": "not_asserted",
+      "allowed_usage_scope": ["local_tool_filter", "local_result_badge", "local_selected_inspector", "sot_target", "install_selected_target", "install_preview", "install_result"],
+      "product_use_approval": { "status": "approved", "authority": "user", "date": "2026-07-15" },
+      "attribution_notice": null,
+      "modification_constraint": "aspect_ratio_containment_only"
+    },
+    {
+      "asset_id": "tool.claude-code",
+      "canonical_tool_id": "claude_code",
+      "aliases": ["claude_code", "claude-code", "claude"],
+      "display_name": "Claude Code",
+      "sourceUrl": "https://anthropic.com/press-kit",
+      "repository_path": "src-frontend/assets/tool-identities/claude.png",
+      "bundled_relative_url": "./assets/tool-identities/claude.png",
+      "source": {
+        "kind": "vendor_downloaded",
+        "source_sha256": "f252cddcf91362ce4e01655044c7d8308c32b4972b1c16b459839ad8c61a0a68"
+      },
+      "repository_sha256": "f252cddcf91362ce4e01655044c7d8308c32b4972b1c16b459839ad8c61a0a68",
+      "media_type": "image/png",
+      "dimensions": { "width": 1280, "height": 1280 },
+      "derivation": "exact_bytes",
+      "copyright_status": "not_asserted",
+      "license_status": "not_asserted",
+      "trademark_review_status": "not_asserted",
+      "allowed_usage_scope": ["local_tool_filter", "local_result_badge", "local_selected_inspector", "sot_target", "install_selected_target", "install_preview", "install_result"],
+      "product_use_approval": { "status": "approved", "authority": "user", "date": "2026-07-15" },
+      "attribution_notice": null,
+      "modification_constraint": "aspect_ratio_containment_only"
+    },
+    {
+      "asset_id": "tool.antigravity",
+      "canonical_tool_id": "antigravity",
+      "aliases": ["antigravity", "antigravity_ide", "antigravity-cli", "antigravity_cli"],
+      "display_name": "Antigravity",
+      "sourceUrl": "https://antigravity.google/press?app=antigravity",
+      "repository_path": "src-frontend/assets/tool-identities/antigravity.png",
+      "bundled_relative_url": "./assets/tool-identities/antigravity.png",
+      "source": {
+        "kind": "vendor_downloaded",
+        "source_sha256": "e0cd08ccd10cd8d08ccf0ba449823ee88495825c0841619618100d3ab089f51e"
+      },
+      "repository_sha256": "e0cd08ccd10cd8d08ccf0ba449823ee88495825c0841619618100d3ab089f51e",
+      "media_type": "image/png",
+      "dimensions": { "width": 540, "height": 540 },
+      "derivation": "exact_bytes",
+      "copyright_status": "not_asserted",
+      "license_status": "not_asserted",
+      "trademark_review_status": "not_asserted",
+      "allowed_usage_scope": ["local_tool_filter", "local_result_badge", "local_selected_inspector", "sot_target", "install_selected_target", "install_preview", "install_result"],
+      "product_use_approval": { "status": "approved", "authority": "user", "date": "2026-07-15" },
+      "attribution_notice": null,
+      "modification_constraint": "aspect_ratio_containment_only"
+    },
+    {
+      "asset_id": "tool.hermes",
+      "canonical_tool_id": "hermes",
+      "aliases": ["hermes", "hermes_agent", "hermesagent"],
+      "display_name": "Hermes",
+      "sourceUrl": "https://hermes-agent.nousresearch.com/icon.png",
+      "repository_path": "src-frontend/assets/tool-identities/hermesagent.png",
+      "bundled_relative_url": "./assets/tool-identities/hermesagent.png",
+      "source": {
+        "kind": "vendor_downloaded",
+        "source_sha256": "5fbced606189c9bfc2925a16f8903333041cabbf1f8699fe9fe9b3e24504048f"
+      },
+      "repository_sha256": "5fbced606189c9bfc2925a16f8903333041cabbf1f8699fe9fe9b3e24504048f",
+      "media_type": "image/png",
+      "dimensions": { "width": 48, "height": 48 },
+      "derivation": "exact_bytes",
+      "copyright_status": "not_asserted",
+      "license_status": "not_asserted",
+      "trademark_review_status": "not_asserted",
+      "allowed_usage_scope": ["local_tool_filter", "local_result_badge", "local_selected_inspector", "sot_target", "install_selected_target", "install_preview", "install_result"],
+      "product_use_approval": { "status": "approved", "authority": "user", "date": "2026-07-15" },
+      "attribution_notice": null,
+      "modification_constraint": "aspect_ratio_containment_only"
+    }
+  ]
+}

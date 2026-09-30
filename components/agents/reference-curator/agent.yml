@@ -1,0 +1,43 @@
+component_id: harnesskit.agent.reference-curator
+kind: agent
+status: draft
+domain: harness
+title: Reference Curator
+summary: 명시적 지속 보관 권한에 따라 인용된 사실/추론 묶음을 만드는 선택적 원전 조사 에이전트이며, 로컬 이전 근거는 명시적으로 선택할 때만 포함한다.
+source_refs: []
+owned_files:
+  - components/agents/reference-curator/agent.yml
+  - components/agents/reference-curator/prompt.md
+  - components/agents/reference-curator/output.schema.json
+  - components/agents/reference-curator/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/agents/reference-curator.md
+  codex:
+    output_path: dist/codex/.codex/agents/reference_curator.toml
+role:
+  type: curator
+  domains:
+    - GitHub and open-source reference assessment
+    - HarnessKit reference packets
+    - explicit local migration evidence
+tool_policy:
+  default: review
+  repository_write: explicit_output_path_only
+  source_mutation: forbidden
+adapter:
+  claude:
+    tools: Read, Glob, Grep, Write, Bash, WebFetch
+    model: sonnet
+    skills: []
+    color: yellow
+  codex:
+    reasoning_effort: high
+routine_harness:
+  category: harness-maintenance
+  phase: reference-curation
+  optional: true
+  requirements_authoring_in_scope: false
+  blueprint_authoring_in_scope: false
+  component_authoring_in_scope: false
+  adapter_authoring_in_scope: false

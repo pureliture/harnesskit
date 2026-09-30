@@ -1,0 +1,25 @@
+profile_id: harnesskit.profile.work
+status: draft
+title: Work
+summary: Work automation profile for project-scope Atlassian workflows.
+components: []
+targets:
+  - project
+  - claude
+  - codex
+install_policy:
+  default_scope: project
+  allowed_scopes:
+    - project
+  activation_policy: manual
+  scope_components:
+    project:
+      - harnesskit.skill.atlassian-work
+      - harnesskit.skill.acli-gateway
+      - harnesskit.skill.acli-read
+      - harnesskit.skill.jira-write
+      - harnesskit.skill.confluence-write
+      - harnesskit.skill.jira-ticket-management
+      - harnesskit.skill.confluence-page-authoring
+      - harnesskit.skill.atlassian-account-diagnostics
+      - harnesskit.agent.atlassian-work-worker

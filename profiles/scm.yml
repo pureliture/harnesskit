@@ -1,0 +1,22 @@
+profile_id: harnesskit.profile.scm
+status: draft
+title: GitHub Workflow
+summary: GitHub issue, start-work, PR, and review-followup workflow profile driven by one router agent over github-workflow-policy.
+components:
+  - harnesskit.skill.capture-collaboration-idea
+  - harnesskit.skill.github-workflow-policy
+  - harnesskit.skill.github-issue
+  - harnesskit.skill.github-start
+  - harnesskit.skill.github-pr
+  - harnesskit.skill.github-pr-followup
+  - harnesskit.agent.github-manager
+targets:
+  - project
+  - claude
+  - codex
+install_policy:
+  default_scope: project
+  allowed_scopes:
+    - project
+    - user
+  activation_policy: manual

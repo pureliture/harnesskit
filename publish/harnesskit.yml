@@ -1,9 +1,11 @@
 projection_id: harnesskit.publish.public-projection
 source_profile: harnesskit.profile.harness-maintenance
 source_profile_path: profiles/harness-maintenance.yml
+public_workflows:
+  - harnesskit.workflow.harness-creation
 registry_path: components/registry.yml
 policy:
-  closure: profile_declared_components
+  closure: profile_components_plus_project_scope_components_plus_explicit_workflows
   manual_file_copying: prohibited
   content_writes: prohibited
 support_paths:
@@ -16,14 +18,20 @@ support_paths:
   - schemas/*.json
   - sources/*.md
   - sources/*.yml
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
   - publish/harnesskit.yml
   - adapters/claude/adapter.yml
   - adapters/claude/templates/*.hbs
+  - adapters/project/adapter.yml
   - adapters/codex/adapter.yml
   - adapters/codex/templates/*.hbs
   - scripts/adapters/__init__.py
+  - scripts/adapters/api.py
   - scripts/adapters/build.py
+  - scripts/adapters/hermes.py
   - scripts/install/*.py
+  - scripts/profiles/*.py
   - scripts/projection/*.py
   - scripts/authoring/*.py
   - scripts/authoring/commands/*.py

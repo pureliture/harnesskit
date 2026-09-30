@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harnesskit.dev/schemas/codex-migration.schema.json",
+  "title": "HarnessKit Codex Migration Manifest Schema",
+  "description": "Profile- and scope-scoped compatibility cleanup for Codex user configuration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "retired_codex_agent_registrations"],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "retired_codex_agent_registrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^harnesskit\\.profile\\.[a-z][a-z0-9-]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "project": {
+              "$ref": "#/definitions/registration_list"
+            },
+            "user": {
+              "$ref": "#/definitions/registration_list"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "registration_list": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "config_file"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "config_file": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

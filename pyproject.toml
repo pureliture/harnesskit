@@ -1,11 +1,18 @@
 [project]
 name = "harnesskit"
 version = "0.1.0"
+authors = [
+  { name = "HarnessKit Contributors" },
+]
 requires-python = ">=3.11"
 dependencies = [
   "PyYAML>=6.0.2",
   "jsonschema>=4.26.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pureliture/harnesskit"
+Repository = "https://github.com/pureliture/harnesskit"
 
 [dependency-groups]
 dev = [

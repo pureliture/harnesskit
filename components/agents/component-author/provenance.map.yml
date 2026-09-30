@@ -1,0 +1,39 @@
+component_id: harnesskit.agent.component-author
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: harness-authoring-vertical-capability-slice-requirements
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      influence:
+        - same-slice canonical author responsibility
+        - future-slice write prohibition
+      copied_content: false
+      adapted_content: true
+    - source_id: harness-authoring-vertical-capability-slice-blueprint
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      influence:
+        - VC-02 one-unit authoring contract
+        - slice id and remaining-units report
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent authored from the
+    approved component-authoring design and public Agent Skills/Codex/Claude
+    Code documentation references. No source text was copied verbatim.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - component author workflow
+    - authoring-only boundaries
+  new_sections:
+    - harness-maintenance placement policy
+    - final reporting discipline
+    - current capability slice authoring contract
+  license_notes: "Referenced public documentation only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - component_schema_changed
+    - registry_contract_changed
+    - adapter_phase_started
+    - capability_slice_contract_changed

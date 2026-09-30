@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "engineering": {
+      "enabled": true,
+      "access_token": "SUPER_SECRET_VALUE"
+    }
+  }
+}

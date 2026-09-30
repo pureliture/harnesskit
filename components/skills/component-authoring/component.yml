@@ -1,0 +1,48 @@
+component_id: harnesskit.skill.component-authoring
+kind: skill
+status: draft
+domain: harness
+title: Component Authoring
+summary: 승인된 컴포넌트 의도 또는 참고자료를 아이디어 구상이나 어댑터 이식 없이 HarnessKit 기준 컴포넌트 기록으로 만들 때 사용한다.
+source_refs:
+  - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+    path: skills/productivity/writing-great-skills
+    used_for:
+      - canonical_skill_body_quality
+      - predictable_process_and_information_hierarchy
+  - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+    path: skills/productivity/teach
+    used_for:
+      - future_agent_teaching_posture
+      - mission_tied_reference_material
+  - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+    path: skills/productivity/handoff
+    used_for:
+      - compact_handoff_and_redaction_pattern
+owned_files:
+  - components/skills/component-authoring/component.yml
+  - components/skills/component-authoring/SKILL.md
+  - components/skills/component-authoring/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/component-authoring/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/component-authoring/SKILL.md
+  antigravity-cli:
+    output_path: dist/antigravity-cli/.agents/skills/component-authoring/SKILL.md
+entrypoints:
+  natural_language:
+    - phrase: "harnesskit에 이런 스킬을 기준정보로 먼저 만들어줘"
+      context: "The user already has a component intent or reference and wants canonical records only."
+    - phrase: "기존 .claude skill을 기준정보로 이관해줘"
+      context: "The user wants adapter-local material migrated into canonical HarnessKit data before any porting."
+provenance_mode: manual
+routine_harness:
+  category: harness-maintenance
+  phase: component-authoring
+  ideation_in_scope: false
+  adapter_porting_in_scope: false
+  self_adapter_outputs_in_scope: false

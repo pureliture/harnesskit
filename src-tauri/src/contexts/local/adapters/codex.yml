@@ -1,0 +1,26 @@
+schema_version: 1
+adapter_id: codex
+adapter_version: 1.0.0
+implementation_version: 1
+identity_namespace: harness_desktop.local.codex
+locator_version: 1
+tool_id: codex
+supported_os: [macos]
+qualification_id: harness-desktop.discovery.codex.v1
+version_probe_id: codex_package_json_v1
+supported_tool_versions: { kind: exact, value: 0.150.1 }
+surfaces:
+  - surface_id: codex_project
+    scope: project
+    root_enumerator_id: codex_home_markers_v1
+    parser_ids: [skill_frontmatter_v1, codex_toml_v1, hook_json_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Command, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1
+  - surface_id: codex_user
+    scope: user
+    root_enumerator_id: codex_home_markers_v1
+    parser_ids: [skill_frontmatter_v1, codex_toml_v1, hook_json_v1, markdown_rule_v1]
+    supported_kinds: [Skill, Agent, Hook, Rule, Command, Unclassified]
+    ignore_policy_id: local_discovery_ignore_v1
+    redaction_policy_id: local_secret_redaction_v1

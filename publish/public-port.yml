@@ -1,0 +1,110 @@
+schema_version: 1
+target_repository_url: https://github.com/pureliture/harnesskit.git
+retain_public_baseline: true
+
+# Each include names a reviewed top-level public slice. The generated manifest
+# expands these patterns to exact tracked paths and hashes at one clean source
+# commit; it never serializes that private source commit or checkout path.
+ported_authored:
+  include:
+    - .gitignore
+    - .github/workflows/projection-artifact.yml
+    - README.md
+    - THIRD_PARTY_NOTICES.md
+    - package.json
+    - pyproject.toml
+    - uv.lock
+    - adapters/antigravity-cli/**
+    - adapters/claude/**
+    - adapters/codex/**
+    - adapters/project/**
+    - assets/branding/**
+    - assets/legal/**
+    - assets/packaging/**
+    - assets/tool-identities/**
+    - bin/harnesskit.mjs
+    - components/registry.yml
+    - components/agents/adapter-author/**
+    - components/agents/component-author/**
+    - components/agents/harness-blueprint-author/**
+    - components/agents/harness-evaluator/**
+    - components/agents/harness-requirements-analyst/**
+    - components/agents/reference-curator/**
+    - components/rules/harness-maintenance-project-context/**
+    - components/skills/adapter-authoring/**
+    - components/skills/component-authoring/**
+    - components/skills/harness-blueprint/**
+    - components/skills/harness-requirements/**
+    - components/skills/skill-evaluation/**
+    - components/workflows/harness-creation/**
+    - components/workflows/review-gated-implementation/**
+    - components/workflows/spec-to-tdd/**
+    - docs/images/**
+    - profiles/**
+    - migrations/**
+    - install-plans/**
+    - publish/harnesskit.yml
+    - publish/public-port.yml
+    - publish/public-sanitation-allowlist.yml
+    - schemas/**
+    - scripts/adapters/**
+    - scripts/authoring/**
+    - scripts/install/**
+    - scripts/package/**
+    - scripts/profiles/**
+    - scripts/projection/**
+    - scripts/public_port/**
+    - sources/*.md
+    - sources/*.yml
+    - src-frontend/**
+    - src-tauri/**
+    - tests/install/**
+    - tests/projection/**
+    - tests/public_port/**
+  exclude:
+    - src-tauri/gen/schemas/**
+    - src-frontend/assets/tool-identities/**
+
+intentional_removals:
+  # Pre-flattening component layout replaced by components/{agents,skills,workflows}.
+  - components/harness/agents/adapter-author/agent.yml
+  - components/harness/agents/adapter-author/prompt.md
+  - components/harness/agents/adapter-author/provenance.map.yml
+  - components/harness/agents/component-author/agent.yml
+  - components/harness/agents/component-author/prompt.md
+  - components/harness/agents/component-author/provenance.map.yml
+  - components/harness/agents/harness-blueprint-author/agent.yml
+  - components/harness/agents/harness-blueprint-author/prompt.md
+  - components/harness/agents/harness-blueprint-author/provenance.map.yml
+  - components/harness/agents/harness-evaluator/agent.yml
+  - components/harness/agents/harness-evaluator/prompt.md
+  - components/harness/agents/harness-evaluator/provenance.map.yml
+  - components/harness/agents/harness-requirements-analyst/agent.yml
+  - components/harness/agents/harness-requirements-analyst/prompt.md
+  - components/harness/agents/harness-requirements-analyst/provenance.map.yml
+  - components/harness/agents/reference-curator/agent.yml
+  - components/harness/agents/reference-curator/prompt.md
+  - components/harness/agents/reference-curator/provenance.map.yml
+  - components/harness/skills/adapter-authoring/SKILL.md
+  - components/harness/skills/adapter-authoring/component.yml
+  - components/harness/skills/adapter-authoring/provenance.map.yml
+  - components/harness/skills/component-authoring/SKILL.md
+  - components/harness/skills/component-authoring/component.yml
+  - components/harness/skills/component-authoring/provenance.map.yml
+  - components/harness/skills/harness-blueprint/SKILL.md
+  - components/harness/skills/harness-blueprint/component.yml
+  - components/harness/skills/harness-blueprint/provenance.map.yml
+  - components/harness/skills/harness-requirements/SKILL.md
+  - components/harness/skills/harness-requirements/component.yml
+  - components/harness/skills/harness-requirements/provenance.map.yml
+  - components/harness/skills/skill-evaluation/SKILL.md
+  - components/harness/skills/skill-evaluation/component.yml
+  - components/harness/skills/skill-evaluation/provenance.map.yml
+  - components/harness/workflows/harness-creation/card.md
+  - components/harness/workflows/harness-creation/provenance.map.yml
+  - components/harness/workflows/harness-creation/workflow.yml
+
+# Generator execution support is implemented and tested in M7A. Production
+# rules are added only with the hermetic tool bootstrap in the package/release
+# milestone; registry-resolving `npx --yes` is not accepted as a pinned rule.
+generated_rules: []
