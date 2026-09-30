@@ -12,7 +12,7 @@ Required references read:
 - `sources/harness-evaluation-oss-reference.yml`
 - `components/registry.yml`
 - `profiles/harness-maintenance.yml`
-- `components/harness/workflows/harness-creation/workflow.yml`
+- `components/workflows/harness-creation/workflow.yml`
 
 Approved requirement anchor:
 
@@ -86,7 +86,7 @@ Rejected alternatives:
 - Runtime proof coordination only inside isolated fixtures or temporary workspaces.
 - Fixture isolation expectations: seed copy must exclude tracked `.agents/**`, `.claude/**`, and `.codex/**` runtime surfaces, or must clean target runtime surfaces before selected profile apply.
 - Profile boundary contamination detection. If selected profile is `harness-maintenance` and `optimal-response` appears in the E2E runtime skill/agent/hook surface, verdict must fail.
-- Provider model/budget enforcement. Runtime tests must use the approved lightest model class for each provider, such as Codex mini/nano class and Claude haiku class, and must fail before execution if the selected model is missing, too expensive, or not explicitly allowed.
+- Provider model/budget enforcement. Codex evaluator adapter uses the approved `inherit` selection policy, distinct from the live-proof policy. live proof must declare Codex `luna` or Claude haiku and reject other model policies before execution. These policy labels are not evidence of actual backend model or cost compliance. Effort, timeout, and live-call caps remain enforced for every provider.
 - Output allowlist enforcement for reports, logs, JSON, JSONL, HTML, sanitized evidence, and fixture-local metadata only.
 - Verdict aggregation into `PASS`, `PASS_WITH_DEFERRED`, `NEEDS_WORK`, or `BLOCKED`.
 
@@ -109,9 +109,9 @@ Rejected alternatives:
 
 Required canonical component files for the new agent:
 
-- `components/harness/agents/harness-evaluator/agent.yml`
-- `components/harness/agents/harness-evaluator/prompt.md`
-- `components/harness/agents/harness-evaluator/provenance.map.yml`
+- `components/agents/harness-evaluator/agent.yml`
+- `components/agents/harness-evaluator/prompt.md`
+- `components/agents/harness-evaluator/provenance.map.yml`
 
 Registry and profile follow-up after canonical authoring:
 
@@ -123,7 +123,7 @@ Files explicitly not to author in this blueprint:
 
 - `components/hooks/harness-evaluation-safety-guard/**`
 - `components/rules/harness-evaluation-budget/**`
-- `components/harness/workflows/harness-evaluation/**`
+- `components/workflows/harness-evaluation/**`
 - Command component files.
 - Adapter outputs under `.agents/**`, `.claude/**`, `.codex/**`, or `dist/**`.
 
@@ -168,7 +168,7 @@ Runtime truth:
 
 - Agent adapter static output is not runtime proof.
 - Runtime proof for the evaluator must use isolated workspace evidence with timeout, budget, sanitized event capture, process cleanup result, fixture id, target, command summary, and verdict.
-- Runtime proof must record provider, selected lightest model, allowed model class, effort, live-call ceiling, timeout, and rejection reason when the model/budget gate blocks execution.
+- Runtime proof must record provider, model-selection policy, actual-model observation availability, effort, live-call ceiling, timeout, and rejection reason when the model/budget gate blocks execution. Codex `luna`, Claude haiku, and evaluator adapter `inherit` labels must not claim actual model or cost compliance without separate observation evidence.
 - `scripts/adapters/probe_harness_creation_runtime.py` should be repositioned in implementation as a reusable runtime proof runner called by the evaluator. It is not a command component.
 
 ## Provenance Plan
@@ -245,10 +245,9 @@ Output allowlist gate:
 
 Model and budget gate:
 
-- Runtime/E2E tests must declare provider, selected model, allowed lightest model class, effort, timeout, and live-call ceiling before starting.
-- Codex tests must use an explicitly approved mini/nano class model unless a later policy updates the allowlist.
-- Claude tests must use an explicitly approved haiku class model unless a later policy updates the allowlist.
-- Missing model selection, expensive default fallback, effort above the approved cap, absent timeout, or absent live-call ceiling fails before live execution.
+- Runtime/E2E tests must declare provider, model-selection policy, effort, timeout, and live-call ceiling before starting.
+- The Codex evaluator adapter uses the explicitly approved `inherit` policy. Record whether actual backend model observation is available; when unavailable, do not claim actual model or cost compliance. live proof must use Codex `luna` or Claude haiku.
+- Missing model-selection policy, a Codex live-proof policy other than `luna`, a Claude live-proof policy other than haiku, effort above the approved cap, absent timeout, or absent live-call ceiling fails before live execution.
 
 Runtime proof gate:
 
@@ -298,7 +297,7 @@ Slice 1: evaluator agent canonical component.
 - Title: Harness Evaluator
 - Summary: Top-level HarnessKit evaluation orchestrator that calls existing gate procedure, deterministic validators, fixture isolation, allowlist/profile contamination checks, runtime proof runner, and report generation without modifying source or canonical files.
 - Source influence: approved requirements; local `skill-evaluation` gates; local runtime probe patterns; OSS evaluation architecture patterns as structure-only references.
-- Owned output family: canonical evaluator agent files under `components/harness/agents/harness-evaluator/`.
+- Owned output family: canonical evaluator agent files under `components/agents/harness-evaluator/`.
 - Files to create/update: `agent.yml`, `prompt.md`, `provenance.map.yml`.
 - Explicit non-responsibilities: hook/rule/command/workflow authoring, adapter outputs, runtime probes, script implementation, tests, registry/profile migration unless separately approved for the authoring step.
 - Evaluation gates: requirements coverage, blueprint conformance, source/provenance, agent body quality, boundary safety, profile contamination contract, output allowlist contract, deferred runtime truth reporting.

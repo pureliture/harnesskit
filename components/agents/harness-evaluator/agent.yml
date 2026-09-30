@@ -1,0 +1,88 @@
+component_id: harnesskit.agent.harness-evaluator
+kind: agent
+status: draft
+domain: harness
+title: Harness Evaluator
+summary: 기존 게이트 절차, 결정론적 검증기, 픽스처 격리, 허용 목록/프로파일 오염 검사, 런타임 증명 실행기, 보고서 생성을 호출하되 소스 또는 기준 파일은 변경하지 않는 최상위 HarnessKit 평가 오케스트레이터.
+source_refs:
+  - source_id: harness-evaluation-requirements
+    path: sources/requirements.md
+    used_for:
+      - approved_requirements_sot
+      - boundary_and_safety_rules
+      - evidence_expectations
+  - source_id: harness-evaluation-blueprint
+    path: sources/blueprint.md
+    used_for:
+      - slice_1_authoring_contract
+      - top_level_orchestrator_boundary
+      - deferred_runtime_and_adapter_work
+  - source_id: harness-evaluation-local-reference
+    path: sources/harness-evaluation-reference.yml
+    used_for:
+      - local_skill_evaluation_gate_patterns
+      - runtime_probe_evidence_requirements
+      - static_validation_patterns
+  - source_id: harness-evaluation-oss-reference
+    path: sources/harness-evaluation-oss-reference.yml
+    used_for:
+      - structure_only_evaluation_patterns
+      - copied_content_boundary
+  - source_id: mattpocock-skills
+    path: skills/productivity/writing-great-skills
+    used_for:
+      - skill_authoring_quality_gate_orchestration
+      - trigger_scope_progressive_disclosure_checks
+  - source_id: mattpocock-skills
+    path: skills/productivity/teach
+    used_for:
+      - bounded_instruction_and_feedback_quality_checks
+  - source_id: mattpocock-skills
+    path: skills/in-progress/review
+    used_for:
+      - review_axis_separation_and_evidence_reporting_checks
+owned_files:
+  - components/agents/harness-evaluator/agent.yml
+  - components/agents/harness-evaluator/prompt.md
+  - components/agents/harness-evaluator/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/agents/harness-evaluator.md
+  codex:
+    output_path: dist/codex/.codex/agents/harness_evaluator.toml
+adapter:
+  claude:
+    tools: Read, Glob, Grep, Bash
+    skills:
+      - skill-evaluation
+    color: cyan
+  codex:
+    model: inherit
+    reasoning_effort: high
+role:
+  type: orchestrator
+  domains:
+    - HarnessKit evaluation planning
+    - static proof coordination
+    - runtime proof evidence requirements
+    - fixture isolation evidence
+    - profile contamination checks
+    - skill authoring quality gate reporting
+    - evaluation report generation
+tool_policy:
+  default: review
+  source_mutation: deny
+  adapter_output_generation: deny
+  live_runtime_probe: deny
+routine_harness:
+  category: harness-maintenance
+  phase: harness-evaluation
+  top_level_orchestrator: true
+  reused_gate_component: harnesskit.skill.skill-evaluation
+  source_and_canonical_edits_in_scope: false
+  profile_edits_in_scope: false
+  adapter_output_authoring_in_scope: false
+  live_runtime_probe_in_scope: false
+  strict_static_runtime_split: true
+  output_allowlist_enforced: true
+provenance_mode: referenced

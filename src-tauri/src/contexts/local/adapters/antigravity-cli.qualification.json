@@ -1,0 +1,15 @@
+{
+  "qualification_id": "harness-desktop.discovery.antigravity-cli.v1",
+  "adapter_id": "antigravity-cli",
+  "adapter_version": "1.0.0",
+  "descriptor_canonical_sha256": "d3464ff305410d7c498aeca6ba0dd0840bcb61b980ea00286e189d69ec00ae09",
+  "fixture_manifest_sha256": "77ca03f5571a885809fe8df8c67f60f163058d385040e7b9e74f46d4d8e29113",
+  "evidence_sources": [
+    {"source_id":"https://antigravity.google/docs/cli-plugins","source_kind":"official_documentation","source_revision":"accessed-2026-07-12","captured_at":"2026-07-12T00:00:00+09:00"},
+    {"source_id":"local-metadata:antigravity-cli-darwin-arm64-release-manifest","source_kind":"distribution_manifest","source_revision":"1.1.22","captured_at":"2026-08-30T20:54:25+09:00"}
+  ],
+  "observed_runtime": {"tool_version":"1.1.22","macos_version":"26.6.2","architecture":"arm64"},
+  "probe_results": [
+    {"probe_id":"antigravity_cli_manifest_v1","surface_id":null,"observed_tool_version":"1.1.22","status":"Passed","observed_schema_digest":null,"evidence_algorithm":"sha512","evidence_digest":"03b36320ce79d5f80a360c4fc129512b0e0568acd2e510f5e968ef794ae4ca2e8b3acc54f3613ce1862e47c4180a4bd20c565bca879e151b2ee94faa2a928a51","safe_failure_code":null}
+  ]
+}

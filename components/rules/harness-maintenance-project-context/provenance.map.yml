@@ -1,0 +1,44 @@
+component_id: harnesskit.rule.harness-maintenance-project-context
+provenance:
+  mode: local_migration
+  source_mode: local_migration
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: harness-maintenance-project-context
+      source_path: sources/harness-maintenance-project-context.yml
+      copied_content: false
+      adapted_content: true
+      runtime_support_claimed: false
+      used_for:
+        - maintenance_profile_identity
+        - sot_first_authoring_sequence
+        - verification_honesty
+        - required_ci_gate
+        - behavior_only_worktree_safety
+  attribution_note: >
+    Repository-local project instruction policy reconstructed for the
+    harness-maintenance profile from approved local migration intent. Existing
+    root instructions influenced the policy categories, but no private runtime
+    inventory or target-specific installed file list was copied.
+  license_notes: >
+    Repository-local policy authored for HarnessKit. No external source text,
+    code, or license dependency is included.
+  copied_sections: []
+  adapted_sections:
+    - maintenance profile identity and project-scope statement
+    - source-of-truth authoring order
+    - evidence-before-completion and strict runtime truth
+    - required CI merge and push gate
+    - behavior-only worktree safety invariants
+  new_sections: []
+  human_review_required: true
+  review_triggers:
+    - profile_identity_changed
+    - managed_block_marker_changed
+    - project_target_removed
+    - worktree_safety_changed
+    - engineering_or_documentation_inventory_reintroduced
+    - user_level_claim_introduced
+    - runtime_support_claim_introduced
+    - projection_rule_kind_changed
+    - package_rule_allowlist_broadened

@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harnesskit.dev/schemas/source.schema.json",
-  "title": "External Source Metadata",
-  "description": "Metadata for an external source tracked by HarnessKit.",
+  "title": "External Source Snapshot Metadata",
+  "description": "Reference-time metadata for an external source tracked by HarnessKit.",
   "type": "object",
-  "required": ["source_id", "kind", "url", "observed_commit"],
+  "required": ["source_id", "kind", "url", "requested_ref", "observed_identity", "observed_at"],
   "properties": {
     "source_id": {
       "type": "string",
@@ -23,11 +23,42 @@
     },
     "ref": {
       "type": "string",
-      "description": "Git ref to track (branch name, tag, or commit-ish). Used when kind is 'git'."
+      "description": "Legacy alias for requested_ref."
+    },
+    "requested_ref": {
+      "type": "string",
+      "description": "Git ref or version selector requested for tracking, such as main, a tag, or a package range."
     },
     "observed_commit": {
       "type": "string",
-      "description": "The commit SHA or version identifier observed at last sync"
+      "description": "Legacy observed commit field. Prefer observed_identity."
+    },
+    "observed_identity": {
+      "type": "object",
+      "description": "Concrete source identity observed at reference time.",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["commit", "tag", "release", "package_version", "version", "unavailable", "unknown"]
+        },
+        "value": {
+          "type": "string",
+          "description": "Observed commit SHA, tag, release, or version value when available."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason the observed identity is unavailable or unknown."
+        }
+      },
+      "oneOf": [
+        { "required": ["value"] },
+        { "required": ["reason"] }
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "description": "Date or timestamp when the source identity was observed."
     },
     "snapshot_id": {
       "type": "string",

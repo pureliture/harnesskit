@@ -1,0 +1,13 @@
+profile_id: harnesskit.profile.minimal
+status: draft
+title: Minimal
+summary: Thin baseline profile for source checkout and dry-run structure checks without hooks or live-operation components.
+components: []
+targets:
+  - claude
+  - codex
+install_policy:
+  default_scope: project
+  allowed_scopes:
+    - project
+  activation_policy: none

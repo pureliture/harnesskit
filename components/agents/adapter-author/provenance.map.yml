@@ -1,0 +1,39 @@
+component_id: harnesskit.agent.adapter-author
+provenance:
+  mode: original
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: harness-authoring-vertical-capability-slice-requirements
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      influence:
+        - validated same-slice output boundary
+        - future output and next-slice progression prohibition
+      copied_content: false
+      adapted_content: true
+    - source_id: harness-authoring-vertical-capability-slice-blueprint
+      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      influence:
+        - VC-02 adapter author handoff contract
+        - approved target and output allowlist preservation
+      copied_content: false
+      adapted_content: true
+  attribution_note: >
+    Original HarnessKit harness-maintenance agent authored from the approved
+    adapter-authoring design and local adapter implementation references. No
+    external source text was copied.
+  source_mode: referenced
+  copied_sections: []
+  rewritten_sections:
+    - adapter author responsibilities
+    - runtime gate handoff rules
+  new_sections:
+    - static adapter versus runtime truth reporting split
+    - runtime-verifier handoff boundary
+    - current capability slice adapter contract
+  license_notes: "Local project references only; no bundled third-party code."
+  human_review_required: true
+  review_triggers:
+    - target_adapter_changed
+    - capability_matrix_changed
+    - runtime_probe_policy_changed
+    - capability_slice_contract_changed

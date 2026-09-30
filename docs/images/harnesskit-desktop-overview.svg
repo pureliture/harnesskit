@@ -1,0 +1,185 @@
+<svg width="100%" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg" font-family="Pretendard" role="img" aria-labelledby="title desc">
+  <title id="title">HarnessKit Desktop 핵심 화면</title>
+  <desc id="desc">왼쪽 기준 명세 목록, 가운데 컴포넌트 관계 지도, 오른쪽 선택 항목 상세와 설치 계획, 아래쪽 로컬 설치 하네스 탐색 기능을 보여 주는 화면 구조</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c1410"/>
+      <stop offset="1" stop-color="#0c0a09"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="0.55" stop-color="#ea580c"/>
+      <stop offset="1" stop-color="#7c2d12"/>
+    </linearGradient>
+    <linearGradient id="window" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e8eef8"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="720" rx="24" fill="url(#background)"/>
+  <rect x="1" y="1" width="1198" height="718" rx="23" fill="none" stroke="#292524"/>
+
+  <text x="48" y="50" fill="#f59e0b" font-size="13" font-weight="800" letter-spacing="4">HARNESSKIT DESKTOP</text>
+  <text x="48" y="88" fill="#fafaf9" font-size="28" font-weight="850">파일을 열기 전에 구조를 이해하고, 쓰기 전에 변경을 확인합니다</text>
+  <text x="48" y="116" fill="#a8a29e" font-size="14">실제 제품의 정보 구조를 단순화한 안내 그림 · 기준 명세와 로컬 설치 상태는 별도 대시보드</text>
+
+  <g filter="url(#shadow)">
+    <rect x="48" y="144" width="1104" height="458" rx="18" fill="url(#window)" stroke="#64748b"/>
+  </g>
+
+  <!-- macOS title bar -->
+  <path d="M48 162 Q48 144 66 144 H1134 Q1152 144 1152 162 V197 H48 Z" fill="#e2e8f0"/>
+  <circle cx="70" cy="170" r="6" fill="#ef4444"/>
+  <circle cx="90" cy="170" r="6" fill="#f59e0b"/>
+  <circle cx="110" cy="170" r="6" fill="#10b981"/>
+
+  <!-- product identity -->
+  <rect x="137" y="155" width="30" height="30" rx="8" fill="#172554" stroke="#475569"/>
+  <rect x="143" y="161" width="7" height="7" rx="2" fill="#38bdf8"/>
+  <rect x="153" y="161" width="7" height="7" rx="2" fill="#a78bfa"/>
+  <rect x="143" y="171" width="7" height="7" rx="2" fill="#34d399"/>
+  <rect x="153" y="171" width="7" height="7" rx="2" fill="#fb923c"/>
+  <text x="177" y="168" fill="#0f172a" font-size="14" font-weight="800">HarnessKit</text>
+  <text x="177" y="184" fill="#64748b" font-size="10.5">하네스 명세 지도</text>
+
+  <rect x="320" y="155" width="244" height="31" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <circle cx="338" cy="170.5" r="4" fill="#10b981"/>
+  <text x="350" y="175" fill="#475569" font-size="12" font-family="ui-monospace, Menlo, monospace">~/Projects/harnesskit</text>
+  <rect x="574" y="155" width="115" height="31" rx="8" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="631.5" y="175" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="800">HarnessKit 연결</text>
+  <rect x="699" y="155" width="108" height="31" rx="8" fill="#2563eb"/>
+  <text x="753" y="175" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="800">명세 불러오기</text>
+  <rect x="932" y="155" width="188" height="31" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="969" y="175" text-anchor="middle" fill="#1e40af" font-size="11" font-weight="800">시스템</text>
+  <text x="1023" y="175" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">밝게</text>
+  <text x="1073" y="175" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">어둡게</text>
+
+  <!-- dashboard tabs -->
+  <rect x="48" y="197" width="1104" height="42" fill="#dbe5f3"/>
+  <rect x="64" y="202" width="205" height="32" rx="7" fill="#eef4ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="166.5" y="223" text-anchor="middle" fill="#1e3a8a" font-size="12.5" font-weight="800">SoT 명세 대시보드</text>
+  <text x="365" y="223" text-anchor="middle" fill="#475569" font-size="12.5" font-weight="750">PC 설치 하네스</text>
+
+  <!-- panel backgrounds -->
+  <rect x="48" y="239" width="242" height="363" fill="#f8fafc"/>
+  <rect x="291" y="239" width="541" height="363" fill="#ffffff"/>
+  <rect x="833" y="239" width="319" height="363" fill="#f8fafc"/>
+  <line x1="290" y1="239" x2="290" y2="602" stroke="#94a3b8"/>
+  <line x1="832" y1="239" x2="832" y2="602" stroke="#94a3b8"/>
+
+  <!-- left inventory -->
+  <text x="66" y="268" fill="#64748b" font-size="10.5" font-weight="800" letter-spacing="1.5">기준 명세</text>
+  <text x="66" y="294" fill="#0f172a" font-size="17" font-weight="850">컴포넌트 목록</text>
+  <rect x="66" y="311" width="206" height="38" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="82" y="335" fill="#64748b" font-size="11.5">이름, 종류, 영역</text>
+  <circle cx="75" cy="372" r="4" fill="#10b981"/>
+  <text x="88" y="376" fill="#475569" font-size="11.5" font-weight="700">체크아웃 연결됨</text>
+
+  <g font-size="11.5" fill="#475569">
+    <rect x="66" y="394" width="206" height="28" rx="6" fill="#e8eef8"/>
+    <text x="78" y="412" font-weight="800">▾ 컴포넌트</text>
+    <text x="246" y="412" text-anchor="end">전체</text>
+    <text x="84" y="442">• 어댑터 작성</text>
+    <rect x="208" y="427" width="56" height="20" rx="5" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="236" y="441" text-anchor="middle" fill="#4338ca" font-size="9.5" font-weight="800">에이전트</text>
+    <text x="84" y="470">• 블루프린트 작성</text>
+    <rect x="208" y="455" width="56" height="20" rx="5" fill="#eef2ff" stroke="#a5b4fc"/>
+    <text x="236" y="469" text-anchor="middle" fill="#4338ca" font-size="9.5" font-weight="800">에이전트</text>
+    <text x="84" y="498">• 컴포넌트 작성</text>
+    <rect x="208" y="483" width="56" height="20" rx="5" fill="#ecfeff" stroke="#67e8f9"/>
+    <text x="236" y="497" text-anchor="middle" fill="#0e7490" font-size="9.5" font-weight="800">스킬</text>
+    <text x="84" y="526">• 하네스 제작 흐름</text>
+    <rect x="194" y="511" width="70" height="20" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="229" y="525" text-anchor="middle" fill="#047857" font-size="9.5" font-weight="800">워크플로우</text>
+  </g>
+
+  <!-- center map -->
+  <text x="316" y="268" fill="#64748b" font-size="10.5" font-weight="800" letter-spacing="1.5">관계 지도</text>
+  <text x="316" y="294" fill="#0f172a" font-size="17" font-weight="850">컴포넌트 관계</text>
+  <rect x="716" y="259" width="92" height="30" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="762" y="278" text-anchor="middle" fill="#475569" font-size="11" font-weight="750">맞춤 · 1×</text>
+
+  <g stroke="#93c5fd" stroke-width="1.5" opacity="0.8">
+    <line x1="387" y1="383" x2="486" y2="343"/>
+    <line x1="387" y1="383" x2="488" y2="400"/>
+    <line x1="387" y1="383" x2="480" y2="454"/>
+    <line x1="486" y1="343" x2="600" y2="368"/>
+    <line x1="488" y1="400" x2="600" y2="368"/>
+    <line x1="480" y1="454" x2="600" y2="432"/>
+    <line x1="600" y1="368" x2="706" y2="338"/>
+    <line x1="600" y1="368" x2="718" y2="402"/>
+    <line x1="600" y1="432" x2="718" y2="402"/>
+    <line x1="600" y1="432" x2="700" y2="464"/>
+  </g>
+  <g filter="url(#glow)">
+    <circle cx="387" cy="383" r="18" fill="#f59e0b" stroke="#fef3c7" stroke-width="3"/>
+    <circle cx="486" cy="343" r="12" fill="#2563eb"/>
+    <circle cx="488" cy="400" r="12" fill="#7c3aed"/>
+    <circle cx="480" cy="454" r="12" fill="#0891b2"/>
+    <circle cx="600" cy="368" r="14" fill="#0f766e"/>
+    <circle cx="600" cy="432" r="14" fill="#ea580c"/>
+    <circle cx="706" cy="338" r="11" fill="#2563eb"/>
+    <circle cx="718" cy="402" r="11" fill="#7c3aed"/>
+    <circle cx="700" cy="464" r="11" fill="#0891b2"/>
+  </g>
+  <text x="387" y="415" text-anchor="middle" fill="#92400e" font-size="10" font-weight="800">프로필</text>
+
+  <line x1="309" y1="509" x2="814" y2="509" stroke="#cbd5e1"/>
+  <text x="316" y="535" fill="#64748b" font-size="10.5" font-weight="800" letter-spacing="1.5">프로필 구성</text>
+  <rect x="316" y="548" width="150" height="37" rx="8" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="391" y="571" text-anchor="middle" fill="#9a3412" font-size="10.5" font-weight="800" font-family="ui-monospace, Menlo, monospace">harness-maintenance</text>
+  <rect x="476" y="548" width="104" height="37" rx="8" fill="#eff6ff" stroke="#60a5fa"/>
+  <text x="528" y="571" text-anchor="middle" fill="#1d4ed8" font-size="11.5" font-weight="800">스킬</text>
+  <rect x="590" y="548" width="104" height="37" rx="8" fill="#f5f3ff" stroke="#a78bfa"/>
+  <text x="642" y="571" text-anchor="middle" fill="#6d28d9" font-size="11.5" font-weight="800">에이전트</text>
+  <rect x="704" y="548" width="104" height="37" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="756" y="571" text-anchor="middle" fill="#047857" font-size="11.5" font-weight="800">워크플로우</text>
+
+  <!-- right detail -->
+  <text x="858" y="268" fill="#64748b" font-size="10.5" font-weight="800" letter-spacing="1.5">선택한 명세</text>
+  <text x="858" y="294" fill="#0f172a" font-size="17" font-weight="850">컴포넌트 상세</text>
+  <line x1="858" y1="308" x2="1128" y2="308" stroke="#cbd5e1"/>
+  <text x="858" y="338" fill="#2563eb" font-size="11" font-weight="800">컴포넌트 작성</text>
+  <rect x="1038" y="321" width="76" height="24" rx="6" fill="#ecfeff" stroke="#67e8f9"/>
+  <text x="1076" y="337" text-anchor="middle" fill="#0e7490" font-size="9.5" font-weight="800">스킬</text>
+  <text x="858" y="370" fill="#334155" font-size="12.5" font-weight="750">승인된 의도를 기준 명세의</text>
+  <text x="858" y="389" fill="#334155" font-size="12.5" font-weight="750">컴포넌트 레코드로 작성합니다.</text>
+  <text x="858" y="425" fill="#64748b" font-size="10.5" font-weight="800" letter-spacing="1.2">대상별 미리보기</text>
+  <rect x="858" y="439" width="270" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="874" y="462" fill="#475569" font-size="11.5">Claude Code</text>
+  <text x="1110" y="462" text-anchor="end" fill="#0f172a" font-size="10.5" font-family="ui-monospace, Menlo, monospace">.claude/skills/…</text>
+  <text x="874" y="486" fill="#475569" font-size="11.5">Codex</text>
+  <text x="1110" y="486" text-anchor="end" fill="#0f172a" font-size="10.5" font-family="ui-monospace, Menlo, monospace">.agents/skills/…</text>
+  <rect x="858" y="520" width="270" height="44" rx="9" fill="url(#brand)"/>
+  <text x="993" y="547" text-anchor="middle" fill="#fff7ed" font-size="12.5" font-weight="850">설치 계획 보기</text>
+  <text x="993" y="584" text-anchor="middle" fill="#64748b" font-size="10.5">선택 → 미리보기 → 명시 확인</text>
+
+  <!-- meaning callouts -->
+  <g>
+    <rect x="48" y="628" width="340" height="62" rx="13" fill="#171210" stroke="#f59e0b"/>
+    <circle cx="78" cy="659" r="17" fill="#f59e0b"/>
+    <text x="78" y="665" text-anchor="middle" fill="#1c1410" font-size="14" font-weight="900">1</text>
+    <text x="108" y="653" fill="#fde68a" font-size="13" font-weight="850">무엇이 있는가</text>
+    <text x="108" y="674" fill="#a8a29e" font-size="11.5">기준 목록과 원본을 확인</text>
+
+    <rect x="430" y="628" width="340" height="62" rx="13" fill="#111827" stroke="#3b82f6"/>
+    <circle cx="460" cy="659" r="17" fill="#3b82f6"/>
+    <text x="460" y="665" text-anchor="middle" fill="#eff6ff" font-size="14" font-weight="900">2</text>
+    <text x="490" y="653" fill="#bfdbfe" font-size="13" font-weight="850">어떻게 연결되는가</text>
+    <text x="490" y="674" fill="#94a3b8" font-size="11.5">프로필·워크플로우 관계와 대상별 출력을 탐색</text>
+
+    <rect x="812" y="628" width="340" height="62" rx="13" fill="#0f1512" stroke="#10b981"/>
+    <circle cx="842" cy="659" r="17" fill="#10b981"/>
+    <text x="842" y="665" text-anchor="middle" fill="#052e20" font-size="14" font-weight="900">3</text>
+    <text x="872" y="653" fill="#a7f3d0" font-size="13" font-weight="850">무엇을 바꿀 것인가</text>
+    <text x="872" y="674" fill="#94a3b8" font-size="11.5">로컬 상태와 설치 계획을 승인 전에 비교</text>
+  </g>
+</svg>

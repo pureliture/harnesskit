@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "command": "CLAUDE_RAW_HOOK_MUST_NOT_BE_INDEXED",
+        "token": "SUPER_SECRET_VALUE"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": ["Read"]
+  }
+}

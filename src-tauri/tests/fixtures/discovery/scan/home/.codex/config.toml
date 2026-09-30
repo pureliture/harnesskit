@@ -1,0 +1,4 @@
+[profiles.engineering]
+description = "Engineering profile"
+model = "gpt-5"
+api_key = "REDACTED"

@@ -1,0 +1,16 @@
+{
+  "qualification_id": "harness-desktop.discovery.claude-code.v1",
+  "adapter_id": "claude-code",
+  "adapter_version": "1.0.0",
+  "descriptor_canonical_sha256": "d8083b77248ff27b368337d1bf193f94de5c2bd7b4606d884a93074a3c7034e9",
+  "fixture_manifest_sha256": "fbb4253fb77e0b19bb9ae0316c3e7b945af7d873a7479eb00f8602e45f4be51d",
+  "evidence_sources": [
+    {"source_id":"https://code.claude.com/docs/en/claude-directory","source_kind":"official_documentation","source_revision":"accessed-2026-08-01","captured_at":"2026-08-01T23:27:10+09:00"},
+    {"source_id":"local-metadata:claude-cli","source_kind":"local_version_metadata","source_revision":"2.1.202","captured_at":"2026-08-01T23:27:10+09:00"},
+    {"source_id":"local-binary:claude-cli-arm64","source_kind":"read_only_live_probe","source_revision":"sha256:7414f707861e2fe5afef33a466f888a8d2170e5028f5e9d2858f1d3ef45ffca5","captured_at":"2026-08-01T23:27:10+09:00"}
+  ],
+  "observed_runtime": {"tool_version":"2.1.202","macos_version":"26.5.2","architecture":"arm64"},
+  "probe_results": [
+    {"probe_id":"claude_cli_metadata_v1","surface_id":null,"observed_tool_version":"2.1.202","status":"Passed","observed_schema_digest":null,"evidence_algorithm":"sha256","evidence_digest":"83fb68a3d483658117731fa52ca2503985c9ebba3b9988b6c22b6729e565f80f","artifact_digest_algorithm":"sha256","artifact_digest":"7414f707861e2fe5afef33a466f888a8d2170e5028f5e9d2858f1d3ef45ffca5","safe_failure_code":null}
+  ]
+}

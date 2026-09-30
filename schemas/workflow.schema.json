@@ -4,17 +4,33 @@
   "title": "Workflow Card Schema",
   "description": "Schema defining a HarnessKit workflow card.",
   "type": "object",
-  "required": ["workflow_id", "status", "description"],
+  "required": ["workflow_id", "kind", "status", "summary", "description"],
   "properties": {
     "workflow_id": {
       "type": "string",
       "description": "Canonical workflow identifier. Format: harnesskit.workflow.<name>",
       "pattern": "^harnesskit\\.workflow\\.[a-z][a-z0-9-]+$"
     },
+    "kind": {
+      "type": "string",
+      "const": "workflow",
+      "description": "Canonical kind discriminator for Workflow relation definitions"
+    },
     "status": {
       "type": "string",
       "description": "Lifecycle status of the workflow",
       "enum": ["draft", "review", "stable", "deprecated", "archived"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "Authored human-readable display title for the workflow"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this workflow belongs to. Preserves the grouping that flat storage would otherwise erase. Buckets map scm->scm, work->work, harness->harness; already-flat workflows default to core.",
+      "enum": ["core", "scm", "work", "harness"]
     },
     "runtime_implemented": {
       "type": "boolean",
@@ -24,6 +40,11 @@
     "description": {
       "type": "string",
       "description": "Human-readable description of the workflow's purpose"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short description of what the workflow does",
+      "pattern": "\\S"
     },
     "entrypoints": {
       "type": "object",
@@ -64,6 +85,12 @@
             "type": "string",
             "description": "Unique identifier for this step within the workflow"
           },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "Authored human-readable display title for this step"
+          },
           "agent": {
             "type": "string",
             "description": "component_id of the agent that executes this step"
@@ -72,9 +99,38 @@
             "type": "string",
             "description": "component_id of the skill invoked in this step"
           },
+          "rule": {
+            "type": "string",
+            "description": "component_id of the rule consulted in this step"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Authored execution role; it is metadata and not a Component incidence"
+          },
+          "prompt_template": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Authored prompt template identity; it is metadata and not a Component incidence"
+          },
           "output": {
             "type": "string",
             "description": "Named output artifact from this step, referenced by later steps"
+          },
+          "gate_order": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Authored review gate order"
+          },
+          "requires_pass_from": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Step id that must pass before this step"
+          },
+          "loop_back_to": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Step id that receives control when this step loops"
           },
           "mode_fanout": {
             "type": "object",

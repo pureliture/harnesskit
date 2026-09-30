@@ -1,0 +1,98 @@
+component_id: harnesskit.agent.reference-curator
+provenance:
+  mode: referenced
+  source_mode: local
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: reference-provenance-gates-requirements
+      role: approved_requirements_sot
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - reference_time_snapshot_model
+        - observed_identity_required_fields
+        - license_quality_runtime_claim_boundary
+    - source_id: reference-provenance-gates-blueprint
+      role: slice_1_authoring_contract
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - reference_curator_packet_contract
+        - machine_mappable_source_packet_fields
+        - registry_snapshot_authoring_handoff_boundary
+    - source_id: mattpocock-engineering-refresh-requirements
+      role: approved_requirements_sot
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - primary_source_research_boundary
+        - fact_inference_citation_contract
+        - explicit_persistence_authorization
+    - source_id: mattpocock-engineering-refresh-blueprint
+      role: approved_blueprint_sot
+      copied_content: false
+      adapted_content: false
+      license: Repository local SoT
+      runtime_support_claimed: false
+      used_for:
+        - vc01_component_boundary
+        - output_schema_fields
+        - codex_runtime_scenario_contract
+        - controlled_mirror_integrity_manifest
+        - child_owned_inspection_receipt_boundary
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-07-16-main-9603c1c
+      path: skills/engineering/research/SKILL.md
+      role: latest_primary_source_research_reference
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+      license: unknown
+      runtime_support_claimed: false
+      used_for:
+        - primary_source_first_research_pattern
+        - claim_level_citation_pattern
+        - background_research_handoff_pattern
+  attribution_note: >
+    Original HarnessKit reference curator enhanced from approved local SoT and
+    the current mattpocock research pattern. No upstream code or prose was
+    copied. The adaptation adds claim-level primary-source citations,
+    fact/inference separation, explicit persistence authorization, and the
+    approved controlled-mirror integrity-manifest boundary without granting
+    license approval, decision authority, or runtime support.
+  copied_sections: []
+  rewritten_sections:
+    - reference packet workflow
+    - source risk and license uncertainty separation
+    - GitHub/open-source source scope routing
+    - explicit local migration boundary
+    - GitHub/open-source packet identity contract
+    - primary-source claim citation contract
+    - explicit persistence authorization boundary
+  new_sections:
+    - HarnessKit reference packet schema
+    - source scope modes
+    - reference-time snapshot model
+    - observed identity field requirements
+    - structured claim and citation schema
+    - persistence decision fields
+    - controlled-mirror integrity-manifest boundary
+    - child-owned mirror inspection receipt
+  license_notes: "No bundled third-party code copied; GitHub/open-source references remain URL-and-fact packet inputs with license uncertainty recorded separately."
+  human_review_required: true
+  review_triggers:
+    - requirements_changed
+    - blueprint_slice_changed
+    - source_registry_schema_changed
+    - snapshot_contract_changed
+    - reference_packet_contract_changed
+    - controlled_mirror_integrity_manifest_changed
+    - source_scope_contract_changed
+    - license_policy_changed
+    - runtime_support_claim_policy_changed

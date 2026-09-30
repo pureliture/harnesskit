@@ -1,0 +1,87 @@
+component_id: harnesskit.rule.harness-maintenance-project-context
+kind: rule
+status: draft
+domain: harness
+title: Harness Maintenance Project Context
+summary: Claude와 Codex 전반에서 HarnessKit 유지보수 저장소에 적용하는 공개 안전 관리형 프로젝트 지침이다.
+installable: true
+subtype: project-context
+scopes:
+  - project
+ownership:
+  type: managed-block
+  managed_block_id: harnesskit.generated-context
+  merge_policy: managed-block
+  preserve_foreign_entries: true
+runtime_contract:
+  target_surfaces:
+    project:
+      paths:
+        - AGENTS.md
+        - CLAUDE.md
+      precedence: project-instruction
+      merge_order: replace-managed-block
+evidence_status:
+  status: build_only
+  reason: Canonical managed-block mapping is statically defined; live target loading and behavior are deferred.
+  by_target:
+    project:
+      status: build_only
+      reason: Both root instruction destinations are declared from one canonical body.
+    claude:
+      status: pending_probe
+      reason: CLAUDE.md loading and behavior are not proven by canonical authoring.
+    codex:
+      status: pending_probe
+      reason: AGENTS.md loading and behavior are not proven by canonical authoring.
+    antigravity-cli:
+      status: pending_probe
+      reason: agy reuses AGENTS.md, but current CLI loading and behavior are not proven by canonical authoring.
+target_support:
+  project:
+    status: build_only
+    scopes:
+      - project
+    output_intent: Managed project instruction blocks in AGENTS.md and CLAUDE.md.
+  claude:
+    status: pending_probe
+    scopes:
+      - project
+    output_intent: CLAUDE.md managed project instruction block.
+  codex:
+    status: pending_probe
+    scopes:
+      - project
+    output_intent: AGENTS.md managed project instruction block.
+  antigravity-cli:
+    status: pending_probe
+    scopes:
+      - project
+    output_intent: shared AGENTS.md managed project instruction block; no separate GEMINI.md output.
+source_refs:
+  - source_id: harness-maintenance-project-context
+    path: sources/harness-maintenance-project-context.yml
+    used_for:
+      - maintenance_profile_identity
+      - sot_first_authoring_sequence
+      - verification_honesty
+      - required_ci_gate
+      - behavior_only_worktree_safety
+owned_files:
+  - components/rules/harness-maintenance-project-context/component.yml
+  - components/rules/harness-maintenance-project-context/PROJECT_CONTEXT.md
+  - components/rules/harness-maintenance-project-context/provenance.map.yml
+bundled_files:
+  - source: components/rules/harness-maintenance-project-context/PROJECT_CONTEXT.md
+    output_path: dist/project/AGENTS.md
+  - source: components/rules/harness-maintenance-project-context/PROJECT_CONTEXT.md
+    output_path: dist/project/CLAUDE.md
+merge_artifacts:
+  - destination: AGENTS.md
+    strategy: managed-block
+    begin_marker: "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->"
+    end_marker: "<!-- END HARNESSKIT GENERATED CONTEXT -->"
+  - destination: CLAUDE.md
+    strategy: managed-block
+    begin_marker: "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->"
+    end_marker: "<!-- END HARNESSKIT GENERATED CONTEXT -->"

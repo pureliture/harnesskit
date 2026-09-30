@@ -1,0 +1,50 @@
+component_id: harnesskit.workflow.spec-to-tdd
+provenance:
+  mode: rewritten
+  source_mode: approved_local_migration
+  runtime_dependency_on_sources: false
+  runtime_support_claimed: false
+  sources:
+    - source_id: tdd-minimal-requirements
+      source_path: docs/harness-requirements/20260721-harnesskit-tdd-minimal-contract/requirements.md
+      influence:
+        - non-runtime workflow cannot revive automatic TDD activation
+        - operation and scope-reduction boundaries remain outside the workflow
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+      runtime_support_claimed: false
+    - source_id: tdd-minimal-blueprint
+      source_path: docs/harness-requirements/20260721-harnesskit-tdd-minimal-contract/blueprint.md
+      influence:
+        - retain historical steps without a user-facing entrypoint or runner
+        - source-only fail-if-selected adapter boundary
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+      runtime_support_claimed: false
+    - source_id: spec-to-tdd-prior-record
+      source_path: components/workflows/spec-to-tdd/workflow.yml
+      influence:
+        - preserves the prior step list as historical context only
+      copied_content: false
+      adapted_content: false
+      runtime_dependency_on_sources: false
+      runtime_support_claimed: false
+  attribution_note: >
+    Owned historical-record rewrite. The former automatic requirements-to-TDD
+    sequence is retained only to explain legacy structure; it has no runtime,
+    routing, activation, or installation authority.
+  copied_sections: []
+  adapted_sections: []
+  new_sections:
+    - explicit historical-only invocation boundary
+    - no-TDD-activation authority statement
+  excluded_concepts:
+    - user-facing workflow invocation examples
+    - automatic requirements, design, implementation, or TDD dispatch
+    - runner, adapter output, installation, or runtime support claim
+  review_triggers:
+    - workflow_activation_or_adapter_policy_changed
+    - tdd_activation_contract_changed
+    - mode_policy_precedent_replaced

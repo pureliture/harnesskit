@@ -1,0 +1,24 @@
+source_mode: local_migration
+title: Harness Maintenance Project Context
+summary: Public-safe policy intent for project-level HarnessKit maintenance instructions.
+runtime_dependency_on_sources: false
+approved_intent:
+  installed_profile: harness-maintenance
+  install_scope: project
+  policies:
+    - requirements, blueprint, canonical source, adapter output 순서로 source of truth를 반영한다.
+    - 완료 주장은 실제 verification evidence에 한정하고 runtime truth는 직접 evidence 없이 확장하지 않는다.
+    - Required CI가 green이 아니면 main 또는 master로 merge하거나 push하지 않는다.
+    - 변경은 dedicated branch와 worktree에서 수행하고 cleanup 전 fresh git truth를 확인한다.
+public_safety:
+  copied_content: false
+  private_paths_included: false
+  secrets_included: false
+  machine_local_inventory_included: false
+  user_level_claims_included: false
+  runtime_support_claimed: false
+exclusions:
+  - engineering profile installation claim
+  - documentation or render runtime inventory
+  - target-specific installed file inventory
+  - skill or agent invocation requirement for worktree safety

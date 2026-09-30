@@ -1,0 +1,4 @@
+skills:
+  external_dirs:
+    - ../../hermes-external
+api_key: REDACTED

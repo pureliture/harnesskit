@@ -12,8 +12,15 @@ from typing import Any
 import yaml
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.profiles.selection import validate_profile_selection  # noqa: E402
+
+
 KIND_PLURALS = {
     "agent": "agents",
+    "rule": "rules",
     "skill": "skills",
     "workflow": "workflows",
 }
@@ -165,6 +172,49 @@ def _optional_sibling(repo_root: Path, manifest_path: str, filename: str) -> str
     return _normalize_repo_file(repo_root, raw_path)
 
 
+def _dedupe_preserving_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
+
+
+def _public_component_ids(profile: dict[str, Any]) -> list[str]:
+    components = profile.get("components") or []
+    install_policy = profile.get("install_policy") or {}
+    allowed_scopes = install_policy.get("allowed_scopes") or []
+    default_scope = install_policy.get("default_scope")
+    scope_components = install_policy.get("scope_components") or {}
+
+    if not isinstance(components, list) or not all(
+        isinstance(component_id, str) for component_id in components
+    ):
+        raise ValueError("profile components must be a list of strings")
+    if not isinstance(allowed_scopes, list) or not all(
+        isinstance(scope, str) for scope in allowed_scopes
+    ):
+        raise ValueError("install_policy.allowed_scopes must be a list of strings")
+    if not isinstance(scope_components, dict):
+        raise ValueError("install_policy.scope_components must be a mapping")
+
+    user_components = scope_components.get("user") or []
+    if allowed_scopes != ["project"] or default_scope == "user" or user_components:
+        raise ValueError("public projection source profile must be project-scope-only")
+
+    project_components = scope_components.get("project") or []
+    if not isinstance(project_components, list) or not all(
+        isinstance(component_id, str) for component_id in project_components
+    ):
+        raise ValueError(
+            "install_policy.scope_components.project must be a list of strings"
+        )
+    return _dedupe_preserving_order([*components, *project_components])
+
+
 def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     policy = _load_yaml(policy_path)
@@ -188,17 +238,54 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
             f"policy source_profile does not match profile_id: {policy['source_profile']}"
         )
 
+    validate_profile_selection(
+        profile,
+        registry_components,
+        load_manifest=lambda raw_path: _load_yaml(
+            repo_root / _normalize_repo_file(repo_root, raw_path)
+        ),
+    )
+
+    raw_public_workflows = policy.get("public_workflows") or []
+    if not isinstance(raw_public_workflows, list) or not all(
+        isinstance(component_id, str) and component_id
+        for component_id in raw_public_workflows
+    ):
+        raise ValueError("public_workflows must be a list of non-empty component ids")
+    if len(raw_public_workflows) != len(set(raw_public_workflows)):
+        raise ValueError("duplicate public workflow identity")
+    explicit_public_workflows = sorted(raw_public_workflows)
+    for component_id in explicit_public_workflows:
+        registry_entry = registry_components.get(component_id)
+        if not isinstance(registry_entry, dict):
+            raise ValueError(f"public workflow is not registered: {component_id}")
+        if registry_entry.get("kind") != "workflow":
+            raise ValueError(
+                f"public workflow registry kind must be workflow: {component_id}"
+            )
+        manifest_path = _normalize_repo_file(repo_root, registry_entry.get("path"))
+        _ensure_not_excluded(manifest_path, excluded_patterns)
+        manifest = _load_yaml(repo_root / manifest_path)
+        if manifest.get("kind") != "workflow":
+            raise ValueError(
+                f"public workflow manifest kind must be workflow: {component_id}"
+            )
+
     grouped_components: dict[str, list[dict[str, Any]]] = {
         "agents": [],
+        "rules": [],
         "skills": [],
         "workflows": [],
     }
-    public_component_ids = set(profile.get("components") or [])
+    ordered_component_ids = _dedupe_preserving_order(
+        [*_public_component_ids(profile), *explicit_public_workflows]
+    )
+    public_component_ids = set(ordered_component_ids)
     included_paths: set[str] = set()
     _add_required_path(included_paths, source_profile_path, excluded_patterns)
     _add_required_path(included_paths, registry_path, excluded_patterns)
 
-    for component_id in public_component_ids:
+    for component_id in ordered_component_ids:
         registry_entry = registry_components.get(component_id)
         if not isinstance(registry_entry, dict):
             raise ValueError(f"profile component is not registered: {component_id}")
@@ -243,9 +330,6 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
             }
         )
 
-    for group in grouped_components.values():
-        group.sort(key=lambda component: component["id"])
-
     support_paths = _support_paths(
         repo_root,
         list(policy.get("support_paths") or []),
@@ -259,11 +343,13 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
             "id": profile["profile_id"],
             "path": source_profile_path,
         },
+        "explicit_public_workflows": explicit_public_workflows,
         "source_revision": _source_revision(repo_root),
         "registry_path": registry_path,
         "components": grouped_components,
         "closure_summary": {
             "agents": len(grouped_components["agents"]),
+            "rules": len(grouped_components["rules"]),
             "skills": len(grouped_components["skills"]),
             "workflows": len(grouped_components["workflows"]),
         },

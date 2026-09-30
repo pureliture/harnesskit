@@ -1,0 +1,15 @@
+{
+  "qualification_id": "harness-desktop.discovery.codex.v1",
+  "adapter_id": "codex",
+  "adapter_version": "1.0.0",
+  "descriptor_canonical_sha256": "0b97e5a9f8a26c30b4e86f45c84fc20fd0bd4fa2d217665c677054ed01b68053",
+  "fixture_manifest_sha256": "c88214ead77fa75b5fbba7545eb36445cf43a19c96259703053c9149424f73a7",
+  "evidence_sources": [
+    {"source_id":"https://learn.chatgpt.com/docs/build-skills","source_kind":"official_documentation","source_revision":"accessed-2026-07-12","captured_at":"2026-07-12T00:00:00+09:00"},
+    {"source_id":"local-metadata:codex-standalone-package","source_kind":"local_version_metadata","source_revision":"0.150.1","captured_at":"2026-08-30T20:54:25+09:00"}
+  ],
+  "observed_runtime": {"tool_version":"0.150.1","macos_version":"26.6.2","architecture":"arm64"},
+  "probe_results": [
+    {"probe_id":"codex_package_json_v1","surface_id":null,"observed_tool_version":"0.150.1","status":"Passed","observed_schema_digest":null,"evidence_algorithm":"sha256","evidence_digest":"f1fb8f28a73bd100038949292c642b1db871b4753fe21dc8e2aef92d4f792eaf","safe_failure_code":null}
+  ]
+}

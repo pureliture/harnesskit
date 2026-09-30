@@ -71,7 +71,7 @@ HarnessKit 하네스 평가 체계의 top-level 총괄자는 하네스 평가 �
 
 14. E2E 평가 fixture는 deterministic setup/teardown을 가져야 하며, fixture 외부 파일 변경 여부를 감지할 수 있어야 한다.
 
-15. Runtime/E2E 테스트는 각 provider의 승인된 lightest 모델만 사용해야 한다. Codex 계열은 mini/nano class, Claude 계열은 haiku class를 기본 허용군으로 두며, provider별 lightest model이 명시되지 않았거나 더 비싼 기본 모델로 fallback되면 실행 전 실패해야 한다.
+15. Runtime/E2E 테스트는 provider별 승인된 model-selection policy를 실행 전에 검증해야 한다. live proof는 Codex `luna`, Claude haiku를 명시해야 한다. Codex evaluator adapter의 `inherit`은 live-proof policy와 별개이며, `inherit`, `luna`, haiku 어느 것도 별도 관찰 증거 없이 actual backend model이나 비용 준수 주장으로 해석하면 안 된다.
 
 16. 평가 gate는 단순 pass/fail 목록이 아니라 재현 가능한 evidence checklist여야 한다. 최소 gate는 requirements coverage, blueprint conformance, source/provenance, static proof, fixture isolation, profile closure, profile contamination, output allowlist, model/budget, runtime proof, report integrity, regression-negative canary를 분리해야 한다.
 
@@ -92,7 +92,7 @@ HarnessKit 하네스 평가 체계의 top-level 총괄자는 하네스 평가 �
 
 7. CI에서 사용할 수 있도록 non-interactive 실행과 deterministic exit code를 제공해야 한다.
 
-8. Provider별 lightest model mapping은 평가 설정에 명시되어야 하며, CI/local 실행 모두 같은 budget policy를 사용해야 한다.
+8. Provider별 model-selection policy는 평가 설정에 명시되어야 하며, live proof는 Codex `luna`, Claude haiku를 사용하고 CI/local 실행 모두 같은 effort·timeout·live-call budget policy를 사용해야 한다.
 
 ## Non-Goals
 1. 요구사항 단계에서 하위 component kind, 파일 배치, registry id, profile 배치, adapter target을 결정하지 않는다.
@@ -124,7 +124,7 @@ HarnessKit 하네스 평가 체계의 top-level 총괄자는 하네스 평가 �
 
 8. live runtime proof는 timeout, budget, process cleanup, failure artifact capture를 가져야 하며, 실패 시 source/canonical 파일을 고치지 않고 report로 종료해야 한다.
 
-9. live runtime proof는 provider별 lightest model allowlist, max step/call budget, max effort, timeout을 실행 전에 검증해야 한다.
+9. live runtime proof는 provider별 승인된 model-selection policy, max step/call budget, max effort, timeout을 실행 전에 검증해야 한다. live proof는 Codex `luna`, Claude haiku 외의 model policy를 실행 전에 거부해야 한다. Codex evaluator adapter의 `inherit`은 허용하되 live-proof policy로 취급하면 안 된다.
 
 ## Evidence Expectations
 1. Requirements evidence: 이 파일은 하네스 평가 agent의 approved requirements SoT로 사용되어야 한다.
@@ -143,7 +143,7 @@ HarnessKit 하네스 평가 체계의 top-level 총괄자는 하네스 평가 �
 
 8. Source uncertainty evidence: reference URL, observed ref, license field, copied-content policy, runtime support 여부는 승인된 사실이 아니라 검증 대기 metadata로 남겨야 한다.
 
-9. Model budget evidence: provider, selected model, allowed lightest model class, effort, timeout, live call ceiling, rejection reason을 기록해야 한다.
+9. Model budget evidence: provider, model-selection policy, selected policy(`luna`, haiku, 또는 evaluator adapter의 `inherit`), actual model 관찰 가능 여부, effort, timeout, live call ceiling, rejection reason을 기록해야 한다. policy label은 actual model·비용 준수 증명이 아님을 명시해야 한다.
 
 ## Open Questions
 현재 blueprint 진행을 막는 open question은 없다.
@@ -153,7 +153,7 @@ HarnessKit 하네스 평가 체계의 top-level 총괄자는 하네스 평가 �
 - top-level 평가 agent가 호출할 하위 tools/skills/runners의 component kind와 경계.
 - static validator와 runtime runner의 입력/출력 schema.
 - 평가 산출물의 기본 저장 경로와 cleanup 정책.
-- CI와 local interactive 실행의 기본 budget/timeout 값과 provider별 lightest model allowlist.
+- CI와 local interactive 실행의 기본 budget/timeout 값과 provider별 model-selection policy의 변경 절차.
 
 ## Approval Status
 approved-for-blueprint

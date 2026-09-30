@@ -14,12 +14,16 @@ components:
   - harnesskit.agent.adapter-author
   - harnesskit.skill.skill-evaluation
   - harnesskit.agent.harness-evaluator
-  - harnesskit.workflow.harness-creation
 targets:
+  - project
   - claude
   - codex
+  - antigravity-cli
 install_policy:
   default_scope: project
   allowed_scopes:
     - project
   activation_policy: manual
+  scope_components:
+    project:
+      - harnesskit.rule.harness-maintenance-project-context

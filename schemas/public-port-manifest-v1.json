@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pureliture/harnesskit/schemas/public-port-manifest-v1.json",
+  "title": "HarnessKit public port manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "target_repository_url",
+    "policy_sha256",
+    "baseline",
+    "retained_baseline",
+    "ported_authored",
+    "generated_rules",
+    "intentional_removals",
+    "expected_tree",
+    "expected_tree_sha256",
+    "manifest_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "target_repository_url": {
+      "const": "https://github.com/pureliture/harnesskit.git"
+    },
+    "policy_sha256": { "$ref": "#/$defs/sha256" },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "default_branch"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40,64}$" },
+        "default_branch": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*\\.\\.)(?!.*\\\\).+$"
+        }
+      }
+    },
+    "retained_baseline": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "ported_authored": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/file" }
+    },
+    "generated_rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/generatedRule" }
+    },
+    "intentional_removals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/path" },
+      "uniqueItems": true
+    },
+    "expected_tree": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/expectedFile" }
+    },
+    "expected_tree_sha256": { "$ref": "#/$defs/sha256" },
+    "manifest_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["100644", "100755"]
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mode", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "mode": { "$ref": "#/$defs/mode" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "expectedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "mode", "sha256", "origin"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "mode": { "$ref": "#/$defs/mode" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "origin": {
+          "type": "string",
+          "enum": ["retained_baseline", "ported_authored", "generated"]
+        }
+      }
+    },
+    "generatedRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "inputs", "outputs"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$" },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/file" }
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/file" }
+        }
+      }
+    }
+  }
+}

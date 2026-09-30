@@ -1,0 +1,3 @@
+event: preflight
+command: HERMES_RAW_HOOK_MUST_NOT_BE_INDEXED
+secret: SUPER_SECRET_VALUE

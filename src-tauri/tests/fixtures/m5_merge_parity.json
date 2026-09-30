@@ -1,0 +1,20 @@
+{
+  "managed_block": {
+    "current": "header\n<!-- BEGIN ROUTINE-HARNESS GENERATED CONTEXT -->\nstale\n<!-- END ROUTINE-HARNESS GENERATED CONTEXT -->\ntail\n",
+    "body": "fresh",
+    "begin_marker": "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->",
+    "end_marker": "<!-- END HARNESSKIT GENERATED CONTEXT -->",
+    "expected": "header\n<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->\nfresh\n<!-- END HARNESSKIT GENERATED CONTEXT -->\ntail\n"
+  },
+  "json_deep_merge": {
+    "current": "{\"zeta\":true,\"hooks\":{\"Stop\":[{\"hooks\":[{\"command\":\"echo foreign\",\"type\":\"command\"}]}],\"UserPromptSubmit\":[{\"hooks\":[{\"command\":\"node /old/.codex/skills/optimal-response/hooks/stop-prompt-submit.cjs\",\"type\":\"command\"}]}]},\"nested\":{\"foreign\":1}}",
+    "body": "{\"alpha\":true,\"hooks\":{\"UserPromptSubmit\":[{\"hooks\":[{\"command\":\"node new.cjs\",\"type\":\"command\"}]}]},\"nested\":{\"owned\":2}}",
+    "merge_key": "codex-hooks"
+  },
+  "toml_agents_merge": {
+    "current": "model = \"gpt-5\"\n# preserve me\n[agents.\"doc_curator\"]\ndescription = \"STALE\"\n[agents.\"foreign\"]\ndescription = \"user\"\n[projects.\"/repo\"]\ntrust_level = \"trusted\"\n",
+    "body": "[agents.\"doc_curator\"]\ndescription = \"fresh\"\nconfig_file = \"agents/doc_curator.toml\"\n",
+    "merge_key": "codex-agents",
+    "expected": "model = \"gpt-5\"\n# preserve me\n[agents.\"foreign\"]\ndescription = \"user\"\n[projects.\"/repo\"]\ntrust_level = \"trusted\"\n[agents.\"doc_curator\"]\ndescription = \"fresh\"\nconfig_file = \"agents/doc_curator.toml\"\n"
+  }
+}

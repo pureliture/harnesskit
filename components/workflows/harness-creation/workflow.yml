@@ -1,0 +1,84 @@
+workflow_id: harnesskit.workflow.harness-creation
+kind: workflow
+status: draft
+domain: harness
+title: Component Dev Guide
+summary: >-
+  승인된 HarnessKit 요구사항을 청사진 작성, 기준 컴포넌트 및 어댑터 작성, 근거 기반 평가로
+  한 기능 단위씩 조율한다.
+runtime_implemented: false
+installable: false
+source_classification: internal-source-only
+adapter_output_policy: fail-if-selected
+modeling_guidance: Convert executable workflow entrypoints to a skill with subtype workflow_trigger before adapter output.
+description: >-
+  사용자 의도를 승인된 요구사항으로 확정한 뒤, 한 번에 하나의 기능 단위를 설계·작성·검증한다.
+  참고자료 수집은 요청이 있을 때만 진행한다.
+entrypoints:
+  natural_language:
+    examples:
+      - "완성된 HarnessKit capability를 요구사항부터 blueprint, authoring, evaluation까지 진행해줘"
+      - "이 참고자료를 기반으로 새 harness skill/agent/workflow를 만들어줘"
+steps:
+  - id: reference-mode
+    title: 참고자료 준비
+    agent: harnesskit.agent.reference-curator
+    output: reference-packet
+    description: 사용자가 요청한 경우에만 외부 조사나 로컬 참고자료를 정리한다. 필요하지 않으면 요구사항 확정부터 시작한다.
+  - id: requirements
+    title: 요구사항 확정
+    skill: harnesskit.skill.harness-requirements
+    agent: harnesskit.agent.harness-requirements-analyst
+    output: requirements.md
+    description: 사용자 의도와 제약, 비목표, 검증 기대치를 승인 가능한 requirements.md로 정리한다.
+  - id: blueprint
+    title: 청사진 작성
+    skill: harnesskit.skill.harness-blueprint
+    agent: harnesskit.agent.harness-blueprint-author
+    output: blueprint.md
+    description: 컴포넌트 경계, profile 배치, adapter 대상과 평가 기준을 blueprint.md에 결정한다.
+  - id: select-current-slice
+    title: 현재 기능 단위 선택
+    output: current capability slice packet
+    description: 승인된 청사진에서 이번에 끝까지 처리할 기능 단위 하나만 선택한다.
+  - id: canonical-authoring
+    title: 기준 컴포넌트 작성
+    skill: harnesskit.skill.component-authoring
+    agent: harnesskit.agent.component-author
+    output: canonical component files
+    description: 선택한 기능 단위의 기준 컴포넌트 기록을 작성한다.
+  - id: adapter-authoring
+    title: 어댑터 산출물 작성
+    skill: harnesskit.skill.adapter-authoring
+    agent: harnesskit.agent.adapter-author
+    output: static adapter output contracts
+    description: 대상 도구용 메타데이터, 템플릿과 테스트 계약을 작성한다. 실행 성공은 이 단계에서 주장하지 않는다.
+  - id: evaluation
+    title: 근거 평가
+    skill: harnesskit.skill.skill-evaluation
+    agent: harnesskit.agent.harness-evaluator
+    output: evaluation.md
+    description: 요구사항 충족, 청사진 일치, 출처, 정적 어댑터 증거와 실행 사실 확인 기준을 평가한다.
+  - id: advance-after-pass
+    title: 다음 기능 단위 진행
+    output: next-slice eligibility
+    description: 평가 결과가 PASS일 때만 다음 기능 단위를 선택한다. 그 외에는 현재 단위를 유지한다.
+routine_harness:
+  category: harness-maintenance
+  runner_deferred: true
+  hook_interception_in_scope: false
+  capability_slice_contract:
+    selection_owner: harnesskit.workflow.harness-creation
+    active_slice_limit: 1
+    path:
+      - canonical-authoring
+      - adapter-authoring
+      - evaluation
+    advance_on:
+      - PASS
+    stop_on:
+      - PASS_WITH_DEFERRED
+      - NEEDS_WORK
+      - BLOCKED
+    horizontal_phase_batching: forbidden
+    persisted_runtime_state: false

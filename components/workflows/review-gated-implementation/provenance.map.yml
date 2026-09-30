@@ -1,0 +1,116 @@
+component_id: harnesskit.workflow.review-gated-implementation
+provenance:
+  mode: adapted
+  runtime_dependency_on_sources: false
+  sources:
+    - source_id: mattpocock-engineering-refresh-requirements
+      source_path: docs/harness-requirements/20260716-mattpocock-engineering-refresh/requirements.md
+      influence:
+        - historical workflow entrypoint withdrawal
+        - former ordered review policy migration history
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+    - source_id: mattpocock-engineering-refresh-blueprint
+      source_path: docs/harness-requirements/20260716-mattpocock-engineering-refresh/blueprint.md
+      influence:
+        - VC-02 migration boundary for deprecated non-installable record
+        - no standalone runtime or user-facing entrypoint
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+    - source_id: obra-superpowers
+      snapshot_id: obra-superpowers/2026-06-27-main-896224c
+      source_url: https://github.com/obra/superpowers
+      source_path: skills/subagent-driven-development/SKILL.md
+      influence:
+        - two-stage ordered review gate (spec-compliance before code-quality) (pattern only)
+        - fix-and-re-review loop (pattern only)
+        - implementer status protocol DONE/CONCERNS/NEEDS_CONTEXT/BLOCKED (pattern only)
+        - adversarial reviewer stance (pattern only)
+        - implementer / spec-reviewer / code-quality-reviewer prompt templates (reconstructed, not copied)
+      copied_content: false
+      adapted_content: true
+    - source_id: harnesskit-local
+      source_path: components/workflows/spec-to-tdd/workflow.yml
+      influence:
+        - definition-only workflow card contract (runtime_implemented false, installable false)
+        - fail-if-selected adapter output policy precedent
+      copied_content: false
+      adapted_content: true
+    - source_id: harnesskit-local
+      source_path: components/skills/agentic-execution/SKILL.md
+      influence:
+        - correction of the former Agentic ownership claim
+        - this record remains historical and does not hand off a current review policy
+      copied_content: false
+      adapted_content: false
+    - source_id: agentic-guided-execution-contract
+      source_path: docs/harness-requirements/20260721-agentic-guided-execution-contract/requirements.md
+      influence:
+        - detailed review procedure stays with its selected owner
+        - no execution contract automatically owns this historical review policy
+      copied_content: false
+      adapted_content: true
+    - source_id: mattpocock-skills
+      snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
+      source_path: skills/in-progress/review
+      influence:
+        - separate spec and standards/code-quality review axes (pattern only)
+        - evidence-backed review findings without merging axes into one verdict (pattern only)
+      copied_content: false
+      adapted_content: true
+      runtime_dependency_on_sources: false
+  attribution_note: >
+    Owned HarnessKit reconstruction of the subagent-driven-development review
+    pattern. The two-stage ordered review gate, fix-and-re-review loop,
+    implementer status protocol, adversarial reviewer stance, and the three
+    load-bearing prompt templates were reconstructed from the obra-superpowers
+    subagent-driven-development skill as a pattern reference, not copied
+    verbatim; this card preserves that pattern as a definition-only artifact.
+    The Matt Pocock skills assimilation Slice D update adapts the review-axis
+    separation pattern from review-oriented material without copied text. The
+    definition-only / non-installable / fail-if-selected contract follows the
+    in-project spec-to-tdd and harness-creation workflow precedents. The
+    approved engineering-refresh SoT withdrew this as an entrypoint, and the
+    later Agentic/Guided contract removes the false current-owner handoff. This
+    card keeps only historical context. The original source is not required at runtime;
+    the card is self-contained.
+  source_mode: referenced
+  reconstructed_sections:
+    - two_stage_ordered_review_gate
+    - implementer_status_protocol
+    - fix_and_re_review_loop
+    - adversarial_reviewer_stance
+    - three_prompt_templates
+  excluded_concepts:
+    - automatic multi-agent execution runner (definition-only; no runtime engine)
+    - new user-facing high-risk workflow invocation or current execution-policy ownership
+    - adapter output emission (fail-if-selected)
+    - branch / commit / push / PR operations
+  copied_sections: []
+  rewritten_sections:
+    - manual two-stage review sequence
+    - card-only runtime boundary
+  new_sections:
+    - HarnessKit definition-only review-gate stop conditions
+    - historical-record-only replacement boundary
+    - review-axis boundary for spec and code-quality findings
+  license_notes: "Reconstructed pattern; no bundled third-party code copied. Source license_hint: unknown for obra-superpowers and mattpocock-skills."
+  human_review_required: true
+  review_triggers:
+    - condition: upstream_snapshot_changed
+      action: Recheck whether the reconstructed review-gate pattern still matches intent.
+      severity: low
+    - condition: agentic_execution_contract_changed
+      action: Recheck the historical replacement boundary; do not restore a workflow entrypoint.
+      severity: low
+    - condition: workflow_runner_added
+      action: Re-evaluate the definition-only boundary if a runtime runner is designed.
+      severity: medium
+    - condition: installable_kind_boundary_changed
+      action: Recheck installable:false and fail-if-selected adapter output policy.
+      severity: medium
+    - condition: review_axis_gate_changed
+      action: Recheck that spec and code-quality review findings remain separate.
+      severity: low

@@ -1,0 +1,53 @@
+# SYNTHETIC representative codex `~/.codex/config.toml` destination fixture.
+#
+# This is NOT the real user config. It is a hand-authored, intentionally rich
+# config used to prove that the codex `.codex/config.toml` preserving merge
+# (toml-agents-merge) never clobbers user content. It exercises:
+#   - top-level keys (model, model_reasoning_effort, approval_policy,
+#     sandbox_mode, notify)
+#   - a [projects."<path>"] table
+#   - a [plugins.<name>] table
+#   - a [mcp_servers.<name>] table WITH a nested [mcp_servers.<name>.env] table
+#   - a [hooks.state] table
+#   - a user-authored [agents."foo"] table the harness must NOT own or remove
+#
+# Inline comments, blank-line spacing, and key ordering are deliberate: a merge
+# that reserialized via a TOML writer would lose them, so their byte-level
+# survival is part of the preservation contract under test.
+
+model = "gpt-5-codex"            # user-chosen model; must survive untouched
+model_reasoning_effort = "high"
+approval_policy = "on-request"
+approvals_reviewer = "user"
+sandbox_mode = "workspace-write"
+notify = ["say", "Codex is done"]
+
+# A project trust entry the user configured by hand.
+[projects."/fixture-home/work/repo"]
+trust_level = "trusted"
+
+# A user plugin registration.
+[plugins.example-plugin]
+enabled = true
+path = "~/.codex/plugins/example"
+
+# An MCP server with secrets in a nested env table (must be byte-preserved).
+[mcp_servers.local]
+command = "node"
+args = ["mcp-server.js", "--stdio"]
+
+[mcp_servers.local.env]
+API_TOKEN = "synthetic-not-a-real-secret"
+WORKDIR = "/fixture-home/work"
+
+# Hook bookkeeping state the user runtime writes.
+[hooks.state]
+last_run = "2026-01-01T00:00:00Z"
+enabled = true
+
+# A user-authored agent the harness does NOT own. It is foreign to the install
+# plan and must be preserved verbatim across apply + re-apply.
+[agents."foo"]
+description = "user authored agent"
+config_file = "agents/foo.toml"
+nickname_candidates = ["foo", "fooey"]

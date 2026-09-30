@@ -37,7 +37,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
       },
       "uniqueItems": true
     },
@@ -77,7 +77,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+              "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
             },
             "minItems": 1,
             "uniqueItems": true
@@ -90,6 +90,9 @@
           },
           "evidence_status": {
             "$ref": "#/definitions/evidence_status"
+          },
+          "historical_predecessor_evidence": {
+            "$ref": "#/definitions/historical_predecessor_evidence"
           }
         }
       }
@@ -103,15 +106,15 @@
         "properties": {
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
           },
           "path": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|\\.acli|\\.gemini|\\.hermes)(?:/.*)?|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "source": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity)/.+$",
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity|hermes)/.+$",
             "description": "Source output or config surface that should materialize here."
           }
         }
@@ -139,19 +142,19 @@
           },
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
           },
           "source": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity)/.+$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))dist/(project|claude|codex|gemini|antigravity-cli|antigravity|hermes)/.+$"
           },
           "destination": {
             "type": "string",
-            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|acli)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
+            "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))((\\.harnesskit|\\.claude|\\.codex|\\.agents|\\.acli|\\.gemini|\\.hermes)/.+|AGENTS\\.md|CLAUDE\\.md|GEMINI\\.md|\\$\\{CODEX_HOME:-\\$HOME/\\.codex\\}/hooks\\.json)$"
           },
           "merge_strategy": {
             "type": "string",
-            "enum": ["managed-block", "json-deep-merge"]
+            "enum": ["managed-block", "json-deep-merge", "toml-agents-merge"]
           },
           "begin_marker": {
             "type": "string",
@@ -165,6 +168,10 @@
             "type": "string",
             "enum": ["claude-settings-hooks", "codex-hooks"]
           },
+          "toml_merge_key": {
+            "type": "string",
+            "enum": ["codex-agents"]
+          },
           "scope": {
             "type": "string",
             "enum": ["project", "user"]
@@ -177,6 +184,9 @@
           },
           "evidence_status": {
             "$ref": "#/definitions/evidence_status"
+          },
+          "historical_predecessor_evidence": {
+            "$ref": "#/definitions/historical_predecessor_evidence"
           }
         }
       }
@@ -194,7 +204,7 @@
           },
           "target": {
             "type": "string",
-            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli"]
+            "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
           },
           "reason": {
             "type": "string"
@@ -204,6 +214,26 @@
           },
           "required_before_runtime": {
             "type": "boolean"
+          }
+        }
+      }
+    },
+    "retired_codex_agent_registrations": {
+      "type": "array",
+      "description": "Retired Codex agent registrations that may be removed from the user config during an explicitly scoped migration.",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "config_file"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "config_file": {
+            "type": "string",
+            "minLength": 1
           }
         }
       }
@@ -251,6 +281,25 @@
         "evidence_refs": {
           "type": "array",
           "items": { "type": "string" }
+        }
+      }
+    },
+    "historical_predecessor_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status_at_observation", "latest_evidence_dir", "boundary"],
+      "properties": {
+        "status_at_observation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "latest_evidence_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }

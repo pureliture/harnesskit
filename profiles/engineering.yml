@@ -1,0 +1,66 @@
+profile_id: harnesskit.profile.engineering
+status: draft
+title: Engineering
+summary: Engineering profile used by HarnessKit for human-doc curation, adapter, install-plan, and development workflows.
+components:
+  - harnesskit.agent.doc-curator
+  - harnesskit.skill.doc-curator
+  - harnesskit.skill.doc-bootstrap
+  - harnesskit.skill.doc-sync
+  - harnesskit.skill.doc-audit
+  - harnesskit.skill.documentation
+  - harnesskit.skill.worktree-lifecycle
+  - harnesskit.agent.reference-curator
+  - harnesskit.skill.prototype
+  - harnesskit.skill.agentic-execution
+  - harnesskit.skill.local-change-review
+  - harnesskit.skill.root-cause-debugging
+  - harnesskit.skill.domain-modeling
+  - harnesskit.skill.testing-strategy
+  - harnesskit.skill.tech-debt
+  - harnesskit.skill.release-readiness
+  - harnesskit.skill.incident-review
+  - harnesskit.skill.frontend-design
+  - harnesskit.skill.accessibility-review
+  - harnesskit.skill.ux-copy
+  - harnesskit.agent.designer
+  - harnesskit.agent.worktree-lifecycle-manager
+  - harnesskit.agent.system-designer
+  - harnesskit.agent.codebase-architecture-manager
+  - harnesskit.agent.code-simplifier
+  - harnesskit.skill.antigravity-agent-loader
+targets:
+  - project
+  - claude
+  - codex
+  - antigravity
+  - antigravity-cli
+  - hermes
+install_policy:
+  default_scope: project
+  allowed_scopes:
+    - project
+    - user
+  activation_policy: manual
+  # Components selected only at a specific scope. optimal-response is user-scope-only:
+  # it installs into ~/.claude (and remaps for codex/antigravity) but must never leak
+  # into the default project install (contamination boundary MH-5).
+  # harnesskit-project-context is project-scope-only: the managed project-instruction
+  # rule must land in a project's root files, never in a global user install.
+  # public-publisher stays in engineering (never harness-maintenance, which is the
+  # public projection seed) but is project-scope-only so it never lands in a global
+  # user install; it is a private harness-side repo-management tool.
+  scope_components:
+    project:
+      - harnesskit.rule.harnesskit-project-context
+      - harnesskit.skill.public-publisher
+      - harnesskit.skill.wizard
+      - harnesskit.skill.writing-for-agents
+      # Guided Execution is a project-local alternative to the existing Agentic
+      # contract. Keep it out of the broad user profile until a separately
+      # approved user-install migration exists.
+      - harnesskit.skill.guided-execution
+    user:
+      - harnesskit.skill.optimal-response
+      - harnesskit.hook.optimal-response-prompt-submit
+      - harnesskit.skill.tdd

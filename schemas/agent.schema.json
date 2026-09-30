@@ -4,7 +4,7 @@
   "title": "Agent Component Schema",
   "description": "Schema for a HarnessKit agent, extending the base component schema.",
   "type": "object",
-  "required": ["component_id", "kind", "status", "title"],
+  "required": ["component_id", "kind", "status", "title", "summary"],
   "properties": {
     "component_id": {
       "type": "string",
@@ -14,6 +14,11 @@
     "kind": {
       "type": "string",
       "const": "agent"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Functional domain this agent belongs to. Preserves the grouping that flat storage would otherwise erase. Buckets map scm->scm, work->work, harness->harness; already-flat agents default to core.",
+      "enum": ["core", "scm", "work", "harness"]
     },
     "status": {
       "type": "string",
@@ -26,7 +31,8 @@
     },
     "summary": {
       "type": "string",
-      "description": "Short description of what the agent does"
+      "description": "Short description of what the agent does",
+      "pattern": "\\S"
     },
     "source_refs": {
       "type": "array",

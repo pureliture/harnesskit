@@ -1,0 +1,14 @@
+[
+  {"name": "contract-mismatch", "pointer": "/install_contract_hash", "value": "unsupported", "expected": "install_contract_unsupported"},
+  {"name": "invalid-plan-mode", "pointer": "/mode", "value": "verify", "expected": "invalid_plan_mode"},
+  {"name": "unknown-target", "pointer": "/artifacts/1/target", "value": "unknown-ai", "expected": "unknown_target"},
+  {"name": "path-traversal", "pointer": "/artifacts/1/destination", "value": ".agents/skills/../escape", "expected": "invalid_path"},
+  {"name": "absolute-source", "pointer": "/artifacts/1/source", "value": "/tmp/escape", "expected": "invalid_path"},
+  {"name": "symlink-ish-segment", "pointer": "/artifacts/1/destination", "value": ".agents/skills/./escape", "expected": "invalid_path"},
+  {"name": "source-mismatch", "pointer": "/artifacts/1/source", "value": "dist/codex/.agents/skills/not-the-destination.md", "expected": "source_mismatch"},
+  {"name": "merge-key-mismatch", "pointer": "/artifacts/3/json_merge_key", "value": "claude-settings-hooks", "expected": "merge_contract_mismatch"},
+  {"name": "invalid-file-mode", "pointer": "/artifacts/1/mode", "value": 512, "expected": "invalid_file_mode"},
+  {"name": "secret-like-file-mode", "pointer": "/artifacts/1/mode", "value": 384, "expected": "secret_like_file_mode"},
+  {"name": "plan-only-surface", "pointer": "/runtime_surfaces/0/path", "value": ".harnesskit", "expected": "runtime_surface_mismatch"},
+  {"name": "closure-mismatch", "pointer": "/components/1", "value": "harnesskit.skill.not-selected", "expected": "component_closure_mismatch"}
+]

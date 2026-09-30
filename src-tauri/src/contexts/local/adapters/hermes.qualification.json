@@ -1,0 +1,15 @@
+{
+  "qualification_id": "harness-desktop.discovery.hermes.v1",
+  "adapter_id": "hermes",
+  "adapter_version": "1.0.0",
+  "descriptor_canonical_sha256": "da5a27f1cdb1725602e4876a4ebbf783232ff865b30fcb13fbe86c711f9fb438",
+  "fixture_manifest_sha256": "97447d36da158430c6843a069963904ffacb1e8f488ae42dba613a883641c06c",
+  "evidence_sources": [
+    {"source_id":"https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/skills.md","source_kind":"official_documentation","source_revision":"accessed-2026-07-12","captured_at":"2026-07-12T00:00:00+09:00"},
+    {"source_id":"local-metadata:hermes-dist-info","source_kind":"local_version_metadata","source_revision":"0.20.6","captured_at":"2026-08-30T20:54:25+09:00"}
+  ],
+  "observed_runtime": {"tool_version":"0.20.6","macos_version":"26.6.2","architecture":"arm64"},
+  "probe_results": [
+    {"probe_id":"hermes_dist_info_v1","surface_id":null,"observed_tool_version":"0.20.6","status":"Passed","observed_schema_digest":null,"evidence_algorithm":"sha256","evidence_digest":"5bd4a39a532a3ae451e2ebeaedc9f4f6f913cde7c9d0693736f2f926e5ffeb70","safe_failure_code":null}
+  ]
+}

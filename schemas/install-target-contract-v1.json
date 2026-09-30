@@ -1,0 +1,233 @@
+{
+  "contract_id": "harnesskit.install-target-contract.v1",
+  "version": 1,
+  "plan_modes": ["dry-run", "apply"],
+  "file_mode_policy": {
+    "minimum": 0,
+    "maximum": 511,
+    "required_group_or_other_read_mask": 36
+  },
+  "targets": [
+    {
+      "id": "project",
+      "scopes": ["project"],
+      "runtime_surfaces": [
+        {"prefix": ".harnesskit", "source": "dist/project/.harnesskit", "kind": "directory"},
+        {"prefix": ".acli", "source": "dist/project/.acli", "kind": "directory"},
+        {"prefix": ".github/ISSUE_TEMPLATE", "source": "dist/project/.github/ISSUE_TEMPLATE", "kind": "directory"},
+        {"prefix": "AGENTS.md", "source": "dist/project/AGENTS.md", "kind": "file"},
+        {"prefix": "CLAUDE.md", "source": "dist/project/CLAUDE.md", "kind": "file"}
+      ]
+    },
+    {
+      "id": "claude",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".claude/skills", "source": "dist/claude/.claude/skills", "kind": "directory"},
+        {"prefix": ".claude/agents", "source": "dist/claude/.claude/agents", "kind": "directory"},
+        {"prefix": ".claude/settings.json", "source": "dist/claude/.claude/settings.json", "kind": "file"}
+      ]
+    },
+    {
+      "id": "codex",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".agents/skills", "source": "dist/codex/.agents/skills", "kind": "directory"},
+        {"prefix": ".agents/templates", "source": "dist/codex/.agents/templates", "kind": "directory"},
+        {"prefix": ".codex/skills", "source": "dist/codex/.codex/skills", "kind": "directory"},
+        {"prefix": ".codex/agents", "source": "dist/codex/.codex/agents", "kind": "directory"},
+        {"prefix": ".codex/config.toml", "source": "dist/codex/.codex/config.toml", "kind": "file"},
+        {"prefix": ".codex/hooks.json", "source": "dist/codex/.codex/hooks.json", "kind": "file"}
+      ]
+    },
+    {
+      "id": "gemini",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".gemini/skills", "source": "dist/gemini/.gemini/skills", "kind": "directory"},
+        {"prefix": "GEMINI.md", "source": "dist/gemini/GEMINI.md", "kind": "file"}
+      ]
+    },
+    {
+      "id": "antigravity",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".agents/skills", "source": "dist/antigravity/.agents/skills", "kind": "directory"},
+        {"prefix": ".agents/agents", "source": "dist/antigravity/.agents/agents", "kind": "directory"},
+        {"prefix": ".agents/hooks.json", "source": "dist/antigravity/.agents/hooks.json", "kind": "file"},
+        {"prefix": ".gemini/config/skills", "source": "dist/antigravity/.gemini/config/skills", "kind": "directory"}
+      ]
+    },
+    {
+      "id": "antigravity-cli",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".agents/skills", "source": "dist/antigravity-cli/.agents/skills", "kind": "directory"},
+        {"prefix": ".gemini/config/skills", "source": "dist/antigravity-cli/.gemini/config/skills", "kind": "directory"}
+      ]
+    },
+    {
+      "id": "hermes",
+      "scopes": ["project", "user"],
+      "runtime_surfaces": [
+        {"prefix": ".hermes/config.yaml", "source": "dist/hermes/config.yaml", "kind": "file"},
+        {"prefix": ".hermes/harnesskit/hooks", "source": "dist/hermes/hooks", "kind": "directory"}
+      ]
+    }
+  ],
+  "correlation_bindings": [
+    {
+      "target": "project",
+      "scope": "project",
+      "tool_id": "codex",
+      "surface_id": "codex_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": ["AGENTS.md"]
+    },
+    {
+      "target": "project",
+      "scope": "project",
+      "tool_id": "antigravity_cli",
+      "surface_id": "antigravity_cli_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": ["AGENTS.md"]
+    },
+    {
+      "target": "project",
+      "scope": "project",
+      "tool_id": "claude_code",
+      "surface_id": "claude_code_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": ["CLAUDE.md"]
+    },
+    {
+      "target": "claude",
+      "scope": "project",
+      "tool_id": "claude_code",
+      "surface_id": "claude_code_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".claude/skills", ".claude/agents"]
+    },
+    {
+      "target": "claude",
+      "scope": "user",
+      "tool_id": "claude_code",
+      "surface_id": "claude_code_user",
+      "authorized_root_prefix": ".claude",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".claude/skills", ".claude/agents"]
+    },
+    {
+      "target": "codex",
+      "scope": "project",
+      "tool_id": "codex",
+      "surface_id": "codex_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".agents/skills", ".codex/agents"]
+    },
+    {
+      "target": "codex",
+      "scope": "user",
+      "tool_id": "codex",
+      "surface_id": "codex_user",
+      "authorized_root_prefix": ".agents/skills",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".agents/skills"]
+    },
+    {
+      "target": "codex",
+      "scope": "user",
+      "tool_id": "codex",
+      "surface_id": "codex_user",
+      "authorized_root_prefix": ".codex",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".codex/skills", ".codex/agents"]
+    },
+    {
+      "target": "antigravity",
+      "scope": "project",
+      "tool_id": "antigravity",
+      "surface_id": "antigravity_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".agents/skills", ".agents/agents"]
+    },
+    {
+      "target": "antigravity",
+      "scope": "user",
+      "tool_id": "antigravity",
+      "surface_id": "antigravity_user",
+      "authorized_root_prefix": ".gemini",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".gemini/config/skills"]
+    },
+    {
+      "target": "antigravity-cli",
+      "scope": "project",
+      "tool_id": "antigravity_cli",
+      "surface_id": "antigravity_cli_project",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".agents/skills"]
+    },
+    {
+      "target": "antigravity-cli",
+      "scope": "user",
+      "tool_id": "antigravity_cli",
+      "surface_id": "antigravity_cli_user",
+      "authorized_root_prefix": ".gemini",
+      "locator_mode": "destination_relative_to_authorized_root",
+      "content_match": "whole_file_sha256",
+      "runtime_surface_prefixes": [".gemini/config/skills"]
+    }
+  ],
+  "source_equivalences": [
+    {"target": "codex", "destination": ".codex/hooks.json", "source": "dist/codex/.codex/hooks.user.json"},
+    {"target": "hermes", "destination": ".hermes/config.yaml", "source": "dist/hermes/config.yaml"},
+    {"target": "hermes", "destination": ".hermes/harnesskit/hooks/optimal-response/optimal-response-pre-llm.cjs", "source": "dist/hermes/hooks/optimal-response/optimal-response-pre-llm.cjs"},
+    {"target": "hermes", "destination": ".hermes/harnesskit/hooks/optimal-response/stop-prompt-submit.cjs", "source": "dist/hermes/hooks/optimal-response/stop-prompt-submit.cjs"}
+  ],
+  "merge_destinations": [
+    {
+      "target": "project",
+      "destination": "AGENTS.md",
+      "strategy": "managed-block",
+      "begin_marker": "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->",
+      "end_marker": "<!-- END HARNESSKIT GENERATED CONTEXT -->"
+    },
+    {
+      "target": "project",
+      "destination": "CLAUDE.md",
+      "strategy": "managed-block",
+      "begin_marker": "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->",
+      "end_marker": "<!-- END HARNESSKIT GENERATED CONTEXT -->"
+    },
+    {
+      "target": "claude",
+      "destination": ".claude/settings.json",
+      "strategy": "json-deep-merge",
+      "merge_key": "claude-settings-hooks"
+    },
+    {
+      "target": "codex",
+      "destination": ".codex/hooks.json",
+      "strategy": "json-deep-merge",
+      "merge_key": "codex-hooks"
+    },
+    {
+      "target": "codex",
+      "destination": ".codex/config.toml",
+      "strategy": "toml-agents-merge",
+      "merge_key": "codex-agents"
+    }
+  ]
+}

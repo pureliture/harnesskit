@@ -1,0 +1,33 @@
+.worktrees/
+.venv/
+.pytest_cache/
+__pycache__/
+.superpowers/
+.DS_Store
+**/.DS_Store
+.claude/render-server-out/
+.claude/worktrees/
+.claude/optimal-response-out/
+.claude/.optimal-response-disabled
+.harnesskit/optimal-response-out/
+graphify-out/
+src-tauri/target/install-runtime/
+/src-tauri/target/
+/src-frontend/node_modules/
+/docs/runtime-evidence/tauri-harness-desktop/20260715-manual/installed-package/collectors/module-cache/
+dist/
+docs/reviews/*.html
+docs/brainstorming/*.html
+docs/superpowers/**/*.html
+docs/superpowers/**/*.render.json
+.claude/specs/**/*.html
+!.claude/specs/20260517-optimal-response-teardown/requirements.html
+/*.html
+
+# Harnesskit private/work directories
+.harnesskit/work/
+.harnesskit/private/
+.harnesskit/publish/
+
+# Intentionally malformed synthetic fixture for Local scanner contracts.
+!src-tauri/tests/fixtures/discovery/scan/home/.claude/settings.local.json
