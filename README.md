@@ -54,42 +54,69 @@ HarnessKit Desktop은 파일과 YAML을 직접 오가며 확인해야 했던 정
 
 SoT 조회는 read-only가 기본입니다. 파일을 쓰는 설치·제거 동작은 별도의 계획과 명시적 확인을 거쳐야 하며, 화면에 보였다는 이유만으로 적용 성공이나 runtime 동작을 주장하지 않습니다.
 
-### Desktop 배포 상태
+### 개발자용 beta.3: 소스에서 직접 빌드하기
 
-> [!IMPORTANT]
-> 현재 Desktop 패키징 대상은 <strong>macOS 13 이상, Apple Silicon(arm64)</strong>입니다. 베타 빌드는 [GitHub Releases](https://github.com/pureliture/harnesskit/releases)에서 내려받을 수 있습니다. 베타는 기능과 화면이 바뀔 수 있습니다.
+현재 베타는 **개발자 몇 명이 자기 Mac에서 소스를 빌드해 기능을 확인하는 방식**으로 진행합니다. macOS 13 이상 Apple Silicon Mac용이며 Intel Mac은 지원하지 않습니다.
 
-이 앱은 Mac App Store에 등록하지 않습니다. GitHub Releases에서 DMG와 같은 이름의 `.sha256` 파일을 내려받아 검증한 뒤, DMG를 열고 `HarnessKit.app`을 `Applications`로 드래그하세요. 터미널에서 받으려면 원하는 릴리스의 태그와 파일 이름을 확인한 뒤 다음처럼 저장합니다.
+다운로드 DMG는 Apple Developer ID 서명·공증이 없어 실행이 차단될 수 있습니다. 로컬 빌드는 다운로드 DMG와 보안 검사 조건이 다를 수 있지만, 회사 보안 정책이나 모든 Mac에서의 실행 허용을 보장하지는 않습니다. 보안 기능을 끄거나 격리 속성을 제거하지 마세요.
+
+#### 1. 준비 도구 확인
+
+- Xcode Command Line Tools: 없으면 `xcode-select --install` 실행 후 설치 창에서 완료합니다.
+- Python 3.11 이상, Node.js 20 이상, `uv`
+- Rust 최신 stable과 Tauri CLI 2
 
 ```bash
-TAG="v0.1.0-beta.1"
-DMG="HarnessKit_0.1.0_aarch64.dmg"
-BASE="https://github.com/pureliture/harnesskit/releases/download/$TAG"
-curl --fail --location --output "$DMG" "$BASE/$DMG"
-curl --fail --location --output "$DMG.sha256" "$BASE/$DMG.sha256"
-shasum -a 256 -c "$DMG.sha256"
-open "$DMG"
+xcode-select -p
+python3 --version
+node --version
+uv --version
+rustc --version
+cargo tauri --version
 ```
 
-검증에 실패하면 앱을 설치하지 마세요. 이 패키지는 `AdHoc` 코드 서명이며 Developer ID 서명·공증이 없습니다. 처음 열 때 macOS가 차단한다면 한 번 실행을 시도한 뒤 `시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기`에서 해당 앱만 승인해야 합니다. 조직에서 관리하는 Mac에서는 이 방법도 허용되지 않을 수 있습니다. 전역 보안 기능을 끄거나 격리 속성을 제거하는 방법은 안내하지 않습니다.
-
-Tauri 소스와 패키징 스크립트로 직접 빌드하려면 다음 도구가 필요합니다.
-
-- macOS 13 이상이 설치된 Apple Silicon Mac
-- Python 3.11 이상과 `uv`
-- Node.js 20 이상
-- Rust 1.85 이상과 Tauri CLI 2 (`cargo install tauri-cli --version "^2"`)
+Rust가 없다면 [공식 rustup 안내](https://rustup.rs/)로 설치합니다. 기존 Rust가 있다면 `rustup update stable`로 갱신하고, Tauri CLI가 없다면 설치합니다:
 
 ```bash
-git clone https://github.com/pureliture/harnesskit.git
-cd harnesskit
-npm ci --prefix src-frontend
+cargo install tauri-cli --version "^2" --locked
+```
+
+#### 2. 고정된 베타 소스 받기
+
+```bash
+git clone --branch v0.1.0-beta.3 --depth 1 https://github.com/pureliture/harnesskit.git harnesskit-beta3
+cd harnesskit-beta3
+git rev-parse HEAD
+```
+
+마지막 명령은 `a5bc523e7c304cdb6dba1c51f10a00a55cc1f76b`를 출력해야 합니다. 태그 checkout의 detached HEAD 안내는 정상입니다. 테스트 소스를 수정하려면 먼저 별도 브랜치를 만드세요.
+
+#### 3. 빌드하기
+
+첫 빌드에는 인터넷 연결과 Rust 의존성 컴파일 시간이 필요합니다. 아래 명령은 선택한 소스 폴더에 산출물을 만들며 `/Applications`에 앱을 설치하거나 기존 도구 설정을 바꾸지 않습니다.
+
+```bash
+npm ci --prefix src-frontend --ignore-scripts
 python3 scripts/package/prepare_install_runtime.py --repo-root .
 python3 scripts/package/prepare_install_runtime.py --repo-root . --verify-only
 CI=true uv run --no-project --no-cache python scripts/package/build_verified_macos_package.py --repo-root .
 ```
 
-이 명령은 고정된 Python 런타임을 내려받아 해시를 확인하고, `.app`과 `.dmg`를 만든 뒤 패키지 identity, arm64 실행 파일, bundled runtime과 DMG 구성을 검증합니다. 결과물은 `src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/`에 생기고, 같은 폴더에 `.sha256` 파일도 만들어집니다. `CI=true`는 DMG 창 배경과 아이콘 배치를 꾸미는 Finder 자동화 단계를 건너뜁니다. 직접 만든 빌드는 공개 Release 파일과 해시가 다를 수 있습니다.
+빌드 스크립트는 고정 Python 런타임의 해시, 앱·DMG 구성과 arm64 실행 파일을 검사합니다. 마지막 JSON 결과에 `app`, `dmg`, `report` 경로가 나오면 해당 보고서를 확인할 수 있습니다. `CI=true`는 Finder의 DMG 창 배경·아이콘 배치 자동화만 건너뜁니다.
+
+#### 4. 직접 만든 앱 실행하기
+
+```bash
+open "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/HarnessKit.app"
+```
+
+DMG 설치 없이 빌드된 앱을 실행합니다. 로컬 빌드도 AdHoc 서명이며 공증된 앱은 아닙니다. 실행이 차단되면 보안 정책을 우회하지 말고 오류 문구를 알려주세요.
+
+처음에는 별도 테스트 프로젝트와 설정 파일 사본으로 가져오기를 확인하세요. 가져오기·편집만으로 원본은 바뀌지 않지만, **적용을 승인하면 선택한 실제 파일이 수정**됩니다. 가져오기, 적용 전 차이 확인, 외부 수정 차단과 앱 재시작 후 상태 유지를 테스트합니다. 실제 앱 화면·도구 실행 확인은 테스터 피드백이 필요한 범위입니다.
+
+#### 참고: 다운로드 DMG
+
+[beta.3 Release](https://github.com/pureliture/harnesskit/releases/tag/v0.1.0-beta.3)의 DMG와 `.sha256`은 기존 산출물로 유지합니다. 개발자 테스트의 기본 경로는 위 소스 빌드이며, DMG는 실행 허용이나 배포자 신뢰를 보장하지 않습니다. 직접 만든 앱과 공개 DMG는 빌드 환경 때문에 파일 해시가 다를 수 있습니다.
 
 앱에 포함된 오픈소스 라이선스는 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)에 있고, 앱 상단의 `오픈소스 라이선스` 링크로도 볼 수 있습니다. 의존성이 바뀌면 `uv run --no-project --with pyyaml python scripts/package/generate_third_party_notices.py`로 고지를 다시 만들어야 합니다.
 
