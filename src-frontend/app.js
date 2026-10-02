@@ -22,6 +22,7 @@ import {
 } from "./typography/controller.js";
 import { normalizeTypographyState } from "./typography/state.js";
 import { createBackendClient } from "./backend.js";
+import { componentImportReason } from "./component-import-support.js";
 import {
   AI_TRANSPORT_WARNING,
   aiProviderTransportWarning,
@@ -212,7 +213,7 @@ function installProfileId(component, activeProfileId) {
     ? component.profileIds ?? component.profile_ids
     : [];
   if (profiles.includes(activeProfileId)) return activeProfileId;
-  return String(profiles[0] ?? "").trim();
+  return String(profiles[0] ?? (["skill", "hook", "agent", "rule"].includes(component?.kind) ? `component:${component.component_id}` : "")).trim();
 }
 
 function readInstallForm(form) {
@@ -1870,6 +1871,15 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
 
     shell?.addEventListener("input", (event) => {
       const input = event.target;
+      if (input.closest?.("[data-imported-skill-content]") && state.importedSkillEditor) {
+        const editor = state.importedSkillEditor;
+        if (editor.busy || editor.readFailed) return;
+        state = { ...state, importedSkillEditor: { ...editor, content: input.value, message: "" } };
+        // Keep textarea selection intact while making validation-error retries available.
+        const save = root.querySelector("[data-save-imported-skill]");
+        if (save) save.disabled = false;
+        return;
+      }
       if (input?.name !== "baseUrl" || !input.closest?.("[data-ai-provider-form]")) return;
       const warning = root.querySelector("[data-ai-provider-transport-warning]");
       if (!warning) return;
@@ -1880,6 +1890,17 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
     });
 
     shell?.addEventListener("change", (event) => {
+      const selection = event.target.closest?.("[data-select-imported-document]");
+      if (selection && state.importedSkillEditor) {
+        const editor = state.importedSkillEditor;
+        if (editor.busy || editor.readFailed) return;
+        const documents = (editor.documents ?? []).map(d => d.path === editor.document ? { ...d, content: editor.content } : d);
+        const mainContent = editor.document ? editor.mainContent : editor.content;
+        const selected = documents.find(d => d.path === selection.value);
+        if (selection.value && !selected) return;
+        update({ ...state, importedSkillEditor: { ...editor, documents, mainContent, document: selected?.path ?? null, content: selected ? selected.content : mainContent, message: "" } });
+        return;
+      }
       const removalSelection = event.target.closest?.("[data-local-removal-selection]");
       if (removalSelection) {
         const localRemoval = toggleLocalRemovalSelection(
@@ -1918,6 +1939,8 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
       const values = {
         confirmed: state.install.confirmed,
         overwrite: state.install.overwrite,
+        adoptManagement: state.install.adoptManagement,
+        replaceManaged: state.install.replaceManaged,
         allowRuntimeHooks: state.install.allowRuntimeHooks,
         [approval.dataset.installApproval]: approval.checked === true,
       };
@@ -1925,6 +1948,75 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
     });
 
     shell?.addEventListener("click", (event) => {
+      if (event.target.closest?.("[data-keep-managed-source]")) {
+        if (state.install.phase === "preview-ready") {
+          installGeneration += 1;
+          commitInstall(reduceInstallState(state.install, { type: "keep_managed_source" }));
+        }
+        return;
+      }
+      if (event.target.closest?.("[data-cancel-imported-skill]")) { update({ ...state, importedSkillEditor: null }); return; }
+      if (event.target.closest?.("[data-edit-imported-skill]")) {
+        const component = selectedSotComponent(state);
+        if (!component || typeof backend.readImportedSkill !== "function") return;
+        const binding = { checkoutId: state.repo.checkoutId, sotSnapshotId: state.sot.snapshot.snapshot_id, componentId: component.component_id };
+        update({ ...state, importedSkillEditor: { binding, busy: true, content: "" } });
+        void Promise.resolve(backend.readImportedSkill(binding)).then(detail => {
+          if (destroyed || state.importedSkillEditor?.binding !== binding || state.sot.snapshot.snapshot_id !== binding.sotSnapshotId) return;
+          update({ ...state, importedSkillEditor: { binding, busy: false, ...detail, mainContent: detail.content, document: null } });
+          root.querySelector("[data-imported-skill-content]")?.focus();
+        }).catch(error => { if (state.importedSkillEditor?.binding === binding) update({ ...state, importedSkillEditor: { binding, busy: false, readFailed: true, content: "", message: `읽지 못했습니다: ${error?.code ?? error}` } }); });
+        return;
+      }
+      if (event.target.closest?.("[data-save-imported-skill]")) {
+        const editor = state.importedSkillEditor;
+        if (!editor || editor.busy || editor.message || typeof backend.saveImportedSkill !== "function") return;
+        update({ ...state, importedSkillEditor: { ...editor, busy: true } });
+        void Promise.resolve(backend.saveImportedSkill({ ...editor.binding, content: editor.content, document: editor.document })).then(snapshot => {
+          if (destroyed || state.importedSkillEditor?.binding !== editor.binding) return;
+          installGeneration += 1;
+          update({ ...state, importedSkillEditor: null, sot: { ...state.sot, snapshot, installEvidenceId: null }, install: createInstallState({ subject: { sotSnapshotId: snapshot.snapshot_id, componentId: editor.binding.componentId }, form: { ...state.install.form, profileId: `component:${editor.binding.componentId}`, targetRoot: "import-source" } }) });
+        }).catch(error => { if (state.importedSkillEditor?.binding === editor.binding) update({ ...state, importedSkillEditor: { ...editor, busy: false, message: `저장 결과를 확인하세요: ${error?.code ?? error}` } }); });
+        return;
+      }
+      if (event.target.closest?.("[data-cancel-component-import]")) {
+        update({ ...state, componentImport: null });
+        return;
+      }
+      if (event.target.closest?.("[data-preview-component-import]")) {
+        const header = state.sourcePreview?.header;
+        if (!header || header.instanceId !== state.localView.selectedInstanceId || !state.repo.checkoutId || state.componentImport?.busy) return;
+        const binding = { checkoutId: state.repo.checkoutId, sotSnapshotId: state.sot.snapshot?.snapshot_id, snapshotId: header.snapshotId, instanceId: header.instanceId, sourceRevision: header.sourceRevision };
+        update({ ...state, componentImport: { busy: true, binding, message: "가져오기 후보를 검증하고 있습니다." } });
+        void (async () => {
+          try {
+            const preview = await backend.previewComponentImport(binding);
+            if (destroyed || state.componentImport?.binding !== binding) return;
+            update({ ...state, componentImport: { busy: false, binding, preview } });
+          } catch (error) {
+            if (destroyed || state.componentImport?.binding !== binding) return;
+            update({ ...state, componentImport: { busy: false, binding, message: `가져올 수 없습니다: ${componentImportReason(error?.code ?? error?.message ?? error)}` } });
+          }
+        })();
+        return;
+      }
+      if (event.target.closest?.("[data-confirm-component-import]")) {
+        const candidate = state.componentImport;
+        if (!candidate?.preview || candidate.busy || candidate.binding.checkoutId !== state.repo.checkoutId || candidate.binding.instanceId !== state.localView.selectedInstanceId || candidate.binding.sourceRevision !== state.sourcePreview?.header?.sourceRevision) return;
+        update({ ...state, componentImport: { ...candidate, busy: true } });
+        void (async () => {
+          try {
+            await backend.confirmComponentImport({ previewId: candidate.preview.preview_id, fingerprint: candidate.preview.fingerprint, confirmed: true });
+            if (destroyed || state.repo.checkoutId !== candidate.binding.checkoutId) return;
+            update({ ...state, componentImport: null, ui: { ...state.ui, activeSegment: "sot" } });
+            await loadSotSnapshot(candidate.binding.checkoutId);
+          } catch (error) {
+            if (destroyed) return;
+            update({ ...state, componentImport: { busy: false, binding: candidate.binding, message: `등록하지 못했습니다. 다시 미리보세요: ${error?.code ?? error?.message ?? error}` } });
+          }
+        })();
+        return;
+      }
       const closeLocalRemoval = event.target.closest?.("[data-close-local-removal]");
       const localRemovalBackdrop = event.target.closest?.("[data-local-removal-dialog]");
       if (closeLocalRemoval || (localRemovalBackdrop && event.target === localRemovalBackdrop)) {
@@ -2028,6 +2120,8 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
             confirmed: true,
             semanticFingerprint: preview.semanticFingerprint,
             overwrite: state.install.overwrite,
+            ...(state.install.adoptManagement === true ? { adoptManagement: true } : {}),
+            ...(state.install.replaceManaged === true ? { replaceManaged: true } : {}),
             allowRuntimeHooks: state.install.allowRuntimeHooks,
           },
         })).then((response) => {
@@ -2225,6 +2319,38 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
       selectFromControl(event.target.closest?.("[data-component-id]"));
     });
     shell?.addEventListener("keydown", (event) => {
+      if (state.importedSkillEditor) {
+        if (event.key === "Escape" && !state.importedSkillEditor.busy) {
+          event.preventDefault();
+          update({ ...state, importedSkillEditor: null });
+          root.querySelector("[data-edit-imported-skill]")?.focus();
+        }
+        if (event.key === "Tab") {
+          const controls = [...(root.querySelector("[data-imported-skill-dialog]")?.querySelectorAll?.("textarea:not(:disabled), button:not(:disabled)") ?? [])];
+          const first = controls[0]; const last = controls.at(-1);
+          if (first && (event.shiftKey ? root.ownerDocument.activeElement === first : root.ownerDocument.activeElement === last)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+        }
+        return;
+      }
+      if (state.componentImport) {
+        if (event.key === "Escape" && !state.componentImport.busy) {
+          event.preventDefault();
+          update({ ...state, componentImport: null });
+          root.querySelector("[data-preview-component-import]")?.focus();
+        }
+        if (event.key === "Tab") {
+          const dialog = root.querySelector("[data-component-import-dialog]");
+          const controls = [...(dialog?.querySelectorAll?.("button:not(:disabled)") ?? [])];
+          const first = controls[0];
+          const last = controls.at(-1);
+          const active = root.ownerDocument?.activeElement;
+          if (controls.length && (event.shiftKey ? active === first : active === last)) {
+            event.preventDefault();
+            (event.shiftKey ? last : first)?.focus();
+          }
+        }
+        return;
+      }
       if (event.key === "Tab" && state.localRemoval?.phase === "confirming") {
         const dialog = root.querySelector("[data-local-removal-dialog]");
         const focusable = [...(dialog?.querySelectorAll?.(

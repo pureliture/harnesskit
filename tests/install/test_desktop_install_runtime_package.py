@@ -114,6 +114,28 @@ def _run_artifact_projection_entrypoint(
     return json.loads(result.stdout)
 
 
+def test_bundled_entrypoint_reuses_standalone_component_plan_without_profile(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir(mode=0o700)
+    for relative in ["components", "profiles", "adapters", "schemas", "scripts/adapters", "scripts/install", "scripts/profiles"]:
+        shutil.copytree(ROOT / relative, workspace / relative)
+    expected = {"targets": ["codex"], "components": ["harnesskit.skill.grill-to-spec"]}
+    command = _entrypoint_command(workspace, "apply", expected)
+    command[command.index("--profile") + 1] = "component:harnesskit.skill.grill-to-spec"
+    command[command.index("--scope") + 1] = "user"
+    result = subprocess.run(command, capture_output=True, timeout=60)
+    assert result.returncode == 0, result.stderr.decode()
+    plan = json.loads(result.stdout)
+    assert plan["components"] == expected["components"]
+    assert plan.get("profile_id") is None
+    assert plan["mode"] == "apply"
+    assert plan["artifacts"]
+    for artifact in plan["artifacts"]:
+        assert artifact["source_sha256"] == _sha256(workspace / artifact["source"])
+    command[command.index("--component-id") + 1] = "harnesskit.skill.intent-guide"
+    assert subprocess.run(command, capture_output=True, timeout=60).returncode == 1
+
+
 def test_prepared_runtime_matches_lock_and_file_manifest() -> None:
     lock_bytes = LOCK_PATH.read_bytes()
     lock = json.loads(lock_bytes)

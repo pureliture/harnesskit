@@ -39,6 +39,18 @@ export function createBackendClient(invoke = resolveTauriInvoke(), listen = reso
   };
 
   return Object.freeze({
+    async confirmComponentImport(request) {
+      return invokeCommand("confirm_component_import", { request: {
+        previewId: requireId(request.previewId, "previewId"),
+        fingerprint: requireId(request.fingerprint, "fingerprint"),
+        confirmed: request.confirmed === true,
+      } });
+    },
+    async previewComponentImport(request) {
+      return invokeCommand("preview_component_import", { request: Object.fromEntries(
+        ["checkoutId", "sotSnapshotId", "snapshotId", "instanceId", "sourceRevision"].map((key) => [key, requireId(request[key], key)]),
+      ) });
+    },
     async getBootstrapState() {
       return invokeCommand("get_bootstrap_state");
     },
@@ -436,6 +448,13 @@ export function createBackendClient(invoke = resolveTauriInvoke(), listen = reso
       return invokeCommand("register_checkout", { checkoutPath: path });
     },
 
+    async readImportedSkill({ checkoutId, sotSnapshotId, componentId }) {
+      return invokeCommand("read_imported_skill", { request: { checkoutId: requireId(checkoutId, "Checkout ID"), sotSnapshotId: requireId(sotSnapshotId, "Snapshot ID"), componentId: requireId(componentId, "Component ID") } });
+    },
+    async saveImportedSkill({ checkoutId, sotSnapshotId, componentId, content, document }) {
+      return invokeCommand("save_imported_skill", { request: { checkoutId: requireId(checkoutId, "Checkout ID"), sotSnapshotId: requireId(sotSnapshotId, "Snapshot ID"), componentId: requireId(componentId, "Component ID"), content: String(content), ...(document ? { document: requireId(document, "Registered document") } : {}) } });
+    },
+
     async previewInstall({ checkoutId, sotSnapshotId, profileId, scope: requestedScope, targetRoot, targetIds }) {
       const scope = String(requestedScope ?? "").trim().toLowerCase();
       if (!["user", "project"].includes(scope)) {
@@ -466,6 +485,8 @@ export function createBackendClient(invoke = resolveTauriInvoke(), listen = reso
             "Preview semantic fingerprint",
           ),
           overwrite: approvals.overwrite === true,
+          ...(approvals.adoptManagement === true ? { adoptManagement: true } : {}),
+          ...(approvals.replaceManaged === true ? { replaceManaged: true } : {}),
           allowRuntimeHooks: approvals.allowRuntimeHooks === true,
         },
       });

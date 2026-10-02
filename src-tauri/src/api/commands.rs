@@ -301,6 +301,71 @@ pub(crate) async fn get_sot_session_state(
 }
 
 #[tauri::command]
+pub(crate) async fn read_imported_skill(
+    request: crate::contexts::sot::import::ImportedSkillRequest,
+    state: tauri::State<'_, Arc<AppController>>,
+) -> Result<crate::contexts::sot::import::ImportedSkillDetail, ApiErrorDto> {
+    let controller = Arc::clone(state.inner());
+    tauri::async_runtime::spawn_blocking(move || controller.read_imported_skill(request))
+        .await
+        .map_err(|_| sot_task_error("import_task_failed"))?
+        .map_err(|code| ApiErrorDto::feature_unavailable(code, "가져온 스킬을 읽을 수 없습니다."))
+}
+
+#[tauri::command]
+pub(crate) async fn save_imported_skill(
+    request: crate::contexts::sot::import::ImportedSkillEdit,
+    state: tauri::State<'_, Arc<AppController>>,
+) -> Result<SotSnapshotDto, ApiErrorDto> {
+    let controller = Arc::clone(state.inner());
+    tauri::async_runtime::spawn_blocking(move || controller.save_imported_skill(request))
+        .await
+        .map_err(|_| sot_task_error("import_task_failed"))?
+        .map(Into::into)
+        .map_err(|code| {
+            ApiErrorDto::feature_unavailable(
+                code,
+                "저장 결과를 확인하세요. 원본 도구 파일은 변경하지 않았습니다.",
+            )
+        })
+}
+
+#[tauri::command]
+pub(crate) async fn preview_component_import(
+    request: crate::contexts::sot::import::ImportRequest,
+    state: tauri::State<'_, Arc<AppController>>,
+) -> Result<crate::contexts::sot::import::ImportPreview, ApiErrorDto> {
+    let controller = Arc::clone(state.inner());
+    tauri::async_runtime::spawn_blocking(move || controller.preview_component_import(request))
+        .await
+        .map_err(|_| sot_task_error("import_task_failed"))?
+        .map_err(|code| {
+            ApiErrorDto::feature_unavailable(
+                code,
+                "가져오기 후보를 다시 확인하세요. 원본은 변경하지 않았습니다.",
+            )
+        })
+}
+
+#[tauri::command]
+pub(crate) async fn confirm_component_import(
+    request: crate::contexts::sot::import::ImportConfirmation,
+    state: tauri::State<'_, Arc<AppController>>,
+) -> Result<SotSnapshotDto, ApiErrorDto> {
+    let controller = Arc::clone(state.inner());
+    tauri::async_runtime::spawn_blocking(move || controller.confirm_component_import(request))
+        .await
+        .map_err(|_| sot_task_error("import_task_failed"))?
+        .map(Into::into)
+        .map_err(|code| {
+            ApiErrorDto::feature_unavailable(
+                code,
+                "가져오기 후보를 다시 확인하세요. 원본은 변경하지 않았습니다.",
+            )
+        })
+}
+
+#[tauri::command]
 pub(crate) async fn load_sot_snapshot(
     checkout_id: String,
     state: tauri::State<'_, Arc<AppController>>,
@@ -765,6 +830,8 @@ pub(crate) async fn apply_install(
                 semantic_fingerprint: approvals.semantic_fingerprint,
                 overwrite: approvals.overwrite,
                 allow_runtime_hooks: approvals.allow_runtime_hooks,
+                adopt_management: approvals.adopt_management,
+                replace_managed: approvals.replace_managed,
             },
         )
     })

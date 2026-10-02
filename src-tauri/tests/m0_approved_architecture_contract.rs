@@ -12,7 +12,7 @@ use harness_desktop_lib::api::dto::local::{
 };
 use serde::de::DeserializeOwned;
 
-const EXPECTED_COMMANDS: [&str; 30] = [
+const EXPECTED_COMMANDS: [&str; 34] = [
     "get_bootstrap_state",
     "set_appearance_mode",
     "set_typography_preset",
@@ -23,6 +23,10 @@ const EXPECTED_COMMANDS: [&str; 30] = [
     "register_checkout",
     "pick_checkout_directory",
     "load_sot_snapshot",
+    "read_imported_skill",
+    "save_imported_skill",
+    "preview_component_import",
+    "confirm_component_import",
     "get_local_scan_state",
     "start_local_scan",
     "get_project_ignore",
@@ -242,12 +246,24 @@ fn approved_custom_command_plan_is_exact() {
 
     let handler = handler_commands(&lib);
     let frontend = frontend_invoke_commands(&frontend);
-    let design_commands = section(&design, "## Public Command Contract", "Progress event")
+    let import_design = std::fs::read_to_string(root.parent().unwrap().join("docs/harness-requirements/20260709-tauri-harness-desktop-app/component-import-management-design.md")).unwrap();
+    let design = format!("{design}\n{import_design}");
+    let mut design_commands = section(&design, "## Public Command Contract", "Progress event")
         .lines()
         .filter_map(|line| line.strip_prefix("| `"))
         .filter_map(|line| line.split_once('`').map(|(command, _)| command.to_owned()))
         .collect::<Vec<_>>();
 
+    design_commands.extend(
+        section(
+            &import_design,
+            "## 가져오기 Command Contract",
+            "## 구현 근거",
+        )
+        .lines()
+        .filter_map(|line| line.strip_prefix("| `"))
+        .filter_map(|line| line.split_once('`').map(|(command, _)| command.to_owned())),
+    );
     for (surface, actual) in [
         ("Tauri handler", handler),
         ("frontend invoke", frontend),
@@ -985,7 +1001,11 @@ fn approved_requirement_trace_is_exact() {
         .lines()
         .filter_map(|line| line.trim_start().strip_prefix("- **"))
         .filter_map(|line| line.split("**").next())
-        .filter(|value| traceable_prefixes.iter().any(|prefix| value.starts_with(prefix)))
+        .filter(|value| {
+            traceable_prefixes
+                .iter()
+                .any(|prefix| value.starts_with(prefix))
+        })
         .map(str::to_owned)
         .collect::<Vec<_>>();
     let trace_ids = section(
@@ -996,7 +1016,11 @@ fn approved_requirement_trace_is_exact() {
     .lines()
     .filter_map(|line| line.strip_prefix("| "))
     .filter_map(|line| line.split(" | ").next())
-    .filter(|value| traceable_prefixes.iter().any(|prefix| value.starts_with(prefix)))
+    .filter(|value| {
+        traceable_prefixes
+            .iter()
+            .any(|prefix| value.starts_with(prefix))
+    })
     .map(str::to_owned)
     .collect::<Vec<_>>();
     let app_aliases = section(

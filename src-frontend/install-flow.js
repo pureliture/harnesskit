@@ -118,6 +118,8 @@ function normalizeRequiredApprovals(value) {
   }
   const approvals = value && typeof value === "object" ? value : {};
   return {
+    ...((approvals.managementAdoption === true || approvals.management_adoption === true) ? { managementAdoption: true } : {}),
+    ...((approvals.managedReplacement === true || approvals.managed_replacement === true) ? { managedReplacement: true } : {}),
     overwrite: approvals.overwrite === true,
     runtimeHooks: approvals.runtimeHooks === true
       || approvals.runtime_hooks === true
@@ -265,6 +267,8 @@ export function createInstallState(overrides = {}) {
     approvalPreviewId: null,
     approvalFingerprint: null,
     overwrite: false,
+    adoptManagement: false,
+    replaceManaged: false,
     allowRuntimeHooks: false,
     execution: null,
     message: "",
@@ -297,6 +301,8 @@ export function canApplyInstall(state) {
     && state?.confirmed === true
     && state?.approvalPreviewId === preview.previewId
     && state?.approvalFingerprint === preview.semanticFingerprint
+    && (!preview.plan.requiredApprovals.managedReplacement || state?.replaceManaged === true)
+    && (!preview.plan.requiredApprovals.managementAdoption || state?.adoptManagement === true)
     && (!preview.plan.requiredApprovals.overwrite || state?.overwrite === true)
     && (!preview.plan.requiredApprovals.runtimeHooks || state?.allowRuntimeHooks === true)
     && sameRequest(preview.request, currentRequest),
@@ -349,6 +355,8 @@ export function reduceInstallState(state, action) {
       phase: "previewing",
       preview: null,
       confirmed: false,
+      adoptManagement: false,
+      replaceManaged: false,
       approvalPreviewId: null,
       approvalFingerprint: null,
       execution: null,
@@ -361,6 +369,8 @@ export function reduceInstallState(state, action) {
       phase: "preview-ready",
       preview: action.preview,
       confirmed: false,
+      adoptManagement: false,
+      replaceManaged: false,
       approvalPreviewId: null,
       approvalFingerprint: null,
       execution: null,
@@ -373,6 +383,8 @@ export function reduceInstallState(state, action) {
       phase: "error",
       preview: null,
       confirmed: false,
+      adoptManagement: false,
+      replaceManaged: false,
       approvalPreviewId: null,
       approvalFingerprint: null,
       execution: null,
@@ -388,8 +400,13 @@ export function reduceInstallState(state, action) {
       approvalPreviewId: confirmed ? preview.previewId : null,
       approvalFingerprint: confirmed ? preview.semanticFingerprint : null,
       overwrite: action.overwrite === true,
+      adoptManagement: action.adoptManagement === true,
+      replaceManaged: action.replaceManaged === true,
       allowRuntimeHooks: action.allowRuntimeHooks === true,
     };
+  }
+  if (action.type === "keep_managed_source" && state.phase === "preview-ready") {
+    return createInstallState({ subject: state.subject, form: state.form, message: "도구 쪽 변경을 유지했습니다. 이번 적용을 취소했습니다." });
   }
   if (action.type === "apply_started") {
     return { ...state, phase: "applying", execution: null, message: "승인된 preview를 적용하고 검증하고 있습니다." };
@@ -401,6 +418,8 @@ export function reduceInstallState(state, action) {
       phase: "result",
       execution: action.execution,
       confirmed: false,
+      adoptManagement: false,
+      replaceManaged: false,
       approvalPreviewId: null,
       approvalFingerprint: null,
       message: outcome.message,
@@ -412,6 +431,8 @@ export function reduceInstallState(state, action) {
       phase: "error",
       execution: action.execution ?? null,
       confirmed: false,
+      adoptManagement: false,
+      replaceManaged: false,
       approvalPreviewId: null,
       approvalFingerprint: null,
       message: String(action.message ?? "Install 응답을 받지 못했습니다."),

@@ -122,6 +122,24 @@ def merge_json_deep(current: str, body: str, artifact: dict) -> str:
     }:
         raise ValueError("unsupported json merge key")
 
+    selected_event = (artifact.get("ownership") or {}).get("selected_hook_event")
+    if selected_event:
+        existing = json.loads(current)
+        source = json.loads(body)
+        def selected(document):
+            groups = document.get("hooks", {}).get(selected_event)
+            if not isinstance(groups, list) or len(groups) != 1:
+                raise ValueError("ambiguous hook item")
+            handlers = groups[0].get("hooks")
+            if not isinstance(handlers, list) or len(handlers) != 1 or not isinstance(handlers[0], dict):
+                raise ValueError("ambiguous hook item")
+            return handlers[0]
+        target = selected(existing)
+        incoming = selected(source)
+        for key in ("type", "command", "timeout"):
+            target[key] = incoming[key]
+        return json.dumps(existing, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+
     source = json.loads(body)
     if not isinstance(source, dict):
         raise ValueError("json-deep-merge source must be a JSON object")

@@ -3,6 +3,8 @@ pub mod api;
 mod app_controller;
 pub mod app_service;
 pub mod checkout;
+#[cfg(test)]
+mod component_import_tests;
 pub mod contexts;
 pub mod controller;
 pub mod dashboard;
@@ -274,6 +276,10 @@ pub fn run() {
             api::commands::register_checkout,
             api::commands::pick_checkout_directory,
             api::commands::load_sot_snapshot,
+            api::commands::read_imported_skill,
+            api::commands::save_imported_skill,
+            api::commands::preview_component_import,
+            api::commands::confirm_component_import,
             api::commands::get_local_scan_state,
             api::commands::start_local_scan,
             api::commands::get_project_ignore,

@@ -147,6 +147,49 @@ fn plan_for(destinations: &[&str]) -> InstallPlan {
     plan
 }
 
+#[test]
+fn adoption_writer_rejects_target_changed_after_review_before_writer_read() {
+    let fixture = Fixture::new();
+    let destination = ".agents/skills/optimal-response/SKILL.md";
+    let mut plan = plan_for(&[destination]);
+    materialize_plan(&fixture, &mut plan);
+    write_mode(&fixture.target.join(destination), b"external edit", 0o644);
+    let selected = plan.components.iter().cloned().collect();
+    let targets = plan.targets.iter().cloned().collect();
+    let validated = PlanValidator::embedded()
+        .unwrap()
+        .validate(
+            &plan,
+            &InstallRequest {
+                scope: plan.scope.clone(),
+                targets,
+            },
+            &selected,
+        )
+        .unwrap();
+    let expected = std::collections::BTreeMap::from([(
+        ("codex".to_string(), destination.to_string()),
+        hex_sha256(b"reviewed source"),
+    )]);
+    let result = InstallWriter::default()
+        .apply_with_expected(
+            &validated,
+            &fixture.workspace,
+            &fixture.roots(validated.request_targets()),
+            &expected,
+        )
+        .unwrap();
+    assert_eq!(result.status(), InstallOperationStatus::Failed);
+    assert_eq!(
+        result.destinations()[0].code.as_deref(),
+        Some("destination_changed_since_review")
+    );
+    assert_eq!(
+        fs::read(fixture.target.join(destination)).unwrap(),
+        b"external edit"
+    );
+}
+
 fn artifact_body(destination: &str) -> &'static [u8] {
     match destination {
         "AGENTS.md" => b"managed body\n",

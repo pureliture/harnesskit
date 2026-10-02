@@ -185,6 +185,32 @@ fn validator_rejects_the_shared_python_contract_negative_corpus() {
 }
 
 #[test]
+fn public_plan_ownership_is_not_whole_file_authority() {
+    let mut plan = positive_plan();
+    let artifact = plan
+        .artifacts
+        .iter_mut()
+        .find(|a| a.target == "project" && a.destination == "AGENTS.md")
+        .unwrap();
+    artifact.merge_strategy = None;
+    artifact.begin_marker = None;
+    artifact.end_marker = None;
+    artifact.ownership = Some(json!({"type":"path","merge_policy":"full-path-overwrite"}));
+    assert_eq!(
+        PlanValidator::embedded()
+            .unwrap()
+            .validate(
+                &plan,
+                &request(&["project", "codex", "hermes"]),
+                &selected_components()
+            )
+            .unwrap_err()
+            .code(),
+        "merge_contract_mismatch"
+    );
+}
+
+#[test]
 fn validator_rejects_duplicate_destination_and_cross_target_fan_in() {
     let validator = PlanValidator::embedded().unwrap();
     let mut duplicate = positive_plan();

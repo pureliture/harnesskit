@@ -1177,6 +1177,16 @@ impl LocalContext {
             .close(view_generation, preview_session_id)
     }
 
+    pub(crate) fn capture_current_source(
+        &self,
+        snapshot_id: &str,
+        instance_id: &str,
+        max_bytes: usize,
+    ) -> Result<CapturedLocalSource, SourceInspectionError> {
+        self.source_inspection
+            .capture_current_source(snapshot_id, instance_id, max_bytes)
+    }
+
     pub(crate) fn capture_revision_bound_source(
         &self,
         snapshot_id: &str,

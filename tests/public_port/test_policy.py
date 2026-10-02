@@ -25,6 +25,13 @@ def test_repository_public_port_policy_is_valid():
     assert "publish/public-sanitation-allowlist.yml" in loaded.ported_includes
 
 
+def test_public_port_includes_antigravity_import_adapter_dependency():
+    root = Path(__file__).resolve().parents[2]
+    loaded = load_policy(root / "publish/public-port.yml")
+
+    assert "adapters/antigravity/**" in loaded.ported_includes
+
+
 @pytest.mark.parametrize(
     "repository_url",
     [

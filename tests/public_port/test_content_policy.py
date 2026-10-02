@@ -112,9 +112,11 @@ def test_content_policy_rejects_secret_like_literal_assignments(body: bytes):
     [
         "src-frontend/tests/ai-explanation.test.js",
         "src-frontend/tests/app-interactions.test.js",
+        "src-tauri/src/component_import_tests.rs",
+        "src-tauri/src/contexts/local/source_inspection.rs",
     ],
 )
-def test_frontend_warning_fixtures_are_safe_for_public_port(path: str) -> None:
+def test_warning_and_import_fixtures_are_safe_for_public_port(path: str) -> None:
     body = (Path(__file__).resolve().parents[2] / path).read_bytes()
     validate_public_blob(path, body)
     baseline = PublicSurfaceSnapshot.create(name="baseline", complete=True)

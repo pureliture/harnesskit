@@ -240,6 +240,16 @@ impl InstallWriter {
         workspace: &InstallWorkspace,
         target_roots: &InstallTargetRoots,
     ) -> Result<InstallApplyReport, InstallWriterError> {
+        self.apply_with_expected(validated, workspace, target_roots, &BTreeMap::new())
+    }
+
+    pub fn apply_with_expected(
+        &self,
+        validated: &ValidatedPlan,
+        workspace: &InstallWorkspace,
+        target_roots: &InstallTargetRoots,
+        expected: &BTreeMap<(String, String), String>,
+    ) -> Result<InstallApplyReport, InstallWriterError> {
         validate_apply_inputs(validated, workspace, target_roots)?;
         let started = self.clock.now_millis();
         let (opened_roots, root_errors) = open_target_roots(target_roots);
@@ -265,7 +275,15 @@ impl InstallWriter {
                 continue;
             }
             let outcome = match opened_roots.get(&artifact.target) {
-                Some(root) => self.apply_one(workspace, root, artifact, started),
+                Some(root) => self.apply_one(
+                    workspace,
+                    root,
+                    artifact,
+                    started,
+                    expected
+                        .get(&(artifact.target.clone(), artifact.destination.clone()))
+                        .map(String::as_str),
+                ),
                 None => Err(root_errors
                     .get(&artifact.target)
                     .copied()
@@ -300,10 +318,18 @@ impl InstallWriter {
         target_root: &OpenedTargetRoot,
         artifact: &PlanArtifact,
         started: u64,
+        expected: Option<&str>,
     ) -> Result<AppliedDestination, &'static str> {
         let source = read_source(workspace.root_fd(), artifact)?;
         let (parent, leaf) = open_destination_parent(&target_root.fd, &artifact.destination, true)?;
         let existing = read_destination(parent.as_fd(), &leaf)?;
+        if expected.is_some_and(|hash| {
+            existing
+                .as_ref()
+                .is_none_or(|f| f.identity.links != 1 || sha256(&f.bytes) != hash)
+        }) {
+            return Err("destination_changed_since_review");
+        }
         let output = render_destination(artifact, existing.as_ref(), &source.bytes)?;
         self.ensure_before_deadline(started)?;
         let mode = match (&existing, artifact.merge_strategy.as_deref()) {
@@ -597,6 +623,7 @@ struct FileIdentity {
     file_type: FileType,
     mode: u32,
     size: u64,
+    links: u64,
     modified_seconds: i64,
     modified_nanoseconds: i64,
     changed_seconds: i64,
@@ -750,6 +777,188 @@ impl Drop for NamedEntryGuard {
         }
         self.file.take();
     }
+}
+
+/// Reuse the descriptor-bound writer for canonical registration and private provenance.
+/// `None` means create-only; an existing file must match the approved bytes exactly.
+pub(crate) fn write_registration_file(
+    root: &Path,
+    relative: &str,
+    expected: Option<&[u8]>,
+    bytes: &[u8],
+    mode: u32,
+) -> Result<(), String> {
+    let root = open_absolute_directory(root).map_err(str::to_owned)?;
+    let (parent, leaf) =
+        open_relative_parent(root.fd.as_fd(), relative, true, "import_destination_unsafe")
+            .map_err(str::to_owned)?;
+    let existing = read_destination(parent.as_fd(), &leaf).map_err(str::to_owned)?;
+    if existing.as_ref().is_some_and(|f| f.identity.links != 1)
+        || existing.as_ref().map(|f| f.bytes.as_slice()) != expected
+    {
+        return Err("import_destination_changed".into());
+    }
+    let mut temp = TempSiblingGuard::create(parent.as_fd()).map_err(str::to_owned)?;
+    temp.write(bytes, mode).map_err(str::to_owned)?;
+    if !destination_unchanged(parent.as_fd(), &leaf, existing.as_ref()).map_err(str::to_owned)? {
+        return Err("import_destination_changed".into());
+    }
+    if atomic_replace(parent.as_fd(), &leaf, existing.as_ref(), &mut temp)
+        .map_err(str::to_owned)?
+        .is_some()
+    {
+        return Err("import_write_incomplete".into());
+    }
+    let after =
+        read_regular(parent.as_fd(), &leaf, "import_write_incomplete").map_err(str::to_owned)?;
+    if after.bytes != bytes || after.identity.links != 1 {
+        return Err("import_write_incomplete".into());
+    }
+    fsync(parent.as_fd()).map_err(|_| "import_write_incomplete".to_string())?;
+    Ok(())
+}
+
+pub(crate) fn rollback_registration_file(
+    root: &Path,
+    relative: &str,
+    written: &[u8],
+    before: Option<&[u8]>,
+    mode: u32,
+) -> Result<(), String> {
+    if let Some(before) = before {
+        return write_registration_file(root, relative, Some(written), before, mode);
+    }
+    let root = open_absolute_directory(root).map_err(str::to_owned)?;
+    let (parent, leaf) = open_relative_parent(
+        root.fd.as_fd(),
+        relative,
+        false,
+        "import_rollback_incomplete",
+    )
+    .map_err(str::to_owned)?;
+    let current =
+        read_regular(parent.as_fd(), &leaf, "import_rollback_incomplete").map_err(str::to_owned)?;
+    if current.bytes != written
+        || !destination_unchanged(parent.as_fd(), &leaf, Some(&current)).map_err(str::to_owned)?
+    {
+        return Err("import_rollback_incomplete".into());
+    }
+    unlinkat(parent.as_fd(), leaf.as_str(), AtFlags::empty())
+        .map_err(|_| "import_rollback_incomplete".to_string())
+}
+
+pub(crate) fn read_private_registration_file(
+    root: &Path,
+    name: &str,
+) -> Result<Option<Vec<u8>>, String> {
+    let directory = open_absolute_directory(root).map_err(str::to_owned)?;
+    let stat = fstat(&directory.fd).map_err(|_| "import_private_state_unsafe")?;
+    if stat.st_mode & 0o077 != 0 || stat.st_uid != rustix::process::getuid().as_raw() {
+        return Err("import_private_state_unsafe".into());
+    }
+    match statat(directory.fd.as_fd(), name, AtFlags::SYMLINK_NOFOLLOW) {
+        Ok(s)
+            if s.st_nlink != 1
+                || s.st_uid != rustix::process::getuid().as_raw()
+                || s.st_mode & 0o077 != 0 =>
+        {
+            return Err("import_private_state_unsafe".into())
+        }
+        Ok(_) | Err(Errno::NOENT) => {}
+        Err(_) => return Err("import_private_state_unsafe".into()),
+    }
+    let file = read_destination(directory.fd.as_fd(), name).map_err(str::to_owned)?;
+    if file
+        .as_ref()
+        .is_some_and(|f| f.mode & 0o077 != 0 || f.identity.links != 1)
+    {
+        return Err("import_private_state_unsafe".into());
+    }
+    Ok(file.map(|f| f.bytes))
+}
+
+fn import_document_lineage(
+    root: BorrowedFd<'_>,
+    relative: &str,
+) -> Result<Vec<(u64, u64)>, String> {
+    let parts = relative_parts(relative).ok_or("import_source_unsafe")?;
+    let mut current = rustix::io::dup(root).map_err(|_| "import_source_unsafe")?;
+    let mut lineage = vec![];
+    let stat = fstat(current.as_fd()).map_err(|_| "import_source_unsafe")?;
+    lineage.push((stat.st_dev as u64, stat.st_ino));
+    for part in &parts[..parts.len() - 1] {
+        current = open_verified_directory(current.as_fd(), OsStr::new(part), false)
+            .map_err(str::to_owned)?;
+        let stat = fstat(current.as_fd()).map_err(|_| "import_source_unsafe")?;
+        lineage.push((stat.st_dev as u64, stat.st_ino));
+    }
+    Ok(lineage)
+}
+
+pub(crate) fn capture_import_document(
+    root: &Path,
+    relative: &str,
+) -> Result<(Vec<u8>, String), String> {
+    let root = open_absolute_directory(root).map_err(str::to_owned)?;
+    let file = read_relative_regular(root.fd.as_fd(), relative, "import_source_unsafe")
+        .map_err(str::to_owned)?;
+    if file.identity.links != 1 || file.identity.mode & 0o111 != 0 || file.bytes.len() > 256 * 1024
+    {
+        return Err("import_source_unsafe".into());
+    }
+    let lineage = import_document_lineage(root.fd.as_fd(), relative)?;
+    let checked = read_relative_regular(root.fd.as_fd(), relative, "import_source_unsafe")
+        .map_err(str::to_owned)?;
+    if checked.identity != file.identity
+        || checked.bytes != file.bytes
+        || import_document_lineage(root.fd.as_fd(), relative)? != lineage
+    {
+        return Err("import_source_unsafe".into());
+    }
+    let hash = format!("{:x}", Sha256::digest(&file.bytes));
+    let revision = format!(
+        "{:x}",
+        Sha256::digest(format!("{:?}:{hash}:{lineage:?}", file.identity).as_bytes())
+    );
+    Ok((file.bytes, revision))
+}
+
+pub(crate) fn read_install_destination(root: &Path, relative: &str) -> Result<Vec<u8>, String> {
+    let root = open_absolute_directory(root).map_err(str::to_owned)?;
+    let file = read_relative_regular(root.fd.as_fd(), relative, "destination_unsafe")
+        .map_err(str::to_owned)?;
+    if file.identity.links != 1 {
+        return Err("destination_unsafe".into());
+    }
+    Ok(file.bytes)
+}
+
+pub(crate) fn private_registration_directory(root: &Path, name: &str) -> Result<PathBuf, String> {
+    let opened = open_absolute_directory(root).map_err(str::to_owned)?;
+    match mkdirat(opened.fd.as_fd(), name, Mode::from(0o700)) {
+        Ok(()) | Err(Errno::EXIST) => {}
+        Err(_) => return Err("import_private_state_unsafe".into()),
+    }
+    let directory = open_verified_directory(opened.fd.as_fd(), OsStr::new(name), false)
+        .map_err(str::to_owned)?;
+    let stat = fstat(&directory).map_err(|_| "import_private_state_unsafe")?;
+    if stat.st_mode & 0o077 != 0 || stat.st_uid != rustix::process::getuid().as_raw() {
+        return Err("import_private_state_unsafe".into());
+    }
+    Ok(root.join(name))
+}
+
+pub(crate) fn reserve_registration_directory(root: &Path, relative: &str) -> Result<(), String> {
+    let root = open_absolute_directory(root).map_err(str::to_owned)?;
+    let (parent, leaf) = open_relative_parent(
+        root.fd.as_fd(),
+        relative,
+        false,
+        "import_destination_unsafe",
+    )
+    .map_err(str::to_owned)?;
+    mkdirat(parent.as_fd(), leaf.as_str(), Mode::from(0o755))
+        .map_err(|_| "import_collision".to_string())
 }
 
 fn atomic_replace(
@@ -1365,6 +1574,23 @@ fn render_destination(
         )
         .map(String::into_bytes)
         .map_err(|_| "merge_failed"),
+        Some("json-deep-merge")
+            if artifact
+                .ownership
+                .as_ref()
+                .and_then(|o| o["selected_hook_event"].as_str())
+                .is_some() =>
+        {
+            super::merge::merge_selected_hook(
+                std::str::from_utf8(current).map_err(|_| "destination_invalid_utf8")?,
+                std::str::from_utf8(source).map_err(|_| "source_invalid_utf8")?,
+                artifact.ownership.as_ref().unwrap()["selected_hook_event"]
+                    .as_str()
+                    .unwrap(),
+            )
+            .map(String::into_bytes)
+            .map_err(|_| "merge_failed")
+        }
         Some("json-deep-merge") => merge_json_deep(
             std::str::from_utf8(current).map_err(|_| "destination_invalid_utf8")?,
             std::str::from_utf8(source).map_err(|_| "source_invalid_utf8")?,
@@ -1375,6 +1601,23 @@ fn render_destination(
         )
         .map(String::into_bytes)
         .map_err(|_| "merge_failed"),
+        Some("toml-agents-merge")
+            if artifact
+                .ownership
+                .as_ref()
+                .and_then(|o| o["selected_codex_agent"].as_str())
+                .is_some() =>
+        {
+            super::merge::merge_selected_codex_agent(
+                std::str::from_utf8(current).map_err(|_| "destination_invalid_utf8")?,
+                std::str::from_utf8(source).map_err(|_| "source_invalid_utf8")?,
+                artifact.ownership.as_ref().unwrap()["selected_codex_agent"]
+                    .as_str()
+                    .unwrap(),
+            )
+            .map(String::into_bytes)
+            .map_err(|_| "merge_failed")
+        }
         Some("toml-agents-merge") => merge_toml_agents(
             std::str::from_utf8(current).map_err(|_| "destination_invalid_utf8")?,
             std::str::from_utf8(source).map_err(|_| "source_invalid_utf8")?,
@@ -1427,6 +1670,7 @@ fn file_identity(stat: &Stat) -> FileIdentity {
         file_type: FileType::from_raw_mode(stat.st_mode),
         mode: stat.st_mode as u32 & 0o777,
         size: u64::try_from(stat.st_size).unwrap_or(u64::MAX),
+        links: stat.st_nlink as u64,
         modified_seconds: stat.st_mtime,
         modified_nanoseconds: stat.st_mtime_nsec,
         changed_seconds: stat.st_ctime,
