@@ -117,6 +117,20 @@ impl AppController {
         }
     }
 
+    pub(crate) fn private_state_root(&self) -> Result<PathBuf, String> {
+        let parent = self
+            .state_file
+            .as_ref()
+            .and_then(|path| path.parent())
+            .ok_or_else(|| "import_private_state_unavailable".to_string())?;
+        let parent =
+            std::fs::canonicalize(parent).map_err(|_| "import_private_state_unsafe".to_string())?;
+        crate::contexts::install::writer::private_registration_directory(
+            &parent,
+            "component-import-state",
+        )
+    }
+
     pub fn with_state_file(state_file: PathBuf) -> Self {
         let controller = Self::new(Some(state_file));
         controller.restore_persisted_state();

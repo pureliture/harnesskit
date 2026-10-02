@@ -362,6 +362,26 @@ fn scalar_string(value: &JsonValue) -> Option<String> {
     }
 }
 
+#[cfg(test)]
+mod codex_metadata_tests {
+    use super::*;
+    #[test]
+    fn codex_agent_metadata_is_structured_and_bad_toml_is_not_parsed() {
+        let batch = parse_toml(".codex/agents/reviewer.toml", SurfaceKind::Agent, b"name = \"reviewer\"\ndescription = \"Review  carefully\"\nmodel = \"gpt-test\"\ndeveloper_instructions = \"Review\"\n");
+        assert_eq!(batch.items[0].name.as_deref(), Some("reviewer"));
+        assert_eq!(
+            batch.items[0].description.as_deref(),
+            Some("Review  carefully")
+        );
+        let malformed = parse_toml(
+            ".codex/agents/reviewer.toml",
+            SurfaceKind::Agent,
+            b"name = [broken",
+        );
+        assert_ne!(malformed.items[0].parse_state, ParseState::Parsed);
+    }
+}
+
 fn parse_toml(locator: &str, kind: SurfaceKind, bytes: &[u8]) -> ParseBatch {
     let Ok(text) = std::str::from_utf8(bytes) else {
         return malformed(locator, kind);
@@ -369,13 +389,35 @@ fn parse_toml(locator: &str, kind: SurfaceKind, bytes: &[u8]) -> ParseBatch {
     if text.trim().is_empty() || text.contains('\0') {
         return malformed(locator, kind);
     }
+    let doc: toml::Value = match toml::from_str(text) {
+        Ok(doc) => doc,
+        Err(_) => return malformed(locator, kind),
+    };
+    let description = doc
+        .get("description")
+        .and_then(toml::Value::as_str)
+        .map(str::to_owned);
+    let settings = doc
+        .get("model")
+        .and_then(toml::Value::as_str)
+        .map(|v| SafeSetting {
+            key: "model".into(),
+            present: true,
+            redacted: false,
+            value: Some(v.into()),
+        })
+        .into_iter()
+        .collect();
     one_item(
         locator,
         kind,
-        safe_file_name(locator),
-        None,
-        None,
-        Vec::new(),
+        doc.get("name")
+            .and_then(toml::Value::as_str)
+            .map(str::to_owned)
+            .or_else(|| safe_file_name(locator)),
+        description.clone(),
+        description.map(|_| "structured_field".into()),
+        settings,
     )
 }
 

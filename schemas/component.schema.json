@@ -240,7 +240,7 @@
       "type": "object",
       "description": "Concrete target build outputs for this component, keyed by platform name. This is intentionally separate from target_support, which records support/evidence status.",
       "propertyNames": {
-        "enum": ["claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
+        "enum": ["project", "claude", "codex", "gemini", "antigravity", "antigravity-cli", "hermes"]
       },
       "additionalProperties": {
         "type": "object",

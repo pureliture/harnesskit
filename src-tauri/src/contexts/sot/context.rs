@@ -24,6 +24,7 @@ struct SotSession {
 }
 
 pub struct SotContext {
+    imports: super::import::ImportState,
     session: Mutex<SotSession>,
     revision_gate: Mutex<()>,
     checkout: Option<CheckoutController>,
@@ -43,6 +44,7 @@ impl Default for SotContext {
         Self {
             session: Mutex::new(SotSession::default()),
             revision_gate: Mutex::new(()),
+            imports: crate::contexts::sot::import::ImportState::default(),
             checkout: None,
             install: None,
             artifact_generator: None,
@@ -60,6 +62,7 @@ impl SotContext {
                 latest_install_evidence: None,
             }),
             revision_gate: Mutex::new(()),
+            imports: crate::contexts::sot::import::ImportState::default(),
             checkout: None,
             install: None,
             artifact_generator: None,
@@ -82,10 +85,238 @@ impl SotContext {
                 latest_install_evidence: None,
             }),
             revision_gate: Mutex::new(()),
+            imports: crate::contexts::sot::import::ImportState::default(),
             checkout: Some(checkout),
             install,
             artifact_generator,
         })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn preview_component_import(
+        &self,
+        local: &crate::contexts::local::LocalContext,
+        checkout_id: &str,
+        sot_id: &str,
+        snapshot_id: &str,
+        instance_id: &str,
+        source_revision: &str,
+    ) -> Result<super::import::ImportPreview, String> {
+        let _revision = self.lock_revision()?;
+        if self.session_state()?.0.as_deref() != Some(checkout_id) {
+            return Err("sot_checkout_not_active".into());
+        }
+        let snapshot = self.require_snapshot(sot_id)?;
+        let checkout = self.checkout_controller()?.resolve_checkout(checkout_id)?;
+        let private = self.checkout_controller()?.private_state_root()?;
+        if private.starts_with(checkout.root()) {
+            return Err("import_private_state_unsafe".into());
+        }
+        let mut prepared = super::import::prepare(
+            local,
+            checkout_id,
+            sot_id,
+            snapshot_id,
+            instance_id,
+            source_revision,
+            checkout.root(),
+        )?;
+        if prepared.checkout_revision != snapshot.checkout_summary.source_revision {
+            return Err("import_preview_stale".into());
+        }
+        super::import::private_link_payload(private, &prepared)?;
+        let generated = self
+            .install
+            .as_ref()
+            .ok_or("install_runtime_unavailable")?
+            .validate_import_candidate(
+                checkout.root(),
+                &prepared.preview.name,
+                prepared.preview.manifest.as_bytes(),
+                prepared.preview.content.as_bytes(),
+                &prepared.registry_after,
+                &prepared.preview.support_documents,
+            )?;
+        prepared.preview.generated_artifact_count = generated.records.len();
+        let preview = prepared.preview.clone();
+        let mut imports = self
+            .imports
+            .0
+            .lock()
+            .map_err(|_| "import_state_unavailable")?;
+        imports.clear();
+        imports.insert(preview.preview_id.clone(), prepared);
+        Ok(preview)
+    }
+
+    pub(crate) fn confirm_component_import(
+        &self,
+        local: &crate::contexts::local::LocalContext,
+        preview_id: &str,
+        fingerprint: &str,
+        confirmed: bool,
+    ) -> Result<SotSnapshot, String> {
+        if !confirmed {
+            return Err("import_confirmation_required".into());
+        }
+        let _revision = self.lock_revision()?;
+        let prepared = self
+            .imports
+            .0
+            .lock()
+            .map_err(|_| "import_state_unavailable")?
+            .remove(preview_id)
+            .ok_or("import_preview_expired")?;
+        if prepared.expires <= std::time::Instant::now()
+            || prepared.preview.fingerprint != fingerprint
+        {
+            return Err("import_preview_expired".into());
+        }
+        if self.session_state()?.0.as_deref() != Some(&prepared.checkout_id) {
+            return Err("sot_checkout_not_active".into());
+        }
+        self.require_snapshot(&prepared.sot_id)?;
+        let checkout = self
+            .checkout_controller()?
+            .resolve_checkout(&prepared.checkout_id)?;
+        let current = super::import::prepare(
+            local,
+            &prepared.checkout_id,
+            &prepared.sot_id,
+            &prepared.snapshot_id,
+            &prepared.instance_id,
+            &prepared.source_revision,
+            checkout.root(),
+        )?;
+        if current.preview.fingerprint != fingerprint {
+            return Err("import_preview_stale".into());
+        }
+        self.install
+            .as_ref()
+            .ok_or("install_runtime_unavailable")?
+            .validate_import_candidate(
+                checkout.root(),
+                &prepared.preview.name,
+                prepared.preview.manifest.as_bytes(),
+                prepared.preview.content.as_bytes(),
+                &prepared.registry_after,
+                &prepared.preview.support_documents,
+            )?;
+        let after_generation = super::import::prepare(
+            local,
+            &prepared.checkout_id,
+            &prepared.sot_id,
+            &prepared.snapshot_id,
+            &prepared.instance_id,
+            &prepared.source_revision,
+            checkout.root(),
+        )?;
+        if after_generation.preview.fingerprint != fingerprint {
+            return Err("import_preview_stale".into());
+        }
+        let private = self.checkout_controller()?.private_state_root()?;
+        let (link_path, link_before, link_after) =
+            super::import::private_link_payload(private.clone(), &prepared)?;
+        let link_name = link_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .ok_or("import_private_state_unsafe")?;
+        let directory = format!(
+            "components/{}s/{}",
+            prepared.preview.kind, prepared.preview.name
+        );
+        use crate::contexts::install::writer::{
+            reserve_registration_directory, rollback_registration_file, write_registration_file,
+        };
+        reserve_registration_directory(checkout.root(), &directory)?;
+        let mut written: Vec<(&Path, String, Vec<u8>, Option<Vec<u8>>, u32)> = vec![];
+        let result = (|| {
+            for document in &prepared.preview.support_documents {
+                let relative = format!("{directory}/{}", document.path);
+                let mut parent = PathBuf::from(&directory);
+                for part in Path::new(&document.path).parent().unwrap().components() {
+                    parent.push(part);
+                    let relative_parent = parent.to_str().ok_or("import_source_unsafe")?;
+                    if !checkout.root().join(&parent).exists() {
+                        reserve_registration_directory(checkout.root(), relative_parent)?;
+                    }
+                }
+                write_registration_file(
+                    checkout.root(),
+                    &relative,
+                    None,
+                    document.content.as_bytes(),
+                    0o644,
+                )?;
+                written.push((
+                    checkout.root(),
+                    relative,
+                    document.content.as_bytes().to_vec(),
+                    None,
+                    0o644,
+                ));
+            }
+            for (root, path, bytes, before, mode) in [
+                (
+                    checkout.root(),
+                    format!(
+                        "{directory}/{}",
+                        if prepared.preview.kind == "agent" {
+                            "prompt.md"
+                        } else if prepared.preview.kind == "rule" {
+                            "rule.md"
+                        } else if prepared.preview.kind == "hook" {
+                            "hook.md"
+                        } else {
+                            "SKILL.md"
+                        }
+                    ),
+                    prepared.preview.content.as_bytes(),
+                    None,
+                    0o644,
+                ),
+                (
+                    checkout.root(),
+                    format!("{directory}/component.yml"),
+                    prepared.preview.manifest.as_bytes(),
+                    None,
+                    0o644,
+                ),
+                (
+                    private.as_path(),
+                    link_name.to_string(),
+                    link_after.as_slice(),
+                    link_before.as_deref(),
+                    0o600,
+                ),
+                (
+                    checkout.root(),
+                    "components/registry.yml".into(),
+                    prepared.registry_after.as_slice(),
+                    Some(prepared.registry_before.as_slice()),
+                    0o644,
+                ),
+            ] {
+                write_registration_file(root, &path, before, bytes, mode)?;
+                written.push((root, path, bytes.to_vec(), before.map(<[u8]>::to_vec), mode));
+            }
+            super::import::validate_stage(&prepared, checkout.root())?;
+            self.load_registered(&prepared.checkout_id, &checkout)
+        })();
+        if result.is_err() {
+            let mut incomplete = false;
+            for (root, path, bytes, before, mode) in written.iter().rev() {
+                incomplete |=
+                    rollback_registration_file(root, path, bytes, before.as_deref(), *mode)
+                        .is_err();
+            }
+            if incomplete {
+                return Err("import_rollback_incomplete".into());
+            }
+            // The reserved empty directory is intentionally retained on failure: never recursively
+            // delete a path another process could have changed. The next preview reports a collision.
+        }
+        result
     }
 
     pub fn activate_checkout(&self, checkout_id: String) -> Result<(), String> {
@@ -173,6 +404,256 @@ impl SotContext {
         Ok(registration)
     }
 
+    pub(crate) fn read_imported_skill(
+        &self,
+        checkout_id: &str,
+        snapshot_id: &str,
+        component_id: &str,
+    ) -> Result<super::import::ImportedSkillDetail, String> {
+        let _revision = self.lock_revision()?;
+        if self.session_state()?.0.as_deref() != Some(checkout_id) {
+            return Err("sot_checkout_not_active".into());
+        }
+        let snapshot = self.require_snapshot(snapshot_id)?;
+        let component = snapshot
+            .components
+            .iter()
+            .find(|c| {
+                c.component_id == component_id
+                    && matches!(c.kind.as_str(), "skill" | "hook" | "agent" | "rule")
+            })
+            .ok_or("imported_skill_unavailable")?;
+        let checkout = self.checkout_controller()?.resolve_checkout(checkout_id)?;
+        let private = self.checkout_controller()?.private_state_root()?;
+        let bytes = crate::contexts::install::writer::read_private_registration_file(
+            &private,
+            &format!("component-imports-{checkout_id}.json"),
+        )?
+        .ok_or("management_record_invalid")?;
+        let links: Vec<serde_json::Value> =
+            serde_json::from_slice(&bytes).map_err(|_| "management_record_invalid")?;
+        let matching: Vec<_> = links
+            .iter()
+            .filter(|l| {
+                l["component_id"].as_str() == Some(component_id)
+                    && l.get("canonical_document").is_none()
+                    && l["source_role"] != "registration"
+            })
+            .collect();
+        if matching.len() != 1 {
+            return Err("imported_skill_unavailable".into());
+        }
+        let path = component
+            .owned_files
+            .iter()
+            .find(|p| {
+                p.ends_with("/SKILL.md")
+                    || p.ends_with("/hook.md")
+                    || p.ends_with("/prompt.md")
+                    || p.ends_with("/rule.md")
+            })
+            .ok_or("imported_skill_unavailable")?;
+        let content = String::from_utf8(
+            crate::contexts::install::writer::read_install_destination(checkout.root(), path)?,
+        )
+        .map_err(|_| "import_invalid_utf8")?;
+        let mut documents = vec![];
+        for link in links.iter().filter(|l| {
+            l["component_id"].as_str() == Some(component_id)
+                && l.get("canonical_document").is_some()
+        }) {
+            let relative = link["canonical_document"]
+                .as_str()
+                .ok_or("management_record_invalid")?;
+            let canonical = format!(
+                "{}/{}",
+                Path::new(path).parent().unwrap().display(),
+                relative
+            );
+            if !component.owned_files.contains(&canonical) {
+                return Err("management_record_invalid".into());
+            }
+            let content =
+                String::from_utf8(crate::contexts::install::writer::read_install_destination(
+                    checkout.root(),
+                    &canonical,
+                )?)
+                .map_err(|_| "import_invalid_utf8")?;
+            documents.push(super::import::ImportedDocument {
+                path: relative.into(),
+                content,
+                managed: link["managed"]
+                    .as_bool()
+                    .ok_or("management_record_invalid")?,
+            });
+        }
+        Ok(super::import::ImportedSkillDetail {
+            content,
+            documents,
+            managed: matching[0]["managed"]
+                .as_bool()
+                .ok_or("management_record_invalid")?,
+            source_locator: matching[0]["source_locator"]
+                .as_str()
+                .ok_or("management_record_invalid")?
+                .into(),
+        })
+    }
+
+    pub(crate) fn save_imported_skill(
+        &self,
+        checkout_id: &str,
+        snapshot_id: &str,
+        component_id: &str,
+        content: &str,
+    ) -> Result<SotSnapshot, String> {
+        self.save_imported_document(checkout_id, snapshot_id, component_id, content, None)
+    }
+    pub(crate) fn save_imported_document(
+        &self,
+        checkout_id: &str,
+        snapshot_id: &str,
+        component_id: &str,
+        content: &str,
+        document: Option<&str>,
+    ) -> Result<SotSnapshot, String> {
+        {
+            let _revision = self.lock_revision()?;
+            if self.session_state()?.0.as_deref() != Some(checkout_id) {
+                return Err("sot_checkout_not_active".into());
+            }
+            let snapshot = self.require_snapshot(snapshot_id)?;
+            let component = snapshot
+                .components
+                .iter()
+                .find(|c| {
+                    c.component_id == component_id
+                        && matches!(c.kind.as_str(), "skill" | "hook" | "agent" | "rule")
+                })
+                .ok_or("imported_skill_unavailable")?;
+            let checkout = self.checkout_controller()?.resolve_checkout(checkout_id)?;
+            if crate::contexts::install::workspace::SourceRevisionManifest::observe_root(
+                checkout.root(),
+            )
+            .map_err(|e| e.code())?
+            .sha256()
+                != snapshot.checkout_summary.source_revision
+            {
+                return Err("snapshot_expired".into());
+            }
+            let private = self.checkout_controller()?.private_state_root()?;
+            let bytes = crate::contexts::install::writer::read_private_registration_file(
+                &private,
+                &format!("component-imports-{checkout_id}.json"),
+            )?
+            .ok_or("management_record_invalid")?;
+            let links: Vec<serde_json::Value> =
+                serde_json::from_slice(&bytes).map_err(|_| "management_record_invalid")?;
+            if links
+                .iter()
+                .filter(|l| {
+                    l["component_id"].as_str() == Some(component_id)
+                        && l.get("canonical_document").is_none()
+                        && l["source_role"] != "registration"
+                })
+                .count()
+                != 1
+            {
+                return Err("imported_skill_unavailable".into());
+            }
+            let name = component_id
+                .strip_prefix(&format!("harnesskit.{}.", component.kind))
+                .ok_or("imported_skill_unavailable")?;
+            let directory = format!("components/{}s/{name}", component.kind);
+            let path = format!(
+                "{directory}/{}",
+                if component.kind == "agent" {
+                    "prompt.md"
+                } else if component.kind == "rule" {
+                    "rule.md"
+                } else if component.kind == "hook" {
+                    "hook.md"
+                } else {
+                    "SKILL.md"
+                }
+            );
+            let path = if let Some(document) = document {
+                let matches: Vec<_> = links
+                    .iter()
+                    .filter(|l| {
+                        l["component_id"].as_str() == Some(component_id)
+                            && l["canonical_document"].as_str() == Some(document)
+                    })
+                    .collect();
+                if matches.len() != 1 {
+                    return Err("imported_document_unavailable".into());
+                }
+                format!("{directory}/{document}")
+            } else {
+                path
+            };
+            if !component.owned_files.contains(&path) {
+                return Err("imported_skill_unavailable".into());
+            }
+            let before =
+                crate::contexts::install::writer::read_install_destination(checkout.root(), &path)?;
+            let manifest = crate::contexts::install::writer::read_install_destination(
+                checkout.root(),
+                &format!("{directory}/component.yml"),
+            )?;
+            let registry = crate::contexts::install::writer::read_install_destination(
+                checkout.root(),
+                "components/registry.yml",
+            )?;
+            // Reuse the import validation limits; only canonical text changes, not operational metadata.
+            if document.is_some() {
+                super::import::validate_document(content)?;
+                let old: BTreeSet<_> = super::import::document_references(
+                    std::str::from_utf8(&before).map_err(|_| "import_invalid_utf8")?,
+                )?
+                .into_iter()
+                .collect();
+                let new: BTreeSet<_> = super::import::document_references(content)?
+                    .into_iter()
+                    .collect();
+                if old != new {
+                    return Err("import_support_reference_unsupported".into());
+                }
+            } else if component.kind == "rule" {
+                super::import::validate_rule_edit(content)?;
+            } else if component.kind == "agent" {
+                super::import::validate_agent_edit(content)?;
+            } else if component.kind == "hook" {
+                super::import::validate_hook_edit(content)?;
+            } else {
+                super::import::validate_bundle_edit(name, content, &before)?;
+            }
+            self.install
+                .as_ref()
+                .ok_or("install_runtime_unavailable")?
+                .validate_skill_edit(
+                    checkout.root(),
+                    name,
+                    &manifest,
+                    content.as_bytes(),
+                    &registry,
+                    document,
+                )?;
+            crate::contexts::install::writer::write_registration_file(
+                checkout.root(),
+                &path,
+                Some(&before),
+                content.as_bytes(),
+                0o644,
+            )?;
+            self.install
+                .as_ref()
+                .ok_or("install_runtime_unavailable")?
+                .reset_revision();
+        }
+        self.load_active(checkout_id)
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn preview_install(
         &self,
@@ -197,24 +678,102 @@ impl SotContext {
         let snapshot = snapshot
             .filter(|snapshot| snapshot.snapshot_id == sot_snapshot_id)
             .ok_or_else(|| "snapshot_expired".to_string())?;
-        let selected_component_ids =
-            selected_profile_component_closure(&snapshot, profile_id, scope)?;
+        let mut target_root = target_root;
+        let selected_component_ids = if let Some(id) = profile_id.strip_prefix("component:") {
+            let component = snapshot
+                .components
+                .iter()
+                .find(|c| {
+                    c.component_id == id
+                        && matches!(c.kind.as_str(), "skill" | "hook" | "agent" | "rule")
+                        && c.install_scopes.iter().any(|s| s == scope)
+                })
+                .ok_or("install_component_unavailable")?;
+            let private = self.checkout_controller()?.private_state_root()?;
+            let bytes = crate::contexts::install::writer::read_private_registration_file(
+                &private,
+                &format!("component-imports-{checkout_id}.json"),
+            )?;
+            let links: Vec<serde_json::Value> = bytes
+                .as_ref()
+                .map(|b| serde_json::from_slice(b))
+                .transpose()
+                .map_err(|_| "management_record_invalid")?
+                .unwrap_or_default();
+            let matching: Vec<_> = links
+                .iter()
+                .filter(|l| {
+                    l["component_id"].as_str() == Some(id)
+                        && l.get("canonical_document").is_none()
+                        && l["source_role"] != "registration"
+                })
+                .collect();
+            if matching.is_empty() {
+                return Err("management_record_invalid".into());
+            }
+            if !matching.is_empty() {
+                if matching.len() != 1 || target_root != PathBuf::from("import-source") {
+                    return Err("management_source_handle_required".into());
+                }
+                let link = matching[0];
+                let locator = link["source_locator"]
+                    .as_str()
+                    .ok_or("management_record_invalid")?;
+                let source = PathBuf::from(
+                    link["source_path"]
+                        .as_str()
+                        .ok_or("management_record_invalid")?,
+                );
+                let relative = Path::new(locator);
+                if relative.is_absolute()
+                    || relative
+                        .components()
+                        .any(|c| !matches!(c, std::path::Component::Normal(_)))
+                    || !source.ends_with(relative)
+                {
+                    return Err("management_record_invalid".into());
+                }
+                target_root = source.clone();
+                for _ in relative.components() {
+                    target_root.pop();
+                }
+                if target_root.join(relative) != source {
+                    return Err("management_record_invalid".into());
+                }
+            }
+            BTreeSet::from([component.component_id.clone()])
+        } else {
+            selected_profile_component_closure(&snapshot, profile_id, scope)?
+        };
         let checkout = self.checkout_controller()?.resolve_checkout(checkout_id)?;
         let install = self
             .install
             .as_ref()
             .ok_or_else(|| "install_runtime_unavailable".to_string())?;
+        let private = self.checkout_controller()?.private_state_root()?;
+        if private.starts_with(checkout.root()) {
+            return Err("import_private_state_unsafe".into());
+        }
         install
-            .preview(InstallPreviewInput {
-                checkout_id: checkout_id.to_string(),
-                checkout_root: checkout.root().to_path_buf(),
-                sot_snapshot_id: sot_snapshot_id.to_string(),
-                source_revision: snapshot.checkout_summary.source_revision.clone(),
-                profile_id: profile_id.to_string(),
-                scope: scope.to_string(),
-                target_root,
-                target_ids,
-                selected_component_ids,
+            .preview_with_management(
+                InstallPreviewInput {
+                    checkout_id: checkout_id.to_string(),
+                    checkout_root: checkout.root().to_path_buf(),
+                    sot_snapshot_id: sot_snapshot_id.to_string(),
+                    source_revision: snapshot.checkout_summary.source_revision.clone(),
+                    profile_id: profile_id.to_string(),
+                    scope: scope.to_string(),
+                    target_root,
+                    target_ids,
+                    selected_component_ids,
+                },
+                Some(&private),
+            )
+            .map(|mut preview| {
+                if profile_id.starts_with("component:") {
+                    preview.target_root = "import-source".into();
+                }
+                preview
             })
             .map_err(|error| error.code().to_string())
     }
@@ -906,6 +1465,7 @@ targets:
                 latest_install_evidence: None,
             }),
             revision_gate: Mutex::new(()),
+            imports: crate::contexts::sot::import::ImportState::default(),
             checkout: None,
             install: Some(coordinator),
             artifact_generator: Some(artifact_generator),

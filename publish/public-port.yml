@@ -14,6 +14,7 @@ ported_authored:
     - package.json
     - pyproject.toml
     - uv.lock
+    - adapters/antigravity/**
     - adapters/antigravity-cli/**
     - adapters/claude/**
     - adapters/codex/**
@@ -65,44 +66,8 @@ ported_authored:
     - src-tauri/gen/schemas/**
     - src-frontend/assets/tool-identities/**
 
-intentional_removals:
-  # Pre-flattening component layout replaced by components/{agents,skills,workflows}.
-  - components/harness/agents/adapter-author/agent.yml
-  - components/harness/agents/adapter-author/prompt.md
-  - components/harness/agents/adapter-author/provenance.map.yml
-  - components/harness/agents/component-author/agent.yml
-  - components/harness/agents/component-author/prompt.md
-  - components/harness/agents/component-author/provenance.map.yml
-  - components/harness/agents/harness-blueprint-author/agent.yml
-  - components/harness/agents/harness-blueprint-author/prompt.md
-  - components/harness/agents/harness-blueprint-author/provenance.map.yml
-  - components/harness/agents/harness-evaluator/agent.yml
-  - components/harness/agents/harness-evaluator/prompt.md
-  - components/harness/agents/harness-evaluator/provenance.map.yml
-  - components/harness/agents/harness-requirements-analyst/agent.yml
-  - components/harness/agents/harness-requirements-analyst/prompt.md
-  - components/harness/agents/harness-requirements-analyst/provenance.map.yml
-  - components/harness/agents/reference-curator/agent.yml
-  - components/harness/agents/reference-curator/prompt.md
-  - components/harness/agents/reference-curator/provenance.map.yml
-  - components/harness/skills/adapter-authoring/SKILL.md
-  - components/harness/skills/adapter-authoring/component.yml
-  - components/harness/skills/adapter-authoring/provenance.map.yml
-  - components/harness/skills/component-authoring/SKILL.md
-  - components/harness/skills/component-authoring/component.yml
-  - components/harness/skills/component-authoring/provenance.map.yml
-  - components/harness/skills/harness-blueprint/SKILL.md
-  - components/harness/skills/harness-blueprint/component.yml
-  - components/harness/skills/harness-blueprint/provenance.map.yml
-  - components/harness/skills/harness-requirements/SKILL.md
-  - components/harness/skills/harness-requirements/component.yml
-  - components/harness/skills/harness-requirements/provenance.map.yml
-  - components/harness/skills/skill-evaluation/SKILL.md
-  - components/harness/skills/skill-evaluation/component.yml
-  - components/harness/skills/skill-evaluation/provenance.map.yml
-  - components/harness/workflows/harness-creation/card.md
-  - components/harness/workflows/harness-creation/provenance.map.yml
-  - components/harness/workflows/harness-creation/workflow.yml
+# Previous public release already removed the pre-flattening paths.
+intentional_removals: []
 
 # Generator execution support is implemented and tested in M7A. Production
 # rules are added only with the hermetic tool bootstrap in the package/release

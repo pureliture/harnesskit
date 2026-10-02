@@ -145,9 +145,15 @@ def main(argv: list[str] | None = None) -> int:
         if not targets or len(targets) != len(args.target_id):
             raise ValueError("install_entry_target_set_rejected")
 
-        from scripts.install.plan import build_plan
+        from scripts.install.plan import build_plan, build_component_plan
 
-        plan = build_plan(args.profile, scope=args.scope, mode=args.mode)
+        if args.profile.startswith("component:"):
+            selected = args.profile.removeprefix("component:")
+            if components != {selected}:
+                raise ValueError("install_entry_component_set_mismatch")
+            plan = build_component_plan(selected, scope=args.scope, mode=args.mode, targets=sorted(targets))
+        else:
+            plan = build_plan(args.profile, scope=args.scope, mode=args.mode)
         full_targets = list(plan.get("targets", []))
         if not targets.issubset(full_targets):
             raise ValueError("install_entry_target_set_mismatch")

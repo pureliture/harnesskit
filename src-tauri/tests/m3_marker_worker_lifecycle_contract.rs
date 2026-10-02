@@ -1,5 +1,6 @@
 #![cfg(unix)]
 
+use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -21,62 +22,76 @@ fn assert_marker_worker_stops_after_parent_end(parent_crashes: bool) {
     let home = fixture.path();
     let project = home.join("project");
     std::fs::create_dir(&project).expect("fixture project");
-    for index in 0..20_000 {
-        std::fs::write(project.join(format!("entry-{index:05}")), []).expect("fixture entry");
+    // Real marker records make the terminal report larger than the stdout pipe.
+    // Read only the heartbeat: backpressure keeps the worker alive even when
+    // enumeration completes before the parent is scheduled again.
+    for index in 0..1_000 {
+        std::fs::create_dir_all(project.join(format!("entry-{index:05}/.claude")))
+            .expect("fixture project marker");
     }
-    let worker_output = home.join("worker-output");
+    let handoff_path = home.join("handoff");
     let helper = r#"
 exec 3<"$2"
-"$1" --harnesskit-marker-walk-v1 70726f6a656374 2 50000 "$$" <&3 >"$3" 2>/dev/null &
+"$1" --harnesskit-marker-walk-v1 70726f6a656374 2 50000 "$$" <&3 2>/dev/null &
 worker_pid=$!
-attempt=0
-while [ ! -s "$3" ] && [ "$attempt" -lt 100 ]; do
-  sleep 0.01
-  attempt=$((attempt + 1))
-done
+# The test acknowledges an actual protocol heartbeat, not a timed file poll.
+IFS= read -r acknowledgement
 if kill -0 "$worker_pid" 2>/dev/null; then
   worker_alive=1
 else
   worker_alive=0
 fi
-printf '%s %s %s\n' "$worker_pid" "$attempt" "$worker_alive"
+printf '%s %s\n' "$worker_pid" "$worker_alive" >"$3"
 if [ "$4" = crash ]; then
   kill -KILL "$$"
 fi
 "#;
-    let helper_output = Command::new("/bin/sh")
+    let mut parent = Command::new("/bin/sh")
         .args([
             "-c",
             helper,
             "marker-worker-parent",
             env!("CARGO_BIN_EXE_harness-desktop"),
             home.to_str().expect("UTF-8 fixture path"),
-            worker_output.to_str().expect("UTF-8 fixture path"),
+            handoff_path.to_str().expect("UTF-8 fixture path"),
             if parent_crashes { "crash" } else { "exit" },
         ])
-        .output()
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
         .expect("direct-parent fixture process");
-    assert_eq!(helper_output.status.success(), !parent_crashes);
-    let handoff = String::from_utf8(helper_output.stdout).expect("fixture handoff");
+    // Keep the unread pipe open through the parent-end check so a broken-pipe
+    // exit cannot substitute for the direct-parent liveness monitor.
+    let mut worker_output = parent.stdout.take().expect("worker output pipe");
+    let (heartbeat_tx, heartbeat_rx) = std::sync::mpsc::channel();
+    thread::spawn(move || {
+        let mut heartbeat = [0; 9];
+        let result = worker_output.read_exact(&mut heartbeat);
+        let _ = heartbeat_tx.send((worker_output, heartbeat, result));
+    });
+    let (_worker_output, heartbeat, heartbeat_result) = heartbeat_rx
+        .recv_timeout(Duration::from_secs(3))
+        .unwrap_or_else(|error| {
+            let _ = parent.kill();
+            let _ = parent.wait();
+            panic!("worker must publish its heartbeat before parent exit: {error}");
+        });
+    heartbeat_result.expect("worker heartbeat");
+    assert_eq!(heartbeat[0], b'H');
+    parent
+        .stdin
+        .take()
+        .expect("parent acknowledgement pipe")
+        .write_all(b"heartbeat observed\n")
+        .expect("acknowledge heartbeat");
+    assert_eq!(
+        parent.wait().expect("direct-parent exit").success(),
+        !parent_crashes
+    );
+    let handoff = std::fs::read_to_string(handoff_path).expect("fixture handoff");
     let mut fields = handoff.split_whitespace();
     let worker_pid = fields.next().expect("worker PID");
-    let heartbeat_attempt = fields
-        .next()
-        .expect("heartbeat attempt")
-        .parse::<usize>()
-        .expect("numeric heartbeat attempt");
-    let worker_alive_before_parent_end = fields.next().expect("worker liveness handoff");
-    assert!(
-        heartbeat_attempt < 100,
-        "worker must start before parent exits"
-    );
-    assert_eq!(worker_alive_before_parent_end, "1");
-    assert!(
-        std::fs::read(&worker_output)
-            .expect("worker heartbeat output")
-            .starts_with(b"H"),
-        "worker must publish its initial heartbeat before the parent ends"
-    );
+    assert_eq!(fields.next().expect("worker liveness handoff"), "1");
 
     let deadline = Instant::now() + Duration::from_secs(3);
     while marker_worker_is_alive(worker_pid) && Instant::now() < deadline {

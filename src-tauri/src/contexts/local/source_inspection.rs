@@ -376,6 +376,9 @@ impl LocalSourceInspectionService {
         expected_source_revision: &str,
         max_bytes: usize,
     ) -> Result<CapturedLocalSource, SourceInspectionError> {
+        if expected_source_revision.is_empty() {
+            return Err(SourceInspectionError::new("source_stale"));
+        }
         let lease = self.operations.begin_local_read(|| {
             self.authority
                 .instance_handle(snapshot_id, instance_id)
@@ -392,6 +395,23 @@ impl LocalSourceInspectionService {
         )?;
         drop(lease);
         Ok(captured)
+    }
+
+    pub(crate) fn capture_current_source(
+        &self,
+        snapshot_id: &str,
+        instance_id: &str,
+        max_bytes: usize,
+    ) -> Result<CapturedLocalSource, SourceInspectionError> {
+        let lease = self.operations.begin_local_read(|| {
+            self.authority
+                .instance_handle(snapshot_id, instance_id)
+                .map_err(|code| BeginLocalReadError::from_lookup_code(&code))
+        })?;
+        let file = VerifiedLocalPathResolver
+            .resolve(lease.value(), VerificationPolicy::CurrentSourceAtLocator)
+            .map_err(source_stale)?;
+        capture_verified_source(&file, self.reader.as_ref(), "", max_bytes)
     }
 
     #[cfg(test)]
@@ -813,16 +833,17 @@ fn capture_verified_source(
     expected_source_revision: &str,
     max_bytes: usize,
 ) -> Result<CapturedLocalSource, SourceInspectionError> {
-    file.verify_unchanged().map_err(source_stale)?;
+    file.verify_single_link().map_err(source_stale)?;
     let total_bytes = file.current_identity().size;
     if total_bytes > max_bytes as u64 {
         return Err(SourceInspectionError::new("source_too_large_for_ai"));
     }
-    if expected_source_revision.len() != 64
-        || !expected_source_revision
-            .as_bytes()
-            .iter()
-            .all(u8::is_ascii_hexdigit)
+    if !expected_source_revision.is_empty()
+        && (expected_source_revision.len() != 64
+            || !expected_source_revision
+                .as_bytes()
+                .iter()
+                .all(u8::is_ascii_hexdigit))
     {
         return Err(SourceInspectionError::new("source_stale"));
     }
@@ -874,7 +895,7 @@ fn capture_verified_source(
         return Err(SourceInspectionError::new("source_stale"));
     }
     let source_revision = source_revision(file.current_identity(), &groups);
-    if source_revision != expected_source_revision {
+    if !expected_source_revision.is_empty() && source_revision != expected_source_revision {
         return Err(SourceInspectionError::new("source_stale"));
     }
     Ok(CapturedLocalSource {
@@ -2080,7 +2101,7 @@ mod tests {
         let path = home.join(".codex/skills/release/SKILL.md");
         let header = concat!(
             "---\nname: release\ndescription: fixture\n---\n",
-            "<single.user@example.invalid>\n",
+            "<single.user@", "example.invalid>\n",
         );
         let cross_prefix = "<cross.user";
         let padding_length =
@@ -2117,8 +2138,8 @@ mod tests {
             ));
         }
 
-        assert!(!projected.contains("single.user@example.invalid"));
-        assert!(!projected.contains("cross.user@example.invalid"));
+        assert!(!projected.contains(concat!("single.user@", "example.invalid")));
+        assert!(!projected.contains(concat!("cross.user@", "example.invalid")));
         assert!(projected.matches("link").count() >= 2);
     }
 
@@ -2235,7 +2256,7 @@ mod tests {
         let source = concat!(
             "---\nname: release\ndescription: fixture\n---\n",
             "<HTTPS://private.invalid/secret>\n",
-            "<mailto:private@example.invalid>\n",
+            "<mailto:private@", "example.invalid>\n",
             "<custom+scheme://private.invalid/other>\n",
         );
         write(&path, source.as_bytes());
@@ -2263,7 +2284,7 @@ mod tests {
         );
 
         assert!(!projected.contains("private.invalid"));
-        assert!(!projected.contains("private@example.invalid"));
+        assert!(!projected.contains(concat!("private@", "example.invalid")));
         assert!(!projected.contains("custom+scheme"));
     }
 

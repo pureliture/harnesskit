@@ -220,6 +220,18 @@ impl VerifiedLocalFile {
         &self.canonical_path
     }
 
+    pub(crate) fn verify_single_link(&self) -> Result<(), VerifiedPathError> {
+        self.verify_unchanged()?;
+        if fstat(&self.file)
+            .map_err(|_| VerifiedPathError::stale())?
+            .st_nlink
+            != 1
+        {
+            return Err(VerifiedPathError::stale());
+        }
+        Ok(())
+    }
+
     pub fn current_identity(&self) -> FileIdentity {
         self.opened_identity.public
     }

@@ -421,6 +421,7 @@ def _artifacts(
     seen_destinations: dict[tuple[str, str], bool] = {}
     artifact_by_destination: dict[tuple[str, str], dict[str, Any]] = {}
     for component_id, entry in entries.items():
+        manifest: dict[str, Any] = {}
         merge_by_destination: dict[str, dict[str, Any]] = {}
         if entry and entry.get("path"):
             manifest_path = REPO_ROOT / entry["path"]
@@ -477,16 +478,23 @@ def _artifacts(
             if destination in merge_by_destination:
                 merge_config = merge_by_destination[destination]
                 artifact["merge_strategy"] = merge_config.get("strategy")
+                if merge_config.get("ownership"):
+                    artifact["ownership"] = merge_config["ownership"]
                 if artifact["merge_strategy"] == "managed-block":
                     artifact["begin_marker"] = merge_config.get("begin_marker")
                     artifact["end_marker"] = merge_config.get("end_marker")
                 if artifact["merge_strategy"] == "json-deep-merge":
                     artifact["json_merge_key"] = merge_config.get("json_merge_key")
+                if artifact["merge_strategy"] == "toml-agents-merge":
+                    artifact["toml_merge_key"] = merge_config.get("toml_merge_key")
             else:
                 toml_merge_key = _toml_agents_merge_key_for(target, destination)
                 if toml_merge_key is not None:
                     artifact["merge_strategy"] = "toml-agents-merge"
                     artifact["toml_merge_key"] = toml_merge_key
+            if (target == "project" and destination == "AGENTS.md"
+                    and manifest.get("ownership") == {"type": "path", "merge_policy": "full-path-overwrite"}):
+                artifact["ownership"] = manifest["ownership"]
             artifacts.append(artifact)
             artifact_by_destination[destination_key] = artifact
     return artifacts

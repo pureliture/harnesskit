@@ -1,0 +1,23 @@
+adapter_id: harnesskit.adapter.antigravity
+target: antigravity
+version: "0.2.0"
+description: Antigravity 2.0 target adapter for HarnessKit components
+output_root: dist/antigravity
+structures:
+  skills:
+    path_template: ".agents/skills/{skill_id}/SKILL.md"
+    format: markdown
+    content_source: SKILL.md
+    frontmatter_format: yaml
+    template: templates/skill.hbs
+  agents:
+    path_template: ".agents/agents/{agent_id}.md"
+    format: markdown_with_frontmatter
+    content_source: prompt.md
+    frontmatter_format: yaml
+    template: templates/agent.hbs
+  hooks:
+    path_template: ".agents/hooks.json"
+    format: json
+    content_source: hook.md
+    template: templates/hooks.json.hbs

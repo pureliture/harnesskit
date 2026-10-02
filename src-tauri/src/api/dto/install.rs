@@ -58,6 +58,8 @@ pub struct InstallRuntimeGateDto {
 pub struct InstallRequiredApprovalsDto {
     pub overwrite: bool,
     pub runtime_hooks: bool,
+    pub management_adoption: bool,
+    pub managed_replacement: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -86,6 +88,10 @@ pub struct ApplyInstallApprovalsDto {
     pub semantic_fingerprint: String,
     pub overwrite: bool,
     pub allow_runtime_hooks: bool,
+    #[serde(default)]
+    pub adopt_management: bool,
+    #[serde(default)]
+    pub replace_managed: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -178,6 +184,8 @@ impl From<InstallPreview> for PreviewInstallResponseDto {
             required_approvals: InstallRequiredApprovalsDto {
                 overwrite: preview.required_approvals.overwrite,
                 runtime_hooks: preview.required_approvals.runtime_hooks,
+                management_adoption: preview.required_approvals.management_adoption,
+                managed_replacement: preview.required_approvals.managed_replacement,
             },
         }
     }

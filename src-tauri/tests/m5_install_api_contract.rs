@@ -37,6 +37,8 @@ fn preview_projection_is_typed_and_excludes_backend_only_source_material() {
         }],
         non_atomic_boundary: true,
         required_approvals: InstallRequiredApprovals {
+            management_adoption: false,
+            managed_replacement: false,
             overwrite: false,
             runtime_hooks: true,
         },

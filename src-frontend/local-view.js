@@ -666,8 +666,27 @@ function renderAiExplanationSurface(view, sourceHeader) {
   </section>${card}`;
 }
 
+function importQualification(item) {
+  if (item.kind === "rule") {
+    const filename = item.toolId === "claude_code" ? "CLAUDE.md" : "AGENTS.md";
+    if (item.scope === "project" && item.toolId === "codex" && item.safeLocator === "AGENTS.md") return { candidate: true, reason: "기존 project의 고유한 HarnessKit 관리 블록은 블록만 선택합니다. marker 없는 AGENTS.md는 선택한 파일 전체를 후보로 확인하며 최초 적용 때 전체 변경·관리 전환·덮어쓰기를 승인합니다. 기존 블록 선택을 자동으로 파일 전체로 확대하지 않습니다." };
+    if (item.scope === "project" && ["codex", "claude_code", "antigravity", "antigravity_cli"].includes(item.toolId) && item.safeLocator === filename) return { candidate: true, reason: "기존 project 파일의 고유한 HarnessKit 관리 블록만 후보 검증 가능. 블록 밖 내용은 보존하며 파일 전체·다른 marker·독립 rules 경로는 관리하지 않습니다. Antigravity IDE·CLI는 기존 project marker로 승인된 root만 사용합니다." };
+    return { candidate: false, reason: "변환기 구현 대기 또는 쓰기 계약 미지원: 사용자 지침·독립 rules 파일은 이 관리 블록 경로로 우회하지 않습니다. portable 불가능 판정이 아닙니다." };
+  }
+  if (item.kind === "agent" && item.toolId === "codex") return { candidate: true, reason: "Codex user/project agent TOML과 config.toml의 선택 등록 항목 후보 검증 가능. prompt·model·effort·nickname을 보존하며 누락·중복·unknown·경로 별칭은 차단합니다. 파일과 선택 항목만 관리합니다." };
+  if (item.kind === "agent" && item.toolId === "antigravity" && item.scope === "project") return { candidate: true, reason: "Antigravity IDE project 독립 agent 후보 검증 가능. 이름·description과 세 tools boolean을 보존합니다. 누락·unknown 필드와 의존성은 차단하며 user·CLI agent 변환은 구현 대기입니다." };
+  if (item.kind === "agent" && item.toolId === "claude_code") return { candidate: true, reason: "Claude 독립 agent 후보 검증 가능. user/project prompt와 tools·model·color를 보존합니다. skills 의존성과 알 수 없는 운영 필드는 이유와 함께 차단합니다." };
+  if (["command", "workflow"].includes(item.kind)) return { candidate: false, reason: "현재 생성 경로에서 설치 가능한 종류가 아닙니다. 원본을 자동으로 다른 종류로 변환하지 않습니다. 표현 가능한 요소의 변환은 별도 계약·구현 확인이 필요합니다." };
+  if (item.kind === "skill" && item.toolId === "hermes") return { candidate: false, reason: "Hermes 외부 패키지 정책과 원본 경로 연결을 검증해야 합니다. 스킬 자체가 변환 불가능하다는 뜻은 아닙니다." };
+  if (item.kind === "skill" && item.toolId === "antigravity_cli" && item.scope === "user") return { candidate: false, reason: "발견 경로와 설치 경로 불일치: .gemini/antigravity-cli/skills와 .gemini/config/skills. 경로 계약 확인이 필요합니다." };
+  if (item.kind === "skill") return { candidate: true, reason: "독립 스킬 후보 검증 가능. 검증 가능한 typed 메타데이터와 inline Markdown 링크의 비실행 .md/.txt 지원 문서를 보존합니다. 알 수 없는 필드·미선택 파일·다른 참조 형식·의존성은 이유와 함께 차단하며 본문·생성·대상 경로는 서버에서 다시 검증합니다." };
+  if (item.kind === "hook" && (!item.toolId || item.toolId === "claude_code")) return { candidate: true, reason: "Claude singleton 훅 후보 검증 가능. 현재 dependency-free printf 선언만 검증하며 모호한 항목·스크립트 의존성은 이유와 함께 차단합니다. 명령을 실행하지 않습니다." };
+  return { candidate: false, reason: "변환기 구현 대기: 표현 가능한 agent·rule·다른 도구 훅을 변환 불가능으로 판정하지 않습니다. 전체 portable 범위의 잔여 구현입니다." };
+}
+
 function renderSelectedInspector(data, view, item) {
   const snapshot = activeLocalSnapshotHeader(data);
+  const qualification = importQualification(item);
   const sourcePreview = activeSourcePreview(view, item);
   const sourceHeader = sourcePreview?.header;
   const project = projectDisplayLabel(item.projectId, projectLabelMap(data));
@@ -690,6 +709,8 @@ function renderSelectedInspector(data, view, item) {
         ].map(([action, label]) => `<button type="button" class="button button--quiet" data-local-action="${action}" data-snapshot-id="${escapeHtml(snapshot?.snapshotId ?? "")}" data-instance-id="${escapeHtml(item.instanceId)}"${view?.actionBusy === true ? ' aria-disabled="true"' : ""}${snapshot ? "" : " disabled"}>${label}</button>`).join("")}
         ${correlation.state === "verified" && correlation.componentId ? `<button type="button" class="button button--secondary" data-open-sot-component="${escapeHtml(correlation.componentId)}">SoT 명세 보기</button>` : ""}
       </div>
+      <section data-import-qualification aria-label="가져오기 지원 상태"><p>${escapeHtml(qualification.reason)}</p><p>발견됨 · 변환/생성은 후보별 검증 · 관리 적용은 명시적 승인 및 경로 검증 필요 · 도구 runtime 미검증</p></section>
+      ${qualification.candidate && view?.checkoutId && sourcePreview?.phase === "ready" && sourceHeader?.snapshotId === snapshot?.snapshotId && sourceHeader?.instanceId === item.instanceId && sourceHeader?.sourceRevision ? '<button type="button" class="button button--secondary" data-preview-component-import>컴포넌트로 가져오기</button>' : ""}
       ${renderLocalActionStatus(view, item, snapshot)}
       ${renderAiExplanationSurface(view, sourceHeader)}
       ${renderSourcePreviewSurface(sourcePreview)}

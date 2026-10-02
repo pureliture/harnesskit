@@ -10,6 +10,12 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# Fixed module contract, independent of a caller's generated-output root.
+_MANAGED_BLOCK_CONTRACTS = {
+    (entry["target"], entry["destination"]): entry
+    for entry in json.loads((REPO_ROOT / "schemas/install-target-contract-v1.json").read_text(encoding="utf-8"))["merge_destinations"]
+    if entry["strategy"] == "managed-block"
+}
 JSON_DEEP_MERGE_KEYS = {"claude-settings-hooks", "codex-hooks"}
 JSON_DEEP_MERGE_DESTINATION_KEYS = {
     ("claude", PurePosixPath(".claude/settings.json")): "claude-settings-hooks",
@@ -145,6 +151,14 @@ def validate_plan_contract(plan: dict[str, Any]) -> None:
             "Artifact destination",
         )
         merge_strategy = artifact.get("merge_strategy")
+        # CLI plans never carry backend private-source authority. Ownership is
+        # descriptive only; the embedded project merge contract remains required.
+        expected_merge = _MANAGED_BLOCK_CONTRACTS.get((target, str(destination)))
+        if expected_merge is not None:
+            fields = {"strategy": "merge_strategy", "begin_marker": "begin_marker", "end_marker": "end_marker"}
+            if any(artifact.get(plan_field) != expected_merge.get(contract_field)
+                   for contract_field, plan_field in fields.items()):
+                raise ValueError(f"merge contract mismatch: {target}:{destination}")
         if merge_strategy is not None:
             if merge_strategy not in {
                 "managed-block",

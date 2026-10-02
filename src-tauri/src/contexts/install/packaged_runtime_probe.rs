@@ -127,6 +127,8 @@ fn packaged_release_app_runs_stage_only_install_and_idempotent_rust_apply_verify
                 semantic_fingerprint: first_preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .expect("packaged apply and Rust verify");
@@ -157,6 +159,8 @@ fn packaged_release_app_runs_stage_only_install_and_idempotent_rust_apply_verify
                 semantic_fingerprint: second_preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .expect("second packaged apply and Rust verify");

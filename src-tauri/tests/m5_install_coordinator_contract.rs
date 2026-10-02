@@ -308,6 +308,8 @@ fn confirmation_is_required_without_consuming_the_preview() {
                 semantic_fingerprint: preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap_err();
@@ -321,6 +323,8 @@ fn confirmation_is_required_without_consuming_the_preview() {
                 semantic_fingerprint: preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();
@@ -345,6 +349,8 @@ fn confirmed_apply_replans_writes_verifies_emits_evidence_and_is_single_use() {
                 semantic_fingerprint: preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();
@@ -414,6 +420,8 @@ fn confirmed_apply_replans_writes_verifies_emits_evidence_and_is_single_use() {
                     semantic_fingerprint: preview.fingerprint.clone(),
                     overwrite: true,
                     allow_runtime_hooks: true,
+                    replace_managed: false,
+                    adopt_management: false,
                 },
             )
             .unwrap_err()
@@ -447,6 +455,8 @@ fn stable_generated_artifact_byte_mismatch_fails_before_target_mutation() {
                 semantic_fingerprint: preview.fingerprint,
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap_err();
@@ -482,6 +492,8 @@ fn installed_exact_bytes_are_authorized_by_generated_artifact_set() {
                 semantic_fingerprint: preview.fingerprint,
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();
@@ -538,6 +550,8 @@ fn real_writer_evidence_and_local_scanner_join_to_verified_without_path_inferenc
                 semantic_fingerprint: preview.fingerprint,
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();
@@ -623,6 +637,8 @@ fn source_or_apply_semantic_drift_fails_before_target_write_and_never_emits_evid
                 semantic_fingerprint: preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap_err();
@@ -653,6 +669,8 @@ fn a_new_apply_attempt_clears_prior_verified_evidence_before_any_failure() {
                 semantic_fingerprint: first.fingerprint,
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();
@@ -668,6 +686,8 @@ fn a_new_apply_attempt_clears_prior_verified_evidence_before_any_failure() {
                     semantic_fingerprint: second.fingerprint,
                     overwrite: true,
                     allow_runtime_hooks: true,
+                    replace_managed: false,
+                    adopt_management: false,
                 },
             )
             .unwrap_err()
@@ -700,6 +720,8 @@ fn checkout_manifest_drift_invalidates_preview_before_apply_process_or_target_wr
                 semantic_fingerprint: preview.fingerprint.clone(),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap_err();
@@ -727,6 +749,8 @@ fn fingerprint_mismatch_rejects_without_consuming_the_preview() {
                 semantic_fingerprint: "0".repeat(64),
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap_err();
@@ -740,6 +764,8 @@ fn fingerprint_mismatch_rejects_without_consuming_the_preview() {
                 semantic_fingerprint: preview.fingerprint,
                 overwrite: true,
                 allow_runtime_hooks: true,
+                replace_managed: false,
+                adopt_management: false,
             },
         )
         .unwrap();

@@ -172,6 +172,16 @@ impl PlanValidator {
         request: &InstallRequest,
         selected_component_closure: &BTreeSet<String>,
     ) -> Result<ValidatedPlan, PlanValidationError> {
+        self.validate_with_management(plan, request, selected_component_closure, None)
+    }
+
+    pub(super) fn validate_with_management(
+        &self,
+        plan: &InstallPlan,
+        request: &InstallRequest,
+        selected_component_closure: &BTreeSet<String>,
+        adoption: Option<&super::management::Adoption>,
+    ) -> Result<ValidatedPlan, PlanValidationError> {
         self.validate_contract_identity(plan)?;
         self.validate_plan_mode(&plan.mode)?;
         if plan.scope != request.scope {
@@ -251,7 +261,11 @@ impl PlanValidator {
                         ),
                     )
                 })?;
-            self.validate_merge_contract(artifact)?;
+            if !adoption
+                .is_some_and(|a| plan.scope == "project" && a.authorizes_whole_file(artifact))
+            {
+                self.validate_merge_contract(artifact)?;
+            }
             self.validate_file_mode(artifact, plan.mode == "apply")?;
             self.validate_source_hash(artifact, plan.mode == "apply")?;
 

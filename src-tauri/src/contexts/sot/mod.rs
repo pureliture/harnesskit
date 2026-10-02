@@ -4,6 +4,7 @@ pub mod checkout_picker;
 mod context;
 pub(crate) mod domain;
 mod graph_projection;
+pub(crate) mod import;
 mod relations;
 mod schema;
 mod snapshot;

@@ -660,6 +660,8 @@ pub struct InstallRuntimeGate {
 pub struct InstallRequiredApprovals {
     pub overwrite: bool,
     pub runtime_hooks: bool,
+    pub management_adoption: bool,
+    pub managed_replacement: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -686,6 +688,8 @@ pub struct InstallApprovals {
     pub semantic_fingerprint: String,
     pub overwrite: bool,
     pub allow_runtime_hooks: bool,
+    pub adopt_management: bool,
+    pub replace_managed: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -732,6 +736,7 @@ struct StoredPreview {
     canonical_artifact_fingerprint: String,
     fingerprint: String,
     required_approvals: InstallRequiredApprovals,
+    adoption: Option<super::management::Adoption>,
 }
 
 pub struct InstallCoordinator {
@@ -803,6 +808,143 @@ impl InstallCoordinator {
         })
     }
 
+    pub(crate) fn validate_import_candidate(
+        &self,
+        checkout_root: &Path,
+        name: &str,
+        manifest: &[u8],
+        content: &[u8],
+        registry: &[u8],
+        documents: &[crate::contexts::sot::import::SupportDocument],
+    ) -> Result<GeneratedArtifactSet, String> {
+        let stage = InstallWorkspace::create(checkout_root, &self.app_temp_root)
+            .map_err(|e| e.code().to_string())?;
+        let value: serde_yaml::Value =
+            serde_yaml::from_slice(manifest).map_err(|_| "import_manifest_invalid")?;
+        let kind = value["kind"].as_str().ok_or("import_manifest_invalid")?;
+        let directory = stage.root().join(format!("components/{kind}s/{name}"));
+        std::fs::create_dir(&directory).map_err(|_| "import_collision".to_string())?;
+        std::fs::write(directory.join("component.yml"), manifest)
+            .map_err(|_| "import_stage_failed".to_string())?;
+        std::fs::write(
+            directory.join(if kind == "agent" {
+                "prompt.md"
+            } else if kind == "rule" {
+                "rule.md"
+            } else if kind == "hook" {
+                "hook.md"
+            } else {
+                "SKILL.md"
+            }),
+            content,
+        )
+        .map_err(|_| "import_stage_failed".to_string())?;
+        std::fs::write(stage.root().join("components/registry.yml"), registry)
+            .map_err(|_| "import_stage_failed".to_string())?;
+        for document in documents {
+            let path = directory.join(&document.path);
+            std::fs::create_dir_all(path.parent().ok_or("import_stage_failed")?)
+                .map_err(|_| "import_stage_failed")?;
+            std::fs::write(path, document.content.as_bytes()).map_err(|_| "import_stage_failed")?;
+        }
+        // Recapture after staging: the existing fixed runner requires immutable captured inputs.
+        let candidate = InstallWorkspace::create(stage.root(), &self.app_temp_root)
+            .map_err(|e| e.code().to_string())?;
+        let component_id = format!("harnesskit.{kind}.{name}");
+        let request = CanonicalArtifactRequest::for_snapshot(
+            "import-candidate",
+            candidate.source_manifest().sha256(),
+            BTreeSet::from([component_id.clone()]),
+        )
+        .map_err(|e| e.code().to_string())?;
+        let generated = self
+            .generator
+            .generate_artifacts_in_workspace(&candidate, &request)
+            .map_err(|e| e.code().to_string())?;
+        candidate
+            .verify_source(stage.root())
+            .map_err(|e| e.code().to_string())?;
+        stage
+            .verify_source(checkout_root)
+            .map_err(|e| e.code().to_string())?;
+        if !generated.issues.is_empty()
+            || !generated.records.iter().any(|r| {
+                r.component_id == component_id
+                    && value["targets"].get(&r.target).is_some()
+                    && !r.exact_bytes.is_empty()
+            })
+        {
+            return Err("import_generation_failed".into());
+        }
+        Ok(generated)
+    }
+
+    pub(crate) fn validate_skill_edit(
+        &self,
+        root: &Path,
+        name: &str,
+        manifest: &[u8],
+        content: &[u8],
+        registry: &[u8],
+        document: Option<&str>,
+    ) -> Result<(), String> {
+        let stage = InstallWorkspace::create(root, &self.app_temp_root)
+            .map_err(|e| e.code().to_string())?;
+        std::fs::remove_dir_all(stage.root().join(format!(
+                "components/{}s/{name}",
+                serde_yaml::from_slice::<serde_yaml::Value>(manifest)
+                    .map_err(|_| "import_manifest_invalid")?["kind"]
+                    .as_str()
+                    .ok_or("import_manifest_invalid")?
+            )))
+        .map_err(|_| "import_stage_failed")?;
+        let value: serde_yaml::Value =
+            serde_yaml::from_slice(manifest).map_err(|_| "import_manifest_invalid")?;
+        let directory = format!(
+            "components/{}s/{name}",
+            value["kind"].as_str().ok_or("import_manifest_invalid")?
+        );
+        let mut documents = vec![];
+        for bundle in value["bundled_files"].as_sequence().into_iter().flatten() {
+            let source = bundle["source"].as_str().ok_or("import_manifest_invalid")?;
+            let path = source
+                .strip_prefix(&format!("{directory}/"))
+                .ok_or("import_source_unsafe")?;
+            let text = if document == Some(path)
+                || (document.is_none() && value["kind"] == "rule" && path == "rule.md")
+            {
+                std::str::from_utf8(content)
+                    .map_err(|_| "import_invalid_utf8")?
+                    .to_string()
+            } else {
+                String::from_utf8(super::writer::read_install_destination(root, source)?)
+                    .map_err(|_| "import_invalid_utf8")?
+            };
+            documents.push(crate::contexts::sot::import::SupportDocument {
+                path: path.into(),
+                content: text,
+                source_sha256: String::new(),
+                source_revision: String::new(),
+            });
+        }
+        let main = if document.is_some() {
+            super::writer::read_install_destination(root, &format!("{directory}/SKILL.md"))?
+        } else {
+            content.to_vec()
+        };
+        self.validate_import_candidate(stage.root(), name, manifest, &main, registry, &documents)?;
+        stage
+            .verify_source(root)
+            .map_err(|e| e.code().to_string())?;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn with_test_writer(mut self, writer: InstallWriter) -> Self {
+        self.writer = writer;
+        self
+    }
+
     pub(crate) fn artifact_generation_port(&self) -> Arc<dyn ArtifactGenerationPort> {
         Arc::clone(&self.artifact_generator)
     }
@@ -818,7 +960,15 @@ impl InstallCoordinator {
 
     pub fn preview(
         &self,
+        input: InstallPreviewInput,
+    ) -> Result<InstallPreview, InstallCoordinatorError> {
+        self.preview_with_management(input, None)
+    }
+
+    pub(crate) fn preview_with_management(
+        &self,
         mut input: InstallPreviewInput,
+        private: Option<&Path>,
     ) -> Result<InstallPreview, InstallCoordinatorError> {
         validate_input(&input)?;
         let (target_root, target_identity) = normalize_root(&input.target_root)?;
@@ -828,21 +978,27 @@ impl InstallCoordinator {
         let source_manifest = workspace.source_manifest().clone();
         let request = plan_request(&input, PlanMode::DryRun);
         let dry_plan = self.generator.generate(&workspace, &request)?;
+        let adoption = private
+            .map(|root| super::management::prepare(root, &input, &dry_plan))
+            .transpose()?
+            .flatten();
         let validator = PlanValidator::embedded()
             .map_err(|_| InstallCoordinatorError::new("install_contract_unsupported"))?;
         let validated = validator
-            .validate(
+            .validate_with_management(
                 &dry_plan,
                 &InstallRequest {
                     scope: input.scope.clone(),
                     targets: input.target_ids.clone(),
                 },
                 &input.selected_component_ids,
+                adoption.as_ref(),
             )
             .map_err(|error| InstallCoordinatorError::new(error.code()))?;
         if dry_plan.mode != "dry-run" {
             return Err(InstallCoordinatorError::new("invalid_plan_mode"));
         }
+
         let canonical_artifact_request = CanonicalArtifactRequest::for_snapshot(
             &input.sot_snapshot_id,
             &input.source_revision,
@@ -853,7 +1009,7 @@ impl InstallCoordinator {
             .generate_artifacts(&canonical_artifact_request)?;
         validate_generated_artifacts(&canonical_artifact_request, &canonical_artifacts)?;
         let canonical_artifact_fingerprint = generated_artifact_set_sha256(&canonical_artifacts)?;
-        let fingerprint = preview_fingerprint(
+        let base_fingerprint = preview_fingerprint(
             &input,
             target_identity,
             &source_manifest,
@@ -861,18 +1017,25 @@ impl InstallCoordinator {
             self.generator.runtime_manifest_sha256(),
             &canonical_artifact_fingerprint,
         )?;
+        let fingerprint = management_fingerprint(&base_fingerprint, adoption.as_ref());
         let preview_sequence = self.next_preview.fetch_add(1, Ordering::Relaxed) + 1;
         let preview_id = hex_sha256(
             format!("{fingerprint}\0{}\0{preview_sequence}", std::process::id()).as_bytes(),
         );
         let runtime_gates = runtime_gates(&dry_plan);
         let required_approvals = InstallRequiredApprovals {
+            managed_replacement: adoption.as_ref().is_some_and(|a| a.requires_replacement()),
+            management_adoption: adoption.as_ref().is_some_and(|a| {
+                a.selected
+                    .iter()
+                    .any(|(i, _, _, _)| a.links[*i]["managed"] == false)
+            }),
             overwrite: plan_touches_existing_destination(&target_root, &dry_plan),
             runtime_hooks: runtime_gates
                 .iter()
                 .any(|gate| gate.required_before_apply || gate.required_before_runtime),
         };
-        let preview = project_preview(
+        let mut preview = project_preview(
             &preview_id,
             &fingerprint,
             &input,
@@ -880,6 +1043,28 @@ impl InstallCoordinator {
             runtime_gates,
             required_approvals,
         );
+        if let Some(adoption) = &adoption {
+            for (index, tool, destination, hash) in &adoption.selected {
+                let before = super::writer::read_install_destination(&target_root, destination)
+                    .map_err(|_| InstallCoordinatorError::new("preview_stale"))?;
+                if super::management::managed_hash(&adoption.links[*index], &before)? != *hash {
+                    return Err(InstallCoordinatorError::new("preview_stale"));
+                }
+                let after = canonical_artifacts
+                    .records
+                    .iter()
+                    .find(|r| {
+                        &r.target == tool && &r.destination == destination && r.scope == input.scope
+                    })
+                    .ok_or_else(|| InstallCoordinatorError::new("artifact_projection_invalid"))?;
+                preview.warnings.push(format!(
+                    "{}: {destination}\n현재 원본 → 적용할 canonical\n--- 현재 원본\n+++ 적용할 canonical\n{}\n{}",
+                    adoption.review_label(*index, hash),
+                    String::from_utf8_lossy(&super::management::managed_bytes(&adoption.links[*index], &before)?).lines().map(|s| format!("-{s}")).collect::<Vec<_>>().join("\n"),
+                    String::from_utf8_lossy(&after.exact_bytes).lines().map(|s| format!("+{s}")).collect::<Vec<_>>().join("\n")
+                ));
+            }
+        }
         self.previews
             .lock()
             .map_err(|_| InstallCoordinatorError::new("install_preview_store_unavailable"))?
@@ -896,6 +1081,7 @@ impl InstallCoordinator {
                     canonical_artifact_fingerprint,
                     fingerprint,
                     required_approvals,
+                    adoption,
                 },
             );
         Ok(preview)
@@ -921,6 +1107,16 @@ impl InstallCoordinator {
                 .ok_or_else(|| InstallCoordinatorError::new("install_preview_unavailable"))?;
             if approvals.semantic_fingerprint != preview.fingerprint {
                 return Err(InstallCoordinatorError::new("preview_stale"));
+            }
+            if preview.required_approvals.management_adoption && !approvals.adopt_management {
+                return Err(InstallCoordinatorError::new(
+                    "management_adoption_approval_required",
+                ));
+            }
+            if preview.required_approvals.managed_replacement && !approvals.replace_managed {
+                return Err(InstallCoordinatorError::new(
+                    "managed_replacement_approval_required",
+                ));
             }
             if preview.required_approvals.overwrite && !approvals.overwrite {
                 return Err(InstallCoordinatorError::new("overwrite_approval_required"));
@@ -972,13 +1168,14 @@ impl InstallCoordinator {
         let validator = PlanValidator::embedded()
             .map_err(|_| InstallCoordinatorError::new("install_contract_unsupported"))?;
         let validated = validator
-            .validate(
+            .validate_with_management(
                 &apply_plan,
                 &InstallRequest {
                     scope: stored.input.scope.clone(),
                     targets: stored.input.target_ids.clone(),
                 },
                 &stored.input.selected_component_ids,
+                stored.adoption.as_ref(),
             )
             .map_err(|_| InstallCoordinatorError::new("preview_stale"))?;
         validator
@@ -989,20 +1186,23 @@ impl InstallCoordinator {
             stored.target_identity,
             workspace.source_manifest(),
             validator
-                .validate(
+                .validate_with_management(
                     &stored.dry_plan,
                     &InstallRequest {
                         scope: stored.input.scope.clone(),
                         targets: stored.input.target_ids.clone(),
                     },
                     &stored.input.selected_component_ids,
+                    stored.adoption.as_ref(),
                 )
                 .map_err(|_| InstallCoordinatorError::new("preview_stale"))?
                 .semantic_fingerprint(),
             self.generator.runtime_manifest_sha256(),
             &stored.canonical_artifact_fingerprint,
         )?;
-        if current_fingerprint != stored.fingerprint {
+        if management_fingerprint(&current_fingerprint, stored.adoption.as_ref())
+            != stored.fingerprint
+        {
             return Err(InstallCoordinatorError::new("preview_stale"));
         }
         require_same_root(
@@ -1029,9 +1229,33 @@ impl InstallCoordinator {
                 .collect(),
         )
         .map_err(|error| InstallCoordinatorError::new(error.code()))?;
+        if let Some(adoption) = &stored.adoption {
+            adoption.revalidate(&stored.normalized_target_root)?;
+        }
+        let expected = stored
+            .adoption
+            .as_ref()
+            .map(|a| {
+                a.selected
+                    .iter()
+                    .map(|(index, tool, destination, hash)| {
+                        let bytes = super::writer::read_install_destination(
+                            &stored.normalized_target_root,
+                            destination,
+                        )
+                        .map_err(|_| InstallCoordinatorError::new("preview_stale"))?;
+                        if super::management::managed_hash(&a.links[*index], &bytes)? != *hash {
+                            return Err(InstallCoordinatorError::new("preview_stale"));
+                        }
+                        Ok(((tool.clone(), destination.clone()), hex_sha256(&bytes)))
+                    })
+                    .collect::<Result<BTreeMap<_, _>, InstallCoordinatorError>>()
+            })
+            .transpose()?
+            .unwrap_or_default();
         let applied = self
             .writer
-            .apply(&validated, &workspace, &target_roots)
+            .apply_with_expected(&validated, &workspace, &target_roots, &expected)
             .map_err(|error| InstallCoordinatorError::new(error.code()))?;
         let verified = self
             .verifier
@@ -1042,6 +1266,9 @@ impl InstallCoordinator {
         let operation_sequence = self.next_operation.fetch_add(1, Ordering::Relaxed) + 1;
         let operation_id = format!("install-operation-{operation_sequence}");
         let evidence = build_evidence(&stored, status, &validated, &verified);
+        if let Some(adoption) = stored.adoption {
+            adoption.persist(&destinations, verified.destinations(), &operation_id)?;
+        }
         let install_evidence_id = evidence
             .as_ref()
             .map(|evidence| evidence.evidence_id.clone());
@@ -1076,6 +1303,16 @@ impl InstallCoordinator {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner) = None;
         self.artifact_workspace_authority.clear();
+    }
+}
+
+fn management_fingerprint(base: &str, adoption: Option<&super::management::Adoption>) -> String {
+    match adoption {
+        Some(a) => hex_sha256(
+            &serde_json::to_vec(&(base, &a.before, &a.selected))
+                .expect("serializable approval binding"),
+        ),
+        None => base.into(),
     }
 }
 

@@ -611,6 +611,75 @@ impl AppController {
         Ok(registration)
     }
 
+    pub(crate) fn read_imported_skill(
+        &self,
+        request: crate::contexts::sot::import::ImportedSkillRequest,
+    ) -> Result<crate::contexts::sot::import::ImportedSkillDetail, String> {
+        self.sot.read_imported_skill(
+            &request.checkout_id,
+            &request.sot_snapshot_id,
+            &request.component_id,
+        )
+    }
+
+    pub(crate) fn save_imported_skill(
+        &self,
+        request: crate::contexts::sot::import::ImportedSkillEdit,
+    ) -> Result<SotSnapshot, String> {
+        let _revision = self.lock_correlation_revision()?;
+        let operation = self.next_install_operation_id();
+        let _guard = self
+            .operations
+            .begin_install(&operation, "canonical-edit", None)
+            .map_err(|_| "operation_busy")?;
+        let snapshot = self.sot.save_imported_document(
+            &request.checkout_id,
+            &request.sot_snapshot_id,
+            &request.component_id,
+            &request.content,
+            request.document.as_deref(),
+        )?;
+        self.correlation.invalidate()?;
+        Ok(snapshot)
+    }
+
+    pub(crate) fn preview_component_import(
+        &self,
+        request: crate::contexts::sot::import::ImportRequest,
+    ) -> Result<crate::contexts::sot::import::ImportPreview, String> {
+        let _source_lease = self
+            .operations
+            .begin_local_read(|| Ok(()))
+            .map_err(|e| e.code().to_string())?;
+        self.sot.preview_component_import(
+            &self.local,
+            &request.checkout_id,
+            &request.sot_snapshot_id,
+            &request.snapshot_id,
+            &request.instance_id,
+            &request.source_revision,
+        )
+    }
+
+    pub(crate) fn confirm_component_import(
+        &self,
+        request: crate::contexts::sot::import::ImportConfirmation,
+    ) -> Result<SotSnapshot, String> {
+        let _revision = self.lock_correlation_revision()?;
+        let _source_lease = self
+            .operations
+            .begin_local_read(|| Ok(()))
+            .map_err(|e| e.code().to_string())?;
+        let result = self.sot.confirm_component_import(
+            &self.local,
+            &request.preview_id,
+            &request.fingerprint,
+            request.confirmed,
+        )?;
+        self.correlation.invalidate()?;
+        Ok(result)
+    }
+
     pub(crate) fn preview_install(
         &self,
         checkout_id: &str,

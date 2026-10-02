@@ -63,6 +63,8 @@ function renderRuntimeGates(gates) {
 
 function approvalLabels(approvals) {
   return [
+    approvals.managementAdoption ? "관리 전환" : null,
+    approvals.managedReplacement ? "외부 수정 검토 후 교체" : null,
     approvals.overwrite ? "overwrite" : null,
     approvals.runtimeHooks ? "runtime hooks" : null,
   ].filter(Boolean);
@@ -107,7 +109,7 @@ function renderPreview(install) {
       <section><h4>Components</h4>${renderValueList(plan.componentIds, "Component evidence가 없습니다.")}</section>
       <section><h4>Runtime gates</h4>${renderRuntimeGates(plan.runtimeGates)}</section>
       <section><h4>Required approvals</h4>${renderValueList(approvalLabels(plan.requiredApprovals), "추가 approval이 없습니다.")}</section>
-      <section><h4>Warnings</h4>${renderValueList(plan.warnings, "Backend warning이 없습니다.")}</section>
+      <section><h4>Warnings</h4>${plan.warnings.length ? plan.warnings.map(w => `<pre class="install-review-diff">${escapeHtml(w)}</pre>`).join("") : renderValueList([], "Backend warning이 없습니다.")}</section>
     </div>
     <section class="artifact-list" aria-labelledby="install-artifacts-title"><h4 id="install-artifacts-title">Planned artifacts</h4>${renderArtifacts(plan.artifacts)}</section>
     <section class="artifact-list" aria-labelledby="install-skipped-title"><h4 id="install-skipped-title">Skipped writes</h4>${renderSkippedWrites(plan.skippedWrites)}</section>
@@ -146,6 +148,7 @@ export function renderInstallActionSurface({ install, component, operationBlocke
   }
   const targets = componentTargets(component);
   const profiles = componentProfiles(component);
+  if (["skill", "hook", "agent", "rule"].includes(component.kind)) profiles.push(`component:${component.component_id}`);
   const preview = normalizeInstallPreviewResponse(install?.preview, createInstallRequest(install));
   const requiredApprovals = preview?.plan.requiredApprovals ?? {
     overwrite: false,
@@ -159,6 +162,7 @@ export function renderInstallActionSurface({ install, component, operationBlocke
   return `<section class="install-action-surface" data-sot-install tabindex="-1" aria-labelledby="install-action-title">
     <div class="install-action-heading">
       <div><p class="eyebrow">Confirmed apply</p><h3 id="install-action-title">Install action</h3></div>
+      ${["skill", "hook", "agent", "rule"].includes(component.kind) ? `<button type="button" data-edit-imported-skill>가져온 컴포넌트 편집 / 출처 확인</button>` : ""}
       <button type="button" class="button button--quiet" data-show-local-install="${escapeHtml(component.component_id)}">Local 설치 보기</button>
     </div>
     <p class="install-subject" title="${escapeHtml(component.component_id)}"><strong>${escapeHtml(component.title ?? component.component_id)}</strong><code>${escapeHtml(component.component_id)}</code></p>
@@ -190,6 +194,8 @@ export function renderInstallActionSurface({ install, component, operationBlocke
     ${preview ? `<fieldset class="approval-gates"${busy ? " disabled" : ""}>
       <legend>Preview-bound approvals</legend>
       <label><input id="confirm-install" type="checkbox" data-install-approval="confirmed"${install.confirmed ? " checked" : ""} /> 이 fingerprint의 target, destination, warning을 확인했습니다.</label>
+      ${requiredApprovals.managedReplacement ? `<p role="alert">마지막 적용 이후 원본이 바뀌어 적용을 중단했습니다. 표시된 차이를 확인한 뒤 유지 또는 교체를 선택하세요.</p><button type="button" data-keep-managed-source>도구 쪽 변경 유지 · 이번 적용 취소</button><label><input id="replace-managed" type="checkbox" data-install-approval="replaceManaged"${install.replaceManaged ? " checked" : ""} /> 표시된 현재 원본만 canonical 내용으로 교체합니다.</label>` : ""}
+      ${requiredApprovals.managementAdoption ? `<label><input id="adopt-management" type="checkbox" data-install-approval="adoptManagement"${install.adoptManagement ? " checked" : ""} /> 표시된 원본 파일만 HarnessKit 관리 대상으로 전환합니다.</label>` : ""}
       ${requiredApprovals.overwrite ? `<label><input id="allow-overwrite" type="checkbox" data-install-approval="overwrite"${install.overwrite ? " checked" : ""} /> Preview가 요구한 기존 destination overwrite를 허용합니다.</label>` : ""}
       ${requiredApprovals.runtimeHooks ? `<label><input id="allow-runtime-hooks" type="checkbox" data-install-approval="allowRuntimeHooks"${install.allowRuntimeHooks ? " checked" : ""} /> Preview에 표시된 runtime gate를 허용합니다.</label>` : ""}
     </fieldset>` : ""}

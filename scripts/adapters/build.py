@@ -565,6 +565,8 @@ def _context(
     model_yaml_line = "" if target_model == "inherit" else f"model: {target_model}\n"
 
     description = _description(manifest, target_options)
+    if target == "antigravity" and manifest["kind"] == "agent" and "description" in target_options:
+        description = target_options["description"]
     return {
         "target_name": _target_name(manifest["kind"], output_path),
         "component_id": _target_name(manifest["kind"], output_path),
@@ -738,10 +740,32 @@ def _render_component(
             body = body_path.read_text(encoding="utf-8")
             context = _context(manifest, target, target_options, output_path, body)
             if kind == "hook":
-                content = _hook_registration_content(manifest, target, target_options)
+                if target_options.get("imported_hook"):
+                    handler = json.loads(body)
+                    content = json.dumps({"hooks": {target_options["event"]: [{"hooks": [handler]}]}}, indent=2) + "\n"
+                else:
+                    content = _hook_registration_content(manifest, target, target_options)
             else:
                 template = template_path.read_text(encoding="utf-8")
                 content = _render_template(template, context)
+                if target == "codex" and kind == "agent" and "imported_agent" in target_options:
+                    fields = {k: v for k, v in target_options["imported_agent"].items() if k != "registration"}
+                    fields["developer_instructions"] = body
+                    content = "\n".join(f"{k} = {json.dumps(v, ensure_ascii=False)}" for k, v in fields.items()) + "\n"
+                if kind == "skill" and "skill_frontmatter" in target_options:
+                    extras = target_options["skill_frontmatter"]
+                    if not isinstance(extras, dict) or set(extras) & {"name", "description"}:
+                        raise ValueError(f"{rel_manifest}: invalid skill_frontmatter options")
+                    # Existing template owns name/description; serialize typed extras
+                    # before its closing delimiter, never interpolate raw YAML.
+                    lines = content.splitlines(keepends=True)
+                    if not lines or lines[0].strip() != "---":
+                        raise ValueError(f"{rel_manifest}: skill template requires frontmatter")
+                    end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
+                    fields = yaml.safe_load("".join(lines[1:end]))
+                    body = "\n" + "".join(lines[end + 1:])
+                    fields.update(extras)
+                    content = "---\n" + yaml.safe_dump(fields, allow_unicode=True, sort_keys=False) + "---" + body
                 rendered.append((output_abs_path, content.rstrip() + "\n", False, None))
 
             registration = structure.get("registration")
@@ -759,6 +783,9 @@ def _render_component(
                         ADAPTERS_DIR / target / registration["template"]
                     ).read_text(encoding="utf-8")
                     registration_content = _render_template(registration_template, context)
+                    if target == "codex" and kind == "agent" and "imported_agent" in target_options:
+                        fields = target_options["imported_agent"]["registration"]
+                        registration_content = f'[agents.{json.dumps(context["target_name"])}]\n' + "\n".join(f"{k} = {json.dumps(v, ensure_ascii=False)}" for k, v in fields.items()) + "\n"
                 rendered.append((registration_path, registration_content.rstrip() + "\n", True, None))
     for bundle in manifest.get("bundled_files") or []:
         if not isinstance(bundle, dict):
@@ -791,7 +818,7 @@ def _render_component(
         rendered.append(
             (
                 output_abs_path,
-                source_path.read_text(encoding="utf-8").rstrip() + "\n",
+                source_path.read_bytes().decode("utf-8") if bundle.get("kind") == "doc" else source_path.read_text(encoding="utf-8").rstrip() + "\n",
                 False,
                 mode,
             )

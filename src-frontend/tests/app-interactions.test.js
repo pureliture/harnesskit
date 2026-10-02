@@ -1220,6 +1220,145 @@ function localAiItem(instanceId) {
   };
 }
 
+test("Local skill import preview requires explicit confirmation then refreshes SoT", async () => {
+  const root = createMountRoot();
+  let previews = 0;
+  let confirmations = 0;
+  let loads = 0;
+  const item = localAiItem("fixture-import");
+  const imported = { ...snapshot, snapshot_id: "imported", components: [...snapshot.components, { ...snapshot.components[1], component_id: "harnesskit.skill.fixture-import" }] };
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import", sot_snapshot_id: snapshot.snapshot_id }; },
+    async loadSotSnapshot() { loads += 1; return loads > 1 ? imported : snapshot; },
+    async getLocalScanState() { return { state_revision: 1, current_attempt: null, latest_terminal_report: { attempt_id: "scan-import", state: "complete", error_code: null }, latest_complete: { snapshot_id: "local-import", attempt_id: "scan-import", status: "complete" }, latest_partial: null }; },
+    async queryLocalInstances() { return { snapshotId: "local-import", items: [item], kindCounts: [{ kind: "skill", count: 1 }], counts: { totalInstances: 1, matchedInstances: 1 } }; },
+    async getLocalInstanceDetail() { return item; },
+    async openLocalSourcePreview(r) { return { preview_session_id: "source-import", view_generation: r.viewGeneration, snapshot_id: "local-import", instance_id: item.instanceId, canonical_path: "/fixture/skills/fixture-import/SKILL.md", changed_since_snapshot: false, issue: null, source_revision: "a".repeat(64), format: "text", total_bytes: 10, total_chunks: 1, chunk_bytes: 65536, selected_chunk_index: 0 }; },
+    async readLocalSourcePreviewChunk(r) { return { preview_session_id: r.previewSessionId, source_revision: r.sourceRevision, chunk_index: 0, is_last: true, content: { format: "text", before: "fixture", selected: null, after: "" } }; },
+    async closeLocalSourcePreview() { return {}; },
+    async previewComponentImport(r) { previews += 1; assert.equal(r.instanceId, item.instanceId); assert.equal(r.sourceRevision, "a".repeat(64)); assert.equal(r.sourcePath, undefined); return { preview_id: "preview-import", fingerprint: "b".repeat(64), component_id: "harnesskit.skill.fixture-import", name: "fixture-import", kind: "skill", content: "# Fixture", manifest: "kind: skill", generated_artifact_count: 2 }; },
+    async confirmComponentImport(r) { confirmations += 1; assert.equal(r.confirmed, true); return imported; },
+  });
+  await flushMicrotasks(24);
+  root.dashboardItems.find((c) => c.dataset.dashboardSegment === "local").dispatch("click");
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: root.localInstanceItems[0] });
+  await flushMicrotasks(24);
+  assert.equal(app.getState().sourcePreview?.phase, "ready", JSON.stringify(app.getState().sourcePreview));
+  assert.equal(app.getState().repo.checkoutId, "checkout-import", JSON.stringify(app.getState().repo));
+  root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(previews, 1);
+  assert.equal(confirmations, 0);
+  assert.equal(app.getState().componentImport.preview.component_id, "harnesskit.skill.fixture-import");
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-component-import]", {}) });
+  assert.equal(app.getState().componentImport, null);
+  assert.equal(confirmations, 0);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-confirm-component-import]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(confirmations, 1);
+  assert.equal(app.getState().ui.activeSegment, "sot");
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "imported");
+  assert.equal(loads, 2);
+  app.destroy();
+});
+
+test("Local Claude agent import preview requires explicit confirmation then refreshes SoT", async () => {
+  const root = createMountRoot();
+  let previews = 0;
+  let confirmations = 0;
+  let loads = 0;
+  const item = { ...localAiItem("fixture-import"), kind: "agent", toolId: "claude_code" };
+  const imported = { ...snapshot, snapshot_id: "imported", components: [...snapshot.components, { ...snapshot.components[1], component_id: "harnesskit.agent.fixture-import" }] };
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import", sot_snapshot_id: snapshot.snapshot_id }; },
+    async loadSotSnapshot() { loads += 1; return loads > 1 ? imported : snapshot; },
+    async getLocalScanState() { return { state_revision: 1, current_attempt: null, latest_terminal_report: { attempt_id: "scan-import", state: "complete", error_code: null }, latest_complete: { snapshot_id: "local-import", attempt_id: "scan-import", status: "complete" }, latest_partial: null }; },
+    async queryLocalInstances() { return { snapshotId: "local-import", items: [item], kindCounts: [{ kind: "agent", count: 1 }], counts: { totalInstances: 1, matchedInstances: 1 } }; },
+    async getLocalInstanceDetail() { return item; },
+    async openLocalSourcePreview(r) { return { preview_session_id: "source-import", view_generation: r.viewGeneration, snapshot_id: "local-import", instance_id: item.instanceId, canonical_path: "/fixture/.claude/agents/fixture-import.md", changed_since_snapshot: false, issue: null, source_revision: "a".repeat(64), format: "text", total_bytes: 10, total_chunks: 1, chunk_bytes: 65536, selected_chunk_index: 0 }; },
+    async readLocalSourcePreviewChunk(r) { return { preview_session_id: r.previewSessionId, source_revision: r.sourceRevision, chunk_index: 0, is_last: true, content: { format: "text", before: "fixture", selected: null, after: "" } }; },
+    async closeLocalSourcePreview() { return {}; },
+    async previewComponentImport(r) { previews += 1; assert.equal(r.instanceId, item.instanceId); assert.equal(r.sourceRevision, "a".repeat(64)); assert.equal(r.sourcePath, undefined); return { preview_id: "preview-import", fingerprint: "b".repeat(64), component_id: "harnesskit.agent.fixture-import", name: "fixture-import", kind: "agent", content: "# Fixture", manifest: "kind: agent", generated_artifact_count: 2 }; },
+    async confirmComponentImport(r) { confirmations += 1; assert.equal(r.confirmed, true); return imported; },
+  });
+  await flushMicrotasks(24);
+  root.dashboardItems.find((c) => c.dataset.dashboardSegment === "local").dispatch("click");
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: root.localInstanceItems[0] });
+  await flushMicrotasks(24);
+  assert.equal(app.getState().sourcePreview?.phase, "ready", JSON.stringify(app.getState().sourcePreview));
+  assert.equal(app.getState().repo.checkoutId, "checkout-import", JSON.stringify(app.getState().repo));
+  root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(previews, 1);
+  assert.equal(confirmations, 0);
+  assert.equal(app.getState().componentImport.preview.component_id, "harnesskit.agent.fixture-import");
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-component-import]", {}) });
+  assert.equal(app.getState().componentImport, null);
+  assert.equal(confirmations, 0);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-confirm-component-import]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(confirmations, 1);
+  assert.equal(app.getState().ui.activeSegment, "sot");
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "imported");
+  assert.equal(loads, 2);
+  app.destroy();
+});
+
+test("Local Antigravity project agent and CLI managed rule import require explicit confirmation then refresh SoT", async () => {
+  for (const isRule of [false, true]) {
+    const root = createMountRoot();
+    let previews = 0;
+    let confirmations = 0;
+    let loads = 0;
+    const id = isRule ? "harnesskit.rule.imported-agents-antigravity-cli" : "harnesskit.agent.fixture-import";
+    const item = { ...localAiItem("fixture-import"), kind: isRule ? "rule" : "agent", toolId: isRule ? "antigravity_cli" : "antigravity", scope: "project", safeLocator: isRule ? "AGENTS.md" : ".agents/agents/fixture-import.md" };
+    const imported = { ...snapshot, snapshot_id: "imported", components: [...snapshot.components, { ...snapshot.components[1], component_id: id }] };
+    const app = mountApp(root, {
+      async getSotSessionState() { return { checkout_id: "checkout-import", sot_snapshot_id: snapshot.snapshot_id }; },
+      async loadSotSnapshot() { loads += 1; return loads > 1 ? imported : snapshot; },
+      async getLocalScanState() { return { state_revision: 1, current_attempt: null, latest_terminal_report: { attempt_id: "scan-import", state: "complete", error_code: null }, latest_complete: { snapshot_id: "local-import", attempt_id: "scan-import", status: "complete" }, latest_partial: null }; },
+      async queryLocalInstances() { return { snapshotId: "local-import", items: [item], kindCounts: [{ kind: item.kind, count: 1 }], counts: { totalInstances: 1, matchedInstances: 1 } }; },
+      async getLocalInstanceDetail() { return item; },
+      async openLocalSourcePreview(r) { return { preview_session_id: "source-import", view_generation: r.viewGeneration, snapshot_id: "local-import", instance_id: item.instanceId, canonical_path: isRule ? "/fixture/AGENTS.md" : "/fixture/.agents/agents/fixture-import.md", changed_since_snapshot: false, issue: null, source_revision: "a".repeat(64), format: "text", total_bytes: 10, total_chunks: 1, chunk_bytes: 65536, selected_chunk_index: 0 }; },
+      async readLocalSourcePreviewChunk(r) { return { preview_session_id: r.previewSessionId, source_revision: r.sourceRevision, chunk_index: 0, is_last: true, content: { format: "text", before: "fixture", selected: null, after: "" } }; },
+      async closeLocalSourcePreview() { return {}; },
+      async previewComponentImport(r) { previews += 1; assert.equal(r.instanceId, item.instanceId); assert.equal(r.sourceRevision, "a".repeat(64)); assert.equal(r.sourcePath, undefined); return { preview_id: "preview-import", fingerprint: "b".repeat(64), component_id: id, name: "fixture-import", kind: item.kind, content: "# Fixture", manifest: `kind: ${item.kind}`, generated_artifact_count: isRule ? 1 : 2 }; },
+      async confirmComponentImport(r) { confirmations += 1; assert.equal(r.confirmed, true); return imported; },
+    });
+    await flushMicrotasks(24);
+    root.dashboardItems.find((c) => c.dataset.dashboardSegment === "local").dispatch("click");
+    await flushMicrotasks(24);
+    root.shell.dispatch("click", { target: root.localInstanceItems[0] });
+    await flushMicrotasks(24);
+    assert.equal(app.getState().sourcePreview?.phase, "ready", JSON.stringify(app.getState().sourcePreview));
+    assert.equal(app.getState().repo.checkoutId, "checkout-import", JSON.stringify(app.getState().repo));
+    assert.match(root.markup, /data-preview-component-import/);
+    root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+    await flushMicrotasks(24);
+    assert.equal(previews, 1);
+    assert.equal(confirmations, 0);
+    assert.equal(app.getState().componentImport.preview.component_id, id);
+    root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-component-import]", {}) });
+    assert.equal(app.getState().componentImport, null);
+    assert.equal(confirmations, 0);
+    root.shell.dispatch("click", { target: delegatedTarget("[data-preview-component-import]", {}) });
+    await flushMicrotasks(24);
+    root.shell.dispatch("click", { target: delegatedTarget("[data-confirm-component-import]", {}) });
+    await flushMicrotasks(24);
+    assert.equal(confirmations, 1);
+    assert.equal(app.getState().ui.activeSegment, "sot");
+    assert.equal(app.getState().sot.snapshot.snapshot_id, "imported");
+    assert.equal(loads, 2);
+    app.destroy();
+  }
+});
+
 async function mountConfiguredLocalAiFixture(options = {}) {
   const root = createMountRoot({
     realisticFocusLifecycle: options.realisticFocusLifecycle === true,
@@ -1374,6 +1513,297 @@ function assertPendingAiControlFocus(root, selector, label) {
   assert.equal(control.getAttribute("aria-disabled"), "true", `${label} must expose pending state`);
   assert.equal(root.ownerDocument.activeElement, control, `${label} must retain logical focus`);
 }
+
+test("support document selection edit reaches file-listed adoption apply", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.skill.fixture-support";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  imported.snapshot_id = "imported-edit";
+  imported.components[1].kind = "skill";
+  imported.components[1].targets = [{ target_id: "claude" }];
+  let saved = 0; let applied = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".claude/skills/fixture-support/SKILL.md", documents: [{ path: "references/guide.md", content: "Original guide", managed: false }] }; },
+    async saveImportedSkill(r) { saved++; assert.equal(r.document, "references/guide.md"); assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
+    async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "claude", destination: ".claude/settings.json" }] }; },
+    async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "claude", destination: ".claude/settings.json", applyState: "changed", verifyState: "verified" }] }; },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.ok(app.getState().importedSkillEditor, JSON.stringify(app.getState()));
+  assert.equal(app.getState().importedSkillEditor.content, "# Original canonical");
+  root.shell.dispatch("change", { target: { value: "references/guide.md", closest(s) { return s === "[data-select-imported-document]" ? this : null; } } });
+  assert.equal(app.getState().importedSkillEditor.content, "Original guide");
+  root.shell.dispatch("input", { target: { value: "# Edited canonical", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(saved, 1);
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "user", targetId: "claude", targetRoot: "import-source" }) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(12); assert.equal(applied, 0);
+  root.shell.dispatch("change", { target: approvalTarget("adoptManagement", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(24); assert.equal(applied, 1);
+  assert.equal(app.getState().install.execution.status, "success");
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
+  assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
+  app.destroy();
+});
+
+test("shared hook canonical edit reaches existing handle-bound adoption apply", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.hook.imported-stop";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  imported.snapshot_id = "imported-edit";
+  imported.components[1].kind = "hook";
+  imported.components[1].targets = [{ target_id: "claude" }];
+  let saved = 0; let applied = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".claude/settings.json" }; },
+    async saveImportedSkill(r) { saved++; assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
+    async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "claude", destination: ".claude/settings.json" }] }; },
+    async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "claude", destination: ".claude/settings.json", applyState: "changed", verifyState: "verified" }] }; },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.ok(app.getState().importedSkillEditor, JSON.stringify(app.getState()));
+  assert.equal(app.getState().importedSkillEditor.content, "# Original canonical");
+  root.shell.dispatch("input", { target: { value: "# Edited canonical", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(saved, 1);
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "user", targetId: "claude", targetRoot: "import-source" }) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(12); assert.equal(applied, 0);
+  root.shell.dispatch("change", { target: approvalTarget("adoptManagement", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(24); assert.equal(applied, 1);
+  assert.equal(app.getState().install.execution.status, "success");
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
+  assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
+  app.destroy();
+});
+
+test("Claude agent prompt edit reaches handle-bound adoption apply", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.agent.fixture-import";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  imported.snapshot_id = "imported-edit";
+  imported.components[1].kind = "agent";
+  imported.components[1].targets = [{ target_id: "claude" }];
+  let saved = 0; let applied = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".claude/agents/fixture-import.md" }; },
+    async saveImportedSkill(r) { saved++; assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
+    async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "claude", destination: ".claude/agents/fixture-import.md" }] }; },
+    async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "claude", destination: ".claude/agents/fixture-import.md", applyState: "changed", verifyState: "verified" }] }; },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.ok(app.getState().importedSkillEditor, JSON.stringify(app.getState()));
+  assert.equal(app.getState().importedSkillEditor.content, "# Original canonical");
+  root.shell.dispatch("input", { target: { value: "# Edited canonical", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(saved, 1);
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "user", targetId: "claude", targetRoot: "import-source" }) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(12); assert.equal(applied, 0);
+  root.shell.dispatch("change", { target: approvalTarget("adoptManagement", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(24); assert.equal(applied, 1);
+  assert.equal(app.getState().install.execution.status, "success");
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
+  assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
+  app.destroy();
+});
+
+test("project rule body edit reaches handle-bound adoption apply", async () => {
+  for (const tool of ["codex", "antigravity-cli"]) {
+    const root = createMountRoot();
+    const id = `harnesskit.rule.imported-agents-${tool}`;
+    const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+    imported.snapshot_id = "imported-edit";
+    imported.components[1].kind = "rule";
+    imported.components[1].targets = [{ target_id: "project" }];
+    let saved = 0; let applied = 0;
+    const app = mountApp(root, {
+      async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+      async loadSotSnapshot() { return imported; },
+      async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: "AGENTS.md" }; },
+      async saveImportedSkill(r) { saved++; assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
+      async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "project", destination: "AGENTS.md" }] }; },
+      async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "project", destination: "AGENTS.md", applyState: "changed", verifyState: "verified" }] }; },
+    });
+    await flushMicrotasks(24);
+    root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+    root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+    await flushMicrotasks(24);
+    assert.ok(app.getState().importedSkillEditor, JSON.stringify(app.getState()));
+    assert.equal(app.getState().importedSkillEditor.content, "# Original canonical");
+    root.shell.dispatch("input", { target: { value: "# Edited canonical", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+    root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+    await flushMicrotasks(24);
+    assert.equal(saved, 1);
+    assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+    root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "project", targetId: "project", targetRoot: "import-source" }) });
+    await flushMicrotasks(24);
+    root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+    root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+    root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+    await flushMicrotasks(12); assert.equal(applied, 0);
+    root.shell.dispatch("change", { target: approvalTarget("adoptManagement", true) });
+    root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+    await flushMicrotasks(24); assert.equal(applied, 1);
+    assert.equal(app.getState().install.execution.status, "success");
+    root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+    await flushMicrotasks(24);
+    root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
+    assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
+    app.destroy();
+  }
+});
+
+test("imported unprofiled canonical edit reaches preview and explicit adoption apply", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.skill.fixture-import";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  imported.snapshot_id = "imported-edit";
+  imported.components[1].targets = [{ target_id: "codex" }];
+  let saved = 0; let applied = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".codex/skills/fixture-import/SKILL.md" }; },
+    async saveImportedSkill(r) { saved++; assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
+    async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "codex", destination: ".codex/skills/fixture-import/SKILL.md" }] }; },
+    async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "codex", destination: ".codex/skills/fixture-import/SKILL.md", applyState: "changed", verifyState: "verified" }] }; },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.ok(app.getState().importedSkillEditor, JSON.stringify(app.getState()));
+  assert.equal(app.getState().importedSkillEditor.content, "# Original canonical");
+  root.shell.dispatch("input", { target: { value: "# Edited canonical", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(saved, 1);
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "user", targetId: "codex", targetRoot: "import-source" }) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(12); assert.equal(applied, 0);
+  root.shell.dispatch("change", { target: approvalTarget("adoptManagement", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(24); assert.equal(applied, 1);
+  assert.equal(app.getState().install.execution.status, "success");
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
+  assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
+  app.destroy();
+});
+
+test("imported canonical validation error can be corrected and saved without reopening", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.skill.fixture-import";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  let attempts = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async readImportedSkill() { return { content: "# Original", managed: false }; },
+    async saveImportedSkill(request) {
+      attempts++;
+      if (attempts === 1) throw { code: "import_frontmatter_required" };
+      assert.equal(request.content, "# Corrected");
+      return { ...imported, snapshot_id: "corrected" };
+    },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-edit-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.match(app.getState().importedSkillEditor.message, /import_frontmatter_required/);
+  root.shell.dispatch("input", { target: { value: "# Corrected", closest(s) { return s === "[data-imported-skill-content]" ? this : null; } } });
+  root.shell.dispatch("click", { target: delegatedTarget("[data-save-imported-skill]", {}) });
+  await flushMicrotasks(24);
+  assert.equal(attempts, 2, "corrected content must be retryable");
+  assert.equal(app.getState().sot.snapshot.snapshot_id, "corrected");
+  assert.equal(app.getState().importedSkillEditor, null);
+  app.destroy();
+});
+
+test("managed external review keeps without apply and replacement approval reaches backend", async () => {
+  const root = createMountRoot();
+  const id = "harnesskit.skill.fixture-import";
+  const imported = JSON.parse(JSON.stringify(snapshot).replaceAll("harnesskit.skill.beta", id));
+  imported.components[1].targets = [{ target_id: "codex" }];
+  let applied = 0; let reviews = 0;
+  const app = mountApp(root, {
+    async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+    async loadSotSnapshot() { return imported; },
+    async previewInstall(r) { reviews++; return { ...r, previewId: `review-${reviews}`, fingerprint: String(reviews).repeat(64), requiredApprovals: { overwrite: true, managedReplacement: true }, warnings: ["외부 수정\n-<script>external()</script>\n+canonical"], components: [id], artifacts: [] }; },
+    async applyInstall(r) { applied++; assert.equal(r.previewId, "review-2"); assert.equal(r.approvals.replaceManaged, true); assert.equal(r.approvals.adoptManagement, undefined); assert.equal(r.approvals.allowRuntimeHooks, false); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "codex", destination: ".codex/skills/fixture-import/SKILL.md", applyState: "changed", verifyState: "verified" }] }; },
+  });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: id }) });
+  const form = { profileId: `component:${id}`, scope: "user", targetId: "codex", targetRoot: "import-source" };
+  root.shell.dispatch("submit", { target: installForm(form) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(12); assert.equal(applied, 0);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-keep-managed-source]", {}) });
+  assert.equal(app.getState().install.preview, null);
+  assert.equal(applied, 0);
+  root.shell.dispatch("submit", { target: installForm(form) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("change", { target: approvalTarget("replaceManaged", true) });
+  root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
+  root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
+  root.shell.dispatch("click", { target: delegatedTarget("#apply-install", {}) });
+  await flushMicrotasks(24);
+  assert.equal(applied, 1);
+  assert.equal(app.getState().install.execution.status, "success");
+  app.destroy();
+});
 
 function installForm(values) {
   return {

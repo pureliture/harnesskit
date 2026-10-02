@@ -3,8 +3,8 @@ use std::fmt;
 
 use serde_json::{Map, Value};
 
-const HARNESSKIT_BEGIN: &str = "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->";
-const HARNESSKIT_END: &str = "<!-- END HARNESSKIT GENERATED CONTEXT -->";
+pub(crate) const HARNESSKIT_BEGIN: &str = "<!-- BEGIN HARNESSKIT GENERATED CONTEXT -->";
+pub(crate) const HARNESSKIT_END: &str = "<!-- END HARNESSKIT GENERATED CONTEXT -->";
 const LEGACY_BEGIN: &str = "<!-- BEGIN ROUTINE-HARNESS GENERATED CONTEXT -->";
 const LEGACY_END: &str = "<!-- END ROUTINE-HARNESS GENERATED CONTEXT -->";
 
@@ -54,8 +54,78 @@ impl fmt::Display for MergeError {
 
 impl std::error::Error for MergeError {}
 
+/// A singleton event/handler has no positional ambiguity. Unknown fields stay unowned.
+pub(crate) fn selected_hook(document: &Value, event: &str) -> Result<Value, MergeError> {
+    let groups = document["hooks"][event]
+        .as_array()
+        .filter(|a| a.len() == 1)
+        .ok_or_else(|| {
+            MergeError::new("ambiguous_hook_item", "event must have exactly one group")
+        })?;
+    let handlers = groups[0]["hooks"]
+        .as_array()
+        .filter(|a| a.len() == 1)
+        .ok_or_else(|| {
+            MergeError::new("ambiguous_hook_item", "group must have exactly one handler")
+        })?;
+    let handler = &handlers[0];
+    if !handler.is_object() {
+        return Err(MergeError::new("ambiguous_hook_item", "handler missing"));
+    }
+    Ok(
+        serde_json::json!({"type":handler["type"],"command":handler["command"],"timeout":handler["timeout"]}),
+    )
+}
+pub(crate) fn merge_selected_hook(
+    current: &str,
+    body: &str,
+    event: &str,
+) -> Result<String, MergeError> {
+    let mut document: Value = serde_json::from_str(current)
+        .map_err(|e| MergeError::new("invalid_json", e.to_string()))?;
+    selected_hook(&document, event)?;
+    let incoming: Value =
+        serde_json::from_str(body).map_err(|e| MergeError::new("invalid_json", e.to_string()))?;
+    let selected = selected_hook(&incoming, event)?;
+    for key in ["type", "command", "timeout"] {
+        document["hooks"][event][0]["hooks"][0][key] = selected[key].clone();
+    }
+    Ok(serde_json::to_string_pretty(&document).unwrap() + "\n")
+}
 pub fn exact_copy(source: &[u8]) -> Vec<u8> {
     source.to_vec()
+}
+
+/// Only an existing, unique, canonical project block grants imported ownership.
+pub(crate) fn selected_project_rule(bytes: &[u8]) -> Result<String, MergeError> {
+    let text = std::str::from_utf8(bytes)
+        .map_err(|_| MergeError::new("ambiguous_managed_block", "invalid UTF-8"))?;
+    let fail = || {
+        MergeError::new(
+            "ambiguous_managed_block",
+            "existing canonical block required",
+        )
+    };
+    if text.contains(LEGACY_BEGIN)
+        || text.contains(LEGACY_END)
+        || text.match_indices(HARNESSKIT_BEGIN).count() != 1
+        || text.match_indices(HARNESSKIT_END).count() != 1
+    {
+        return Err(fail());
+    }
+    let begin = text.find(HARNESSKIT_BEGIN).ok_or_else(fail)?;
+    let end = text.find(HARNESSKIT_END).ok_or_else(fail)?;
+    let start = begin + HARNESSKIT_BEGIN.len();
+    if end <= start
+        || !text[start..].starts_with('\n')
+        || (begin != 0 && !text[..begin].ends_with('\n'))
+        || !text[..end].ends_with('\n')
+        || !(text[end + HARNESSKIT_END.len()..].is_empty()
+            || text[end + HARNESSKIT_END.len()..].starts_with('\n'))
+    {
+        return Err(fail());
+    }
+    Ok(text[start + 1..end].to_string())
 }
 
 pub fn merge_managed_block(
@@ -295,6 +365,97 @@ fn hook_group_is_managed(
         source_commands.contains(command)
             || managed_tokens.iter().any(|token| command.contains(token))
     })
+}
+
+#[cfg(test)]
+mod selected_codex_tests {
+    #[test]
+    fn registration_path_alias_cannot_hide_second_owner() {
+        let text = "[agents.reviewer]\nconfig_file = 'agents/reviewer.toml'\n[agents.other]\nconfig_file = 'agents/./reviewer.toml'\n";
+        assert!(super::selected_codex_agent(text.as_bytes(), "reviewer").is_err());
+    }
+}
+
+/// Typed selected registration, not the surrounding settings file.
+pub(crate) fn selected_codex_agent(bytes: &[u8], name: &str) -> Result<Value, MergeError> {
+    let fail = || {
+        MergeError::new(
+            "codex_registration_ambiguous",
+            "selected Codex registration is missing, invalid or aliased",
+        )
+    };
+    let text = std::str::from_utf8(bytes).map_err(|_| fail())?;
+    let doc: toml::Value = toml::from_str(text).map_err(|_| fail())?;
+    let agents = doc
+        .get("agents")
+        .and_then(toml::Value::as_table)
+        .ok_or_else(fail)?;
+    let selected = agents
+        .get(name)
+        .and_then(toml::Value::as_table)
+        .ok_or_else(fail)?;
+    let path = selected
+        .get("config_file")
+        .and_then(toml::Value::as_str)
+        .ok_or_else(fail)?;
+    if path != format!("agents/{name}.toml")
+        || agents.iter().any(|(k, v)| {
+            k != name
+                && v.get("config_file")
+                    .and_then(toml::Value::as_str)
+                    .is_some_and(|other| {
+                        // Fail closed on alternate spellings instead of normalizing a selected path.
+                        other == path
+                            || other.contains("\\")
+                            || other.split('/').any(|part| matches!(part, "" | "." | ".."))
+                            || other.starts_with('/')
+                            || other.starts_with('~')
+                    })
+        })
+    {
+        return Err(fail());
+    }
+    serde_json::to_value(selected).map_err(|_| fail())
+}
+
+pub(crate) fn merge_selected_codex_agent(
+    current: &str,
+    body: &str,
+    name: &str,
+) -> Result<String, MergeError> {
+    let fail = || {
+        MergeError::new(
+            "codex_registration_ambiguous",
+            "selected Codex registration cannot be safely replaced",
+        )
+    };
+    selected_codex_agent(current.as_bytes(), name)?;
+    selected_codex_agent(body.as_bytes(), name)?;
+    let mut destination: toml_edit::Document = current.parse().map_err(|_| fail())?;
+    let source: toml_edit::Document = body.parse().map_err(|_| fail())?;
+    let table = destination["agents"][name]
+        .as_table_mut()
+        .ok_or_else(fail)?;
+    let incoming = source["agents"][name].as_table().ok_or_else(fail)?;
+    // Keep table/key comments and unowned tables byte-preserving through toml_edit.
+    table.retain(|k, _| incoming.contains_key(k));
+    for (key, value) in incoming.iter() {
+        let mut value = value.clone();
+        if let (Some(old), Some(new)) = (
+            table.get(key).and_then(toml_edit::Item::as_value),
+            value.as_value_mut(),
+        ) {
+            *new.decor_mut() = old.decor().clone();
+        }
+        let key_decor = table.key_decor(key).cloned();
+        table.insert(key, value);
+        if let Some(decor) = key_decor {
+            *table.key_decor_mut(key).unwrap() = decor;
+        }
+    }
+    let result = destination.to_string();
+    selected_codex_agent(result.as_bytes(), name)?;
+    Ok(result)
 }
 
 pub fn merge_toml_agents(current: &str, body: &str, merge_key: &str) -> Result<String, MergeError> {

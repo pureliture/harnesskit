@@ -56,7 +56,7 @@
   ],
   "entrypoint": {
     "path": "src-tauri/resources/install-runtime-entry/install_entry.py",
-    "sha256": "0d6b131fc5d62a1a0ee58fe3c8ffb99561bd108e24bb9f5e54ceba4d110ca57a"
+    "sha256": "81902c1c60d4104fe90a9a3d6dc77d2f0acb4ce5292405b9cab11b09cc3d9d3a"
   },
   "licenses": [
     "Python-2.0",
