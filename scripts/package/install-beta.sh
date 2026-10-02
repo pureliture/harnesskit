@@ -17,6 +17,8 @@ APP_REL="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/${APP_NAME}"
 CHECK_ONLY=0
 KEEP_WORK=0
 WORK=""
+STAGE=""
+TARGET=""
 
 usage() {
   cat <<'USAGE'
@@ -35,6 +37,13 @@ die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
 cleanup() {
   local status=$?
+  if [ -n "$STAGE" ] && [ -d "$STAGE" ]; then
+    # Restore the previous app if the swap was interrupted.
+    if [ -d "$STAGE/previous.app" ] && [ ! -e "$TARGET" ]; then
+      mv "$STAGE/previous.app" "$TARGET" && log "Previous app restored: $TARGET"
+    fi
+    rm -rf "$STAGE"
+  fi
   if [ -n "$WORK" ] && [ -d "$WORK" ]; then
     if [ "$KEEP_WORK" = 1 ] || { [ "$status" -ne 0 ] && [ "${HARNESSKIT_KEEP_ON_FAIL:-0}" = 1 ]; }; then
       log "Temporary folder kept: $WORK"
@@ -61,8 +70,12 @@ check_prerequisites() {
     fi
   }
 
-  [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] \
-    || { printf 'MISSING: macOS on Apple Silicon (arm64) is required.\n' >&2; problems=1; }
+  if [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ]; then
+    version_at_least "$(sw_vers -productVersion)" 13 0 \
+      || { printf 'TOO OLD: macOS 13 or newer is required.\n' >&2; problems=1; }
+  else
+    printf 'MISSING: macOS on Apple Silicon (arm64) is required.\n' >&2; problems=1
+  fi
   xcode-select -p >/dev/null 2>&1 \
     || { printf 'MISSING: Xcode Command Line Tools -> xcode-select --install\n' >&2; problems=1; }
   need git "install Xcode Command Line Tools"
@@ -87,15 +100,24 @@ check_prerequisites() {
   log "Prerequisites look good."
 }
 
+tauri_cli_is_v2() {
+  local version
+  version="$(cargo tauri --version 2>/dev/null)" || return 1
+  case "$version" in
+    "tauri-cli 2."*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 prepare_tauri_cli() {
-  if cargo tauri --version >/dev/null 2>&1; then
-    log "Using the Tauri CLI that is already installed."
+  if tauri_cli_is_v2; then
+    log "Using the Tauri CLI 2 that is already installed."
     return
   fi
-  log "Installing a temporary Tauri CLI (removed at the end; this can take several minutes)."
+  log "Installing a temporary Tauri CLI 2 (removed at the end; this can take several minutes)."
   cargo install tauri-cli --version "^2" --locked --root "$WORK/tauri-cli"
   export PATH="$WORK/tauri-cli/bin:$PATH"
-  cargo tauri --version >/dev/null 2>&1 || die "Temporary Tauri CLI is not usable."
+  tauri_cli_is_v2 || die "Temporary Tauri CLI 2 is not usable."
 }
 
 fetch_source() {
@@ -112,7 +134,6 @@ build_app() {
   log "Building (first build compiles many Rust dependencies and can take a long time)."
   (
     cd "$WORK/src"
-    npm ci --prefix src-frontend --ignore-scripts
     python3 scripts/package/prepare_install_runtime.py --repo-root .
     python3 scripts/package/prepare_install_runtime.py --repo-root . --verify-only
     CI=true uv run --no-project --no-cache python \
@@ -125,20 +146,31 @@ build_app() {
 }
 
 install_app() {
-  local target="$DEST_DIR/$APP_NAME"
+  TARGET="$DEST_DIR/$APP_NAME"
   mkdir -p "$DEST_DIR"
-  if [ -e "$target" ]; then
-    local backup_dir="$HOME/Library/Application Support/HarnessKit-install-backup"
-    local stamp backup
-    stamp="$(date +%Y%m%d-%H%M%S)"
-    backup="$backup_dir/HarnessKit-$stamp.app"
-    mkdir -p "$backup_dir"
-    log "Existing app backed up to: $backup"
-    /usr/bin/ditto "$target" "$backup"
-    rm -rf "$target"
+
+  # 1. Copy the new app next to the destination and verify it there first.
+  STAGE="$(mktemp -d "$DEST_DIR/.HarnessKit-install.XXXXXX")"
+  /usr/bin/ditto "$WORK/src/$APP_REL" "$STAGE/$APP_NAME"
+  /usr/bin/codesign --verify --deep --strict "$STAGE/$APP_NAME" \
+    || die "Copied app failed the code signature check. The existing app was not changed."
+
+  # 2. Back up the existing app to a folder unique to this run.
+  if [ -e "$TARGET" ]; then
+    local backup_root="$HOME/Library/Application Support/HarnessKit-install-backup"
+    local backup_dir
+    mkdir -p "$backup_root"
+    backup_dir="$(mktemp -d "$backup_root/HarnessKit-$(date +%Y%m%d-%H%M%S).XXXXXX")"
+    /usr/bin/ditto "$TARGET" "$backup_dir/$APP_NAME"
+    log "Existing app backed up to: $backup_dir/$APP_NAME"
+    mv "$TARGET" "$STAGE/previous.app"
   fi
-  /usr/bin/ditto "$WORK/src/$APP_REL" "$target"
-  log "Installed: $target"
+
+  # 3. Swap in the verified app. On failure, cleanup restores the previous app.
+  mv "$STAGE/$APP_NAME" "$TARGET"
+  rm -rf "$STAGE"
+  STAGE=""
+  log "Installed: $TARGET"
 }
 
 main() {
