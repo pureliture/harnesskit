@@ -54,9 +54,9 @@ HarnessKit Desktop은 파일과 YAML을 직접 오가며 확인해야 했던 정
 
 SoT 조회는 read-only가 기본입니다. 파일을 쓰는 설치·제거 동작은 별도의 계획과 명시적 확인을 거쳐야 하며, 화면에 보였다는 이유만으로 적용 성공이나 runtime 동작을 주장하지 않습니다.
 
-### 개발자용 beta.3: 명령 두 줄로 빌드·설치
+### beta.3 설치: 명령 두 줄, 준비물 없음
 
-현재 베타는 **개발자 몇 명이 자기 Mac에서 직접 빌드해 설치하는 방식**입니다. macOS 13 이상 Apple Silicon Mac용이며 Intel Mac은 지원하지 않습니다. 다운로드 DMG는 Apple 서명·공증이 없어 실행이 차단될 수 있으므로 기본 경로로 쓰지 않습니다.
+macOS 13 이상 Apple Silicon Mac용입니다. Intel Mac은 지원하지 않습니다. 터미널에 아래 두 줄을 붙여 넣으면 됩니다. Python, Node.js, uv, Rust 같은 도구를 미리 설치할 필요가 없습니다.
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/pureliture/harnesskit/main/scripts/package/install-beta.sh
@@ -67,19 +67,20 @@ bash install-beta.sh
 
 스크립트가 하는 일:
 
-1. 필요한 도구(Xcode Command Line Tools, Python 3.11 이상, Node.js 20 이상, `uv`, Rust)가 있는지 확인하고 없으면 설치 방법을 안내한 뒤 멈춥니다. 이 도구들을 자동으로 설치하지는 않습니다.
-2. 임시 폴더에 고정된 `v0.1.0-beta.3` 소스를 받고 커밋이 `a5bc523e7c304cdb6dba1c51f10a00a55cc1f76b`인지 확인합니다.
-3. Tauri CLI가 없으면 임시 폴더에 설치합니다.
-4. 앱을 빌드하고 코드 서명 검사를 통과하면 `/Applications/HarnessKit.app`으로 복사합니다. 기존 앱이 있으면 `~/Library/Application Support/HarnessKit-install-backup/`에 백업합니다.
-5. 임시 폴더(소스, 빌드 결과, 임시 Tauri CLI)를 자동으로 지웁니다. 직접 설치한 Rust·Node·uv와 Cargo 공용 다운로드 캐시는 지우지 않습니다.
+1. 이미 빌드된 beta.3 앱(DMG)을 내려받고, 스크립트에 고정된 SHA-256 값과 같은지 확인합니다. 다르면 아무것도 설치하지 않습니다.
+2. 앱의 코드 서명과 앱 식별자를 확인합니다.
+3. `/Applications/HarnessKit.app`에 설치합니다. 기존 앱이 있으면 `~/Library/Application Support/HarnessKit-install-backup/`에 먼저 백업하고, 교체 중 실패하면 원래 앱을 되돌려 놓습니다.
+4. 내려받은 파일을 자동으로 지웁니다.
 
-첫 빌드는 Rust 의존성을 컴파일하느라 오래 걸릴 수 있습니다. 도구만 먼저 점검하려면 `bash install-beta.sh --check`, 실패 원인을 보려면 `bash install-beta.sh --keep-work`를 쓰세요. 다른 폴더에 설치하려면 `HARNESSKIT_INSTALL_DEST=$HOME/Applications bash install-beta.sh`처럼 실행합니다.
+요구 조건만 점검하려면 `bash install-beta.sh --check`를 쓰세요. 다른 폴더에 설치하려면 `HARNESSKIT_INSTALL_DEST=$HOME/Applications bash install-beta.sh`처럼 실행합니다.
 
-로컬 빌드 앱도 AdHoc 서명이며 Apple 공증을 받지 않았습니다. 회사 보안 정책이나 모든 Mac에서의 실행을 보장하지 않습니다. 실행이 차단되면 보안 기능을 끄거나 격리 속성을 제거하지 말고 오류 문구를 알려주세요.
+이 앱은 AdHoc 서명이며 Apple 공증을 받지 않았습니다. 회사 보안 정책이나 모든 Mac에서의 실행을 보장하지 않습니다. 실행이 차단되면 보안 기능을 끄거나 격리 속성을 제거하지 말고 오류 문구를 알려주세요.
 
 처음에는 별도 테스트 프로젝트와 설정 파일 사본으로 가져오기를 확인하세요. 가져오기·편집만으로 원본은 바뀌지 않지만, **적용을 승인하면 선택한 실제 파일이 수정**됩니다.
 
-[beta.3 Release](https://github.com/pureliture/harnesskit/releases/tag/v0.1.0-beta.3)의 DMG와 `.sha256`은 참고 산출물로 남겨 둡니다.
+#### 직접 빌드하고 싶다면
+
+`bash install-beta.sh --from-source`는 고정된 `v0.1.0-beta.3` 소스(커밋 `a5bc523e7c304cdb6dba1c51f10a00a55cc1f76b`)를 임시 폴더에서 빌드해 설치합니다. 이 방법은 Xcode Command Line Tools, Python 3.11 이상, Node.js 20 이상, `uv`, Rust가 필요하고, 첫 빌드는 오래 걸릴 수 있습니다. Tauri CLI 2가 없으면 임시로 설치했다가 지웁니다. 실패 원인을 보려면 `--keep-work`를 함께 쓰세요.
 
 앱에 포함된 오픈소스 라이선스는 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)에 있고, 앱 상단의 `오픈소스 라이선스` 링크로도 볼 수 있습니다. 의존성이 바뀌면 `uv run --no-project --with pyyaml python scripts/package/generate_third_party_notices.py`로 고지를 다시 만들어야 합니다.
 
