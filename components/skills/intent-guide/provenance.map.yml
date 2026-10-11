@@ -1,0 +1,53 @@
+component_id: harnesskit.skill.intent-guide
+provenance:
+  mode: local_migration
+  source_mode: local
+  runtime_dependency_on_sources: false
+  runtime_support_claimed: false
+  sources:
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'This is an owned, compact local reconstruction from approved
+    requirements, blueprint, current destination boundaries, and a synthetic behavior
+    dataset. No upstream prose, runtime behavior, historical routing oracle, or external
+    product research is copied or claimed.
+
+    '
+  license_notes:
+  - All listed sources are repository-local authority or synthetic evaluation input.
+  - No third-party text is copied into the canonical body.
+  copied_sections: []
+  adapted_sections:
+  - fixed route meanings and destination boundaries
+  - custom-implementation preflight
+  - returned-control and explicit-selection boundary
+  new_sections:
+  - compact one-result entry procedure
+  - no automatic specialist routing and no routing-platform boundary
+  excluded_influences:
+  - external solution comparison, vendor choice, purchase, or product research
+  - automatic route execution, delegation, document writing, implementation, testing,
+    or operations work
+  - direct System Designer, Codebase Architecture Manager, TDD, debugging, or specialist
+    routing
+  - hooks, schedulers, route history, databases, compatibility paths, profiles, installation,
+    or runtime claims
+  - historical 42-case routing corpus and its legacy owner or handoff oracle
+  review_triggers:
+  - condition: intent_guide_requirements_or_blueprint_changed
+    action: Recheck primary-result, returned-control, and IG-01 boundaries.
+    severity: high
+  - condition: destination_skill_contract_changed
+    action: Recheck Grill, Grill-to-Spec, and Wayfinder route meanings without changing
+      their direct-entry migration scope.
+    severity: high
+  - condition: profile_or_joint_entry_migration_requested
+    action: Require the separately approved IG-02 migration slice before changing
+      profile or legacy-entry state.
+    severity: high
+  - condition: adapter_or_runtime_support_requested
+    action: Require separate adapter-authoring and runtime evidence before adding
+      target support claims.
+    severity: high

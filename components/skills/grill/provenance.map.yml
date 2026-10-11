@@ -1,0 +1,55 @@
+component_id: harnesskit.skill.grill
+provenance:
+  mode: adapted
+  source_mode: user_supplied_refs
+  runtime_dependency_on_sources: false
+  runtime_support_claimed: false
+  sources:
+  - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-07-16-main-9603c1c
+    source_path: skills/productivity/grilling/SKILL.md
+    influence:
+    - fact lookup before a user question
+    - one question and wait interaction pattern
+    copied_content: false
+    adapted_content: true
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'This is an owned, compact reconstruction from approved local
+    requirements and blueprint. The supplied upstream grilling reference influences
+    only the interaction pattern; no third-party prose, legacy route behavior, or
+    runtime behavior is copied or claimed.
+
+    '
+  license_notes:
+  - Approved local requirements and blueprint are repository-local authority.
+  - The upstream reference is user-supplied and used as an adapted interaction-pattern
+    influence only.
+  - No third-party text is copied into the canonical body.
+  copied_sections: []
+  adapted_sections:
+  - fact-first and one-question interaction pattern
+  - bounded current-objective clarification boundary
+  - terminal return and latest-user-override behavior
+  new_sections:
+  - explicit non-router and non-execution boundary
+  - development profile and Codex build-only target support boundary
+  excluded_influences:
+  - relentless traversal of every theoretical branch
+  - entry routing, cross-skill handoff, and persistent route state
+  - document generation, implementation, TDD, delegation, and operations execution
+  - domain variants, queues, schedulers, databases, and compatibility paths
+  review_triggers:
+  - condition: grill_or_boundary_requirements_changed
+    action: Recheck fact-first, terminal-return, and ownership boundaries.
+    severity: high
+  - condition: approved_blueprint_changed
+    action: Recheck GRILL-01 canonical scope, profile selection, and static target
+      boundary.
+    severity: high
+  - condition: live_install_or_runtime_support_requested
+    action: Require a separately approved live-install and runtime evidence slice
+      before changing support claims.
+    severity: high

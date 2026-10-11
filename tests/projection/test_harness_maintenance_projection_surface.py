@@ -62,7 +62,7 @@ def test_projected_maintenance_rule_is_public_safe() -> None:
     assert manifest["closure_summary"] == {
         "agents": 6,
         "rules": 1,
-        "skills": 5,
+        "skills": 11,
         "workflows": 1,
     }
 

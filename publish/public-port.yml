@@ -1,6 +1,10 @@
 schema_version: 1
 target_repository_url: https://github.com/pureliture/harnesskit.git
 retain_public_baseline: true
+canonical_component_projection: publish/harnesskit.yml
+public_authored_exceptions:
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
 
 # Each include names a reviewed top-level public slice. The generated manifest
 # expands these patterns to exact tracked paths and hashes at one clean source
@@ -25,25 +29,18 @@ ported_authored:
     - assets/tool-identities/**
     - bin/harnesskit.mjs
     - components/registry.yml
-    - components/agents/adapter-author/**
-    - components/agents/component-author/**
-    - components/agents/harness-blueprint-author/**
-    - components/agents/harness-evaluator/**
-    - components/agents/harness-requirements-analyst/**
-    - components/agents/reference-curator/**
-    - components/rules/harness-maintenance-project-context/**
-    - components/skills/adapter-authoring/**
-    - components/skills/component-authoring/**
-    - components/skills/harness-blueprint/**
-    - components/skills/harness-requirements/**
-    - components/skills/skill-evaluation/**
-    - components/workflows/harness-creation/**
-    - components/workflows/review-gated-implementation/**
-    - components/workflows/spec-to-tdd/**
+    - components/skills/agentic-execution/**
+    - components/skills/grill/**
+    - components/skills/grill-to-spec/**
+    - components/skills/intent-guide/**
+    - components/skills/wayfinder/**
+    - components/skills/worktree-lifecycle/**
     - docs/images/**
-    - profiles/**
+    - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+    - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+    - profiles/harness-maintenance.yml
     - migrations/**
-    - install-plans/**
+    - install-plans/harness-maintenance.project.yml
     - publish/harnesskit.yml
     - publish/public-port.yml
     - publish/public-sanitation-allowlist.yml
@@ -54,20 +51,36 @@ ported_authored:
     - scripts/package/**
     - scripts/profiles/**
     - scripts/projection/**
-    - scripts/public_port/**
     - sources/*.md
     - sources/*.yml
     - src-frontend/**
     - src-tauri/**
     - tests/install/**
     - tests/projection/**
-    - tests/public_port/**
   exclude:
     - src-tauri/gen/schemas/**
     - src-frontend/assets/tool-identities/**
+    - src-frontend/tests/ai-explanation.test.js
+    - src-frontend/tests/local-view.test.js
+    - tests/projection/test_publish_manifest.py
+    - tests/public_port/**
 
-# Previous public release already removed the pre-flattening paths.
-intentional_removals: []
+# Remove unselected Profiles, Workflows and their installer plans from the public catalog.
+intentional_removals:
+  - components/workflows/review-gated-implementation/card.md
+  - components/workflows/review-gated-implementation/provenance.map.yml
+  - components/workflows/review-gated-implementation/workflow.yml
+  - components/workflows/spec-to-tdd/.gitkeep
+  - components/workflows/spec-to-tdd/card.md
+  - components/workflows/spec-to-tdd/provenance.map.yml
+  - components/workflows/spec-to-tdd/workflow.yml
+  - install-plans/engineering.project.yml
+  - install-plans/engineering.user.yml
+  - profiles/development.yml
+  - profiles/engineering.yml
+  - profiles/minimal.yml
+  - profiles/scm.yml
+  - profiles/work.yml
 
 # Generator execution support is implemented and tested in M7A. Production
 # rules are added only with the hermetic tool bootstrap in the package/release

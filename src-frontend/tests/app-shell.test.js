@@ -422,15 +422,15 @@ test("SoT inventory status follows the latest snapshot lifecycle instead of a st
   }
 });
 
-test("header offers an offline open-source license link to the bundled notice", () => {
+test("footer offers an accessible offline license icon to the bundled notice", () => {
   const markup = renderAppShell(createInitialState());
-  const toolbar = markup.match(/<header class="command-bar"[\s\S]*?<\/header>/)?.[0] ?? "";
+  const footer = markup.match(/<footer class="app-statusbar"[\s\S]*?<\/footer>/)?.[0] ?? "";
 
   assert.match(
-    toolbar,
-    /<a(?=[^>]*class="license-link")(?=[^>]*href="\.\/legal\/third-party-notices\.html")(?=[^>]*target="_self")[^>]*>오픈소스 라이선스<\/a>/,
+    footer,
+    /<a(?=[^>]*class="license-link")(?=[^>]*href="\.\/legal\/third-party-notices\.html")(?=[^>]*target="_self")(?=[^>]*aria-label="오픈소스 라이선스")(?=[^>]*title="오픈소스 라이선스")[^>]*><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg><\/a>\s*<\/footer>/,
   );
-  assert.doesNotMatch(toolbar, /href="https?:[^"]*third-party/);
+  assert.doesNotMatch(footer, /href="https?:[^"]*third-party/);
 });
 
 test("global toolbar DOM order stays aligned with responsive visual reading order", () => {
@@ -568,7 +568,7 @@ test("ready SoT state renders the persistent 3D host plus fixed graph matrix and
 
   assert.equal((markup.match(/data-component-map-scene-host/g) ?? []).length, 1);
   assert.match(markup, /5 nodes · 0 links/);
-  assert.doesNotMatch(markup, /<svg\b|data-graph-scene=/);
+  assert.doesNotMatch(markup, /<svg\b(?![^>]*class="license-link__icon")|data-graph-scene=/);
   assert.match(markup, /Component Map/);
   assert.match(markup, /Profile Matrix/);
   assert.match(markup, /profile-panel/);

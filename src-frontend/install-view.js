@@ -103,7 +103,7 @@ function renderPreview(install) {
       <div><dt>Scope</dt><dd>${escapeHtml(plan.scope)}</dd></div>
       <div><dt>Profile</dt><dd class="path-value">${escapeHtml(preview.request.profileId ?? "evidence 없음")}</dd></div>
       <div><dt>Target tool</dt><dd>${renderTargetIdentities(plan.targetIds, "install_preview")}</dd></div>
-      <div><dt>Target root</dt><dd class="path-value">${escapeHtml(plan.targetRoot || "evidence 없음")}</dd></div>
+      <div><dt>적용 위치</dt><dd class="path-value">${escapeHtml(plan.targetRoot === "import-source" ? `가져온 원본 · ${install.sourceBinding?.locator ?? "출처 연결"}` : plan.targetRoot || "evidence 없음")}</dd></div>
     </dl>
     <div class="plan-grid">
       <section><h4>Components</h4>${renderValueList(plan.componentIds, "Component evidence가 없습니다.")}</section>
@@ -155,6 +155,7 @@ export function renderInstallActionSurface({ install, component, operationBlocke
     runtimeHooks: false,
   };
   const busy = ["previewing", "applying"].includes(install?.phase);
+  const importedSource = install?.form?.targetRoot === "import-source";
   const previewDisabled = operationBlocked || busy || !install?.subject?.sotSnapshotId
     || !install?.subject?.componentId || !install?.form?.profileId
     || !install?.form?.targetId || !install?.form?.targetRoot;
@@ -181,24 +182,24 @@ export function renderInstallActionSurface({ install, component, operationBlocke
         ${install.form.targetId ? `<div class="install-target-companion" data-install-target-companion>${renderToolIdentity(install.form.targetId, { context: "install_selected_target" })}</div>` : ""}
         <label for="install-scope">Scope</label>
         <select id="install-scope" name="scope" data-install-field="scope"${busy ? " disabled" : ""}>
-          <option value="user"${install.form.scope === "user" ? " selected" : ""}>User</option>
-          <option value="project"${install.form.scope === "project" ? " selected" : ""}>Project</option>
+          ${!importedSource || install.form.scope === "user" ? `<option value="user"${install.form.scope === "user" ? " selected" : ""}>User</option>` : ""}
+          ${!importedSource || install.form.scope === "project" ? `<option value="project"${install.form.scope === "project" ? " selected" : ""}>Project</option>` : ""}
         </select>
-        <label for="install-target-root">Target root</label>
-        <input id="install-target-root" name="targetRoot" data-install-field="targetRoot" value="${escapeHtml(install.form.targetRoot)}" autocomplete="off" spellcheck="false" required${busy ? " disabled" : ""} />
+        ${importedSource ? `<input type="hidden" name="targetRoot" value="import-source" /><p id="install-source-location" class="path-value">적용 위치: 가져온 원본 · ${escapeHtml(install.sourceBinding?.locator ?? "출처 연결")}</p><p>원본 위치와 Scope는 가져올 때 연결한 값입니다. 다른 경로로 변경하지 않습니다. 미리보기와 적용 승인을 모두 하기 전에는 원본 파일을 바꾸지 않습니다.</p>` : `<label for="install-target-root">Target root</label><input id="install-target-root" name="targetRoot" data-install-field="targetRoot" value="${escapeHtml(install.form.targetRoot)}" autocomplete="off" spellcheck="false" required${busy ? " disabled" : ""} />`}
       </div>
       <button id="preview-install" type="submit" class="button button--secondary"${previewDisabled ? " disabled" : ""}>${install.phase === "previewing" ? "Preview 생성 중…" : "Install preview"}</button>
     </form>
     ${install.message ? `<p class="install-message${install.phase === "error" ? " install-message--error" : ""}" role="${install.phase === "error" ? "alert" : "status"}" aria-live="polite">${escapeHtml(install.message)}</p>` : ""}
     ${renderPreview(install)}
-    ${preview ? `<fieldset class="approval-gates"${busy ? " disabled" : ""}>
-      <legend>Preview-bound approvals</legend>
-      <label><input id="confirm-install" type="checkbox" data-install-approval="confirmed"${install.confirmed ? " checked" : ""} /> 이 fingerprint의 target, destination, warning을 확인했습니다.</label>
+    ${preview ? `<p class="approval-explanation">여기서 승인하는 것은 아래 미리보기의 파일 변경을 표시된 적용 위치에 기록하는 것입니다. 가져오기·편집·미리보기만으로는 원본 파일이 바뀌지 않습니다. 적용하지 않으려면 <strong>이번 적용 취소</strong>를 누르세요.</p><fieldset class="approval-gates"${busy ? " disabled" : ""}>
+      <legend>이번 적용 승인</legend>
+      <label><input id="confirm-install" type="checkbox" data-install-approval="confirmed"${install.confirmed ? " checked" : ""} /> 대상과 파일 변경 내용을 확인했고, 이 미리보기를 표시된 적용 위치에 기록하도록 승인합니다.</label>
       ${requiredApprovals.managedReplacement ? `<p role="alert">마지막 적용 이후 원본이 바뀌어 적용을 중단했습니다. 표시된 차이를 확인한 뒤 유지 또는 교체를 선택하세요.</p><button type="button" data-keep-managed-source>도구 쪽 변경 유지 · 이번 적용 취소</button><label><input id="replace-managed" type="checkbox" data-install-approval="replaceManaged"${install.replaceManaged ? " checked" : ""} /> 표시된 현재 원본만 canonical 내용으로 교체합니다.</label>` : ""}
       ${requiredApprovals.managementAdoption ? `<label><input id="adopt-management" type="checkbox" data-install-approval="adoptManagement"${install.adoptManagement ? " checked" : ""} /> 표시된 원본 파일만 HarnessKit 관리 대상으로 전환합니다.</label>` : ""}
       ${requiredApprovals.overwrite ? `<label><input id="allow-overwrite" type="checkbox" data-install-approval="overwrite"${install.overwrite ? " checked" : ""} /> Preview가 요구한 기존 destination overwrite를 허용합니다.</label>` : ""}
       ${requiredApprovals.runtimeHooks ? `<label><input id="allow-runtime-hooks" type="checkbox" data-install-approval="allowRuntimeHooks"${install.allowRuntimeHooks ? " checked" : ""} /> Preview에 표시된 runtime gate를 허용합니다.</label>` : ""}
     </fieldset>` : ""}
+    ${preview && install.phase === "preview-ready" ? `<button id="cancel-install-preview" type="button" class="button button--secondary" data-cancel-install-preview${busy ? " disabled" : ""}>이번 적용 취소 · 파일 변경 안 함</button>` : ""}
     <button id="apply-install" type="button" class="button button--primary"${applyDisabled ? " disabled" : ""}>${install.phase === "applying" ? "Apply + verify 중…" : "승인한 preview 적용"}</button>
     ${renderExecution(install.execution)}
   </section>`;

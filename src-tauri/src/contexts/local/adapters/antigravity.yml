@@ -1,6 +1,6 @@
 schema_version: 1
 adapter_id: antigravity
-adapter_version: 1.0.0
+adapter_version: 1.1.0
 implementation_version: 1
 identity_namespace: harness_desktop.local.antigravity
 locator_version: 1
@@ -8,7 +8,7 @@ tool_id: antigravity
 supported_os: [macos]
 qualification_id: harness-desktop.discovery.antigravity.v1
 version_probe_id: antigravity_info_plist_v1
-supported_tool_versions: { kind: exact, value: 2.8.1 }
+supported_tool_versions: { kind: exact, value: 2.19.1 }
 surfaces:
   - surface_id: antigravity_project
     scope: project

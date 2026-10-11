@@ -1,535 +1,78 @@
-version: "1"
 components:
-  # ── Skills ────────────────────────────────────────
-  harnesskit.skill.tdd:
-    kind: skill
-    status: draft
-    path: components/skills/tdd/component.yml
-
-  harnesskit.skill.agentic-execution:
-    kind: skill
-    status: draft
-    path: components/skills/agentic-execution/component.yml
-
-  harnesskit.skill.guided-execution:
-    kind: skill
-    status: draft
-    path: components/skills/guided-execution/component.yml
-
-  harnesskit.skill.local-change-review:
-    kind: skill
-    status: draft
-    path: components/skills/local-change-review/component.yml
-
-  harnesskit.skill.junie-cli:
-    kind: skill
-    status: draft
-    path: components/skills/junie-cli/component.yml
-
-  harnesskit.skill.prototype:
-    kind: skill
-    status: draft
-    path: components/skills/prototype/component.yml
-
-  harnesskit.skill.wizard:
-    kind: skill
-    status: draft
-    path: components/skills/wizard/component.yml
-
-  harnesskit.skill.to-questionnaire:
-    kind: skill
-    status: draft
-    path: components/skills/to-questionnaire/component.yml
-
-  harnesskit.skill.writing-for-agents:
-    kind: skill
-    status: draft
-    path: components/skills/writing-for-agents/component.yml
-
-  harnesskit.skill.writing-plans:
-    kind: skill
-    status: skeleton
-    planned: true
-    replaced_by: harnesskit.skill.agentic-execution
-    path: components/skills/writing-plans/component.yml
-
-  harnesskit.skill.executing-plans:
-    kind: skill
-    status: skeleton
-    planned: true
-    replaced_by: harnesskit.skill.agentic-execution
-    path: components/skills/executing-plans/component.yml
-
-  harnesskit.skill.requesting-code-review:
-    kind: skill
-    status: deprecated
-    planned: true
-    deprecated: true
-    replaced_by: harnesskit.skill.local-change-review
-    path: components/skills/requesting-code-review/component.yml
-    deprecation:
-      reason: >
-        Local fixed-diff review is absorbed by local-change-review. GitHub PR
-        feedback, replies, and resolution remain owned by github-pr-followup.
-
-  harnesskit.skill.receiving-code-review:
-    kind: skill
-    status: deprecated
-    planned: true
-    deprecated: true
-    replaced_by: harnesskit.skill.local-change-review
-    path: components/skills/receiving-code-review/component.yml
-    deprecation:
-      reason: >
-        Local fixed-diff review is absorbed by local-change-review. GitHub PR
-        feedback, replies, and resolution remain owned by github-pr-followup.
-
-  harnesskit.skill.verification-before-completion:
-    kind: skill
-    status: semi-concrete
-    planned: true
-    path: components/skills/verification-before-completion/component.yml
-    deprecated: true
-    absorbed_by: harnesskit.rule.harnesskit-project-context
-    deprecation:
-      reason: >
-        The verification-before-completion honesty gate is absorbed as one managed-block
-        section in the harnesskit-project-context rule (M5); a standalone skill is not
-        authored. global core.md, STOP, and rh-tdd already enforce it. This skeleton is a
-        Deferred Work removal item; actual skeleton removal is sequenced after the rule
-        section emits.
-
-  harnesskit.skill.root-cause-debugging:
-    kind: skill
-    status: draft
-    path: components/skills/root-cause-debugging/component.yml
-
-  harnesskit.skill.domain-modeling:
-    kind: skill
-    status: draft
-    path: components/skills/domain-modeling/component.yml
-
-  harnesskit.skill.testing-strategy:
-    kind: skill
-    status: draft
-    path: components/skills/testing-strategy/component.yml
-
-  harnesskit.skill.tech-debt:
-    kind: skill
-    status: draft
-    path: components/skills/tech-debt/component.yml
-
-  harnesskit.skill.release-readiness:
-    kind: skill
-    status: draft
-    path: components/skills/release-readiness/component.yml
-
-  harnesskit.skill.incident-review:
-    kind: skill
-    status: draft
-    path: components/skills/incident-review/component.yml
-
-  harnesskit.skill.frontend-design:
-    kind: skill
-    status: draft
-    path: components/skills/frontend-design/component.yml
-
-  harnesskit.skill.accessibility-review:
-    kind: skill
-    status: draft
-    path: components/skills/accessibility-review/component.yml
-
-  harnesskit.skill.ux-copy:
-    kind: skill
-    status: draft
-    path: components/skills/ux-copy/component.yml
-
-  harnesskit.skill.using-git-worktrees:
-    kind: skill
-    status: skeleton
-    planned: true
-    path: components/skills/using-git-worktrees/component.yml
-    deprecated: true
-    replaced_by: harnesskit.skill.worktree-lifecycle
-    compatibility:
-      mode: planned_surface_deprecated
-      note: >
-        Planned start-of-work worktree surface is superseded by the expanded
-        worktree lifecycle skill. Keep this entry explicit until downstream
-        references migrate.
-
-  harnesskit.skill.worktree-lifecycle:
-    kind: skill
-    status: draft
-    path: components/skills/worktree-lifecycle/component.yml
-
-  harnesskit.skill.finishing-a-development-branch:
-    kind: skill
-    status: skeleton
-    planned: true
-    path: components/skills/finishing-a-development-branch/component.yml
-
-  harnesskit.skill.subagent-driven-development:
-    kind: skill
-    status: deprecated
-    planned: true
-    deprecated: true
-    path: components/skills/subagent-driven-development/component.yml
-    replaced_by: harnesskit.skill.agentic-execution
-    deprecation:
-      reason: >
-        This historical skeleton does not create a separate user-facing workflow
-        or require multi-agent delegation. Agentic Execution is a separately
-        selected execution contract, not this skeleton's review-policy owner.
-
-  harnesskit.skill.doc-curator:
-    kind: skill
-    status: draft
-    path: components/skills/doc-curator/component.yml
-
-  harnesskit.skill.doc-bootstrap:
-    kind: skill
-    status: draft
-    path: components/skills/doc-bootstrap/component.yml
-
-  harnesskit.skill.doc-sync:
-    kind: skill
-    status: draft
-    path: components/skills/doc-sync/component.yml
-
-  harnesskit.skill.doc-audit:
-    kind: skill
-    status: draft
-    path: components/skills/doc-audit/component.yml
-
-  harnesskit.skill.documentation:
-    kind: skill
-    status: draft
-    path: components/skills/documentation/component.yml
-
-  harnesskit.skill.optimal-response:
-    kind: skill
-    status: draft
-    path: components/skills/optimal-response/component.yml
-
-  harnesskit.skill.teach-visualization:
-    kind: skill
-    status: draft
-    path: components/skills/teach-visualization/component.yml
-
-  harnesskit.skill.public-publisher:
-    kind: skill
-    status: draft
-    path: components/skills/harnesskit-public-publisher/component.yml
-
-  harnesskit.skill.grill:
-    kind: skill
-    status: draft
-    path: components/skills/grill/component.yml
-
-  harnesskit.skill.grill-to-spec:
-    kind: skill
-    status: draft
-    path: components/skills/grill-to-spec/component.yml
-
-  harnesskit.skill.intent-guide:
-    kind: skill
-    status: draft
-    path: components/skills/intent-guide/component.yml
-
-  harnesskit.skill.wayfinder:
-    kind: skill
-    status: draft
-    path: components/skills/wayfinder/component.yml
-
-  harnesskit.skill.antigravity-agent-loader:
-    kind: skill
-    status: draft
-    path: components/skills/antigravity-agent-loader/component.yml
-
-  # ── SCM skills ───────────────────────────────────
-  harnesskit.skill.github-workflow-policy:
-    kind: skill
-    status: draft
-    path: components/skills/github-workflow-policy/component.yml
-
-  harnesskit.skill.github-issue:
-    kind: skill
-    status: draft
-    path: components/skills/github-issue/component.yml
-
-  harnesskit.skill.github-start:
-    kind: skill
-    status: draft
-    path: components/skills/github-start/component.yml
-
-  harnesskit.skill.github-pr:
-    kind: skill
-    status: draft
-    path: components/skills/github-pr/component.yml
-
-  harnesskit.skill.github-pr-followup:
-    kind: skill
-    status: draft
-    path: components/skills/github-pr-followup/component.yml
-
-  harnesskit.skill.capture-collaboration-idea:
-    kind: skill
-    status: draft
-    path: components/skills/capture-collaboration-idea/component.yml
-
-  # ── Work skills ──────────────────────────────────
-  harnesskit.skill.atlassian-work:
-    kind: skill
-    status: draft
-    path: components/skills/atlassian-work/component.yml
-
-  harnesskit.skill.acli-gateway:
-    kind: skill
-    status: draft
-    path: components/skills/acli-gateway/component.yml
-
-  harnesskit.skill.acli-read:
-    kind: skill
-    status: draft
-    path: components/skills/acli-read/component.yml
-
-  harnesskit.skill.acli-write:
-    kind: skill
-    status: deprecated
-    path: components/skills/acli-write/component.yml
-
-  harnesskit.skill.jira-acli-write:
-    kind: skill
-    status: deprecated
-    path: components/skills/jira-acli-write/component.yml
-
-  harnesskit.skill.jira-write:
-    kind: skill
-    status: draft
-    path: components/skills/jira-write/component.yml
-
-  harnesskit.skill.confluence-rest-write:
-    kind: skill
-    status: deprecated
-    path: components/skills/confluence-rest-write/component.yml
-
-  harnesskit.skill.confluence-write:
-    kind: skill
-    status: draft
-    path: components/skills/confluence-write/component.yml
-
-  harnesskit.skill.jira-ticket-management:
-    kind: skill
-    status: draft
-    path: components/skills/jira-ticket-management/component.yml
-
-  harnesskit.skill.confluence-page-authoring:
-    kind: skill
-    status: draft
-    path: components/skills/confluence-page-authoring/component.yml
-
-  harnesskit.skill.atlassian-account-diagnostics:
-    kind: skill
-    status: draft
-    path: components/skills/atlassian-account-diagnostics/component.yml
-
-  harnesskit.skill.ubuntu-runtime-access-diagnostics:
-    kind: skill
-    status: draft
-    path: components/skills/ubuntu-runtime-access-diagnostics/component.yml
-
-  # ── Harness maintenance skills ────────────────────
-  harnesskit.skill.component-authoring:
-    kind: skill
-    status: draft
-    path: components/skills/component-authoring/component.yml
-
-  harnesskit.skill.harness-requirements:
-    kind: skill
-    status: draft
-    path: components/skills/harness-requirements/component.yml
-
-  harnesskit.skill.harness-blueprint:
-    kind: skill
-    status: draft
-    path: components/skills/harness-blueprint/component.yml
-
-  harnesskit.skill.adapter-authoring:
-    kind: skill
-    status: draft
-    path: components/skills/adapter-authoring/component.yml
-
-  harnesskit.skill.skill-evaluation:
-    kind: skill
-    status: draft
-    path: components/skills/skill-evaluation/component.yml
-
-  # ── Agents ────────────────────────────────────────
-  harnesskit.agent.requirements-analyst:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/requirements-analyst/component.yml
-
-  harnesskit.agent.spec-writer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/spec-writer/component.yml
-
-  harnesskit.agent.plan-writer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/plan-writer/component.yml
-
-  harnesskit.agent.tdd-implementer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/tdd-implementer/component.yml
-
-  harnesskit.agent.verification-agent:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/verification-agent/component.yml
-
-  harnesskit.agent.system-designer:
-    kind: agent
-    status: draft
-    path: components/agents/system-designer/agent.yml
-
-  harnesskit.agent.codebase-architecture-manager:
-    kind: agent
-    status: draft
-    path: components/agents/codebase-architecture-manager/agent.yml
-
-  harnesskit.agent.code-simplifier:
-    kind: agent
-    status: draft
-    path: components/agents/code-simplifier/agent.yml
-
-  harnesskit.agent.security-reviewer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/security-reviewer/component.yml
-
-  harnesskit.agent.solid-reviewer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/solid-reviewer/component.yml
-
-  harnesskit.agent.testability-reviewer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/testability-reviewer/component.yml
-
-  harnesskit.agent.provenance-impact-reviewer:
-    kind: agent
-    status: draft
-    planned: true
-    path: components/agents/provenance-impact-reviewer/component.yml
-
-  harnesskit.agent.github-manager:
-    kind: agent
-    status: draft
-    path: components/agents/github-manager/agent.yml
-
-  harnesskit.agent.designer:
-    kind: agent
-    status: draft
-    path: components/agents/designer/agent.yml
-
-  harnesskit.agent.doc-curator:
-    kind: agent
-    status: draft
-    path: components/agents/doc-curator/agent.yml
-
-  harnesskit.agent.worktree-lifecycle-manager:
-    kind: agent
-    status: draft
-    path: components/agents/worktree-lifecycle-manager/agent.yml
-
-  harnesskit.agent.atlassian-work-worker:
-    kind: agent
-    status: draft
-    path: components/agents/atlassian-work-worker/agent.yml
-
-  # ── Harness maintenance agents ────────────────────
-  harnesskit.agent.component-author:
-    kind: agent
-    status: draft
-    path: components/agents/component-author/agent.yml
-
-  harnesskit.agent.reference-curator:
-    kind: agent
-    status: draft
-    path: components/agents/reference-curator/agent.yml
-
-  harnesskit.agent.harness-requirements-analyst:
-    kind: agent
-    status: draft
-    path: components/agents/harness-requirements-analyst/agent.yml
-
-  harnesskit.agent.harness-blueprint-author:
-    kind: agent
-    status: draft
-    path: components/agents/harness-blueprint-author/agent.yml
-
   harnesskit.agent.adapter-author:
     kind: agent
-    status: draft
     path: components/agents/adapter-author/agent.yml
-
+    status: draft
+  harnesskit.agent.component-author:
+    kind: agent
+    path: components/agents/component-author/agent.yml
+    status: draft
+  harnesskit.agent.harness-blueprint-author:
+    kind: agent
+    path: components/agents/harness-blueprint-author/agent.yml
+    status: draft
   harnesskit.agent.harness-evaluator:
     kind: agent
-    status: draft
     path: components/agents/harness-evaluator/agent.yml
-
-  # ── Hooks ────────────────────────────────────────
-  harnesskit.hook.optimal-response-prompt-submit:
-    kind: hook
     status: draft
-    path: components/hooks/optimal-response-prompt-submit/component.yml
-
-  harnesskit.rule.harnesskit-project-context:
-    kind: rule
+  harnesskit.agent.harness-requirements-analyst:
+    kind: agent
+    path: components/agents/harness-requirements-analyst/agent.yml
     status: draft
-    path: components/rules/harnesskit-project-context/component.yml
-
+  harnesskit.agent.reference-curator:
+    kind: agent
+    path: components/agents/reference-curator/agent.yml
+    status: draft
   harnesskit.rule.harness-maintenance-project-context:
     kind: rule
-    status: draft
     path: components/rules/harness-maintenance-project-context/component.yml
-
-  # ── Workflow ────────────────────────────────────────
-  harnesskit.workflow.spec-to-tdd:
-    kind: workflow
-    status: draft-card-only
-    path: components/workflows/spec-to-tdd/workflow.yml
-
+    status: draft
+  harnesskit.skill.adapter-authoring:
+    kind: skill
+    path: components/skills/adapter-authoring/component.yml
+    status: draft
+  harnesskit.skill.agentic-execution:
+    kind: skill
+    path: components/skills/agentic-execution/component.yml
+    status: draft
+  harnesskit.skill.component-authoring:
+    kind: skill
+    path: components/skills/component-authoring/component.yml
+    status: draft
+  harnesskit.skill.grill:
+    kind: skill
+    path: components/skills/grill/component.yml
+    status: draft
+  harnesskit.skill.grill-to-spec:
+    kind: skill
+    path: components/skills/grill-to-spec/component.yml
+    status: draft
+  harnesskit.skill.harness-blueprint:
+    kind: skill
+    path: components/skills/harness-blueprint/component.yml
+    status: draft
+  harnesskit.skill.harness-requirements:
+    kind: skill
+    path: components/skills/harness-requirements/component.yml
+    status: draft
+  harnesskit.skill.intent-guide:
+    kind: skill
+    path: components/skills/intent-guide/component.yml
+    status: draft
+  harnesskit.skill.skill-evaluation:
+    kind: skill
+    path: components/skills/skill-evaluation/component.yml
+    status: draft
+  harnesskit.skill.wayfinder:
+    kind: skill
+    path: components/skills/wayfinder/component.yml
+    status: draft
+  harnesskit.skill.worktree-lifecycle:
+    kind: skill
+    path: components/skills/worktree-lifecycle/component.yml
+    status: draft
   harnesskit.workflow.harness-creation:
     kind: workflow
-    status: draft
     path: components/workflows/harness-creation/workflow.yml
-
-  harnesskit.workflow.review-gated-implementation:
-    kind: workflow
-    status: deprecated
-    deprecated: true
-    path: components/workflows/review-gated-implementation/workflow.yml
-    deprecation:
-      reason: >
-        The former ordered high-risk review policy has no current routing owner;
-        this workflow remains only as a non-installable historical record.
-
-  # ── Composites ───────────────────────────────────────
-  harnesskit.composite.atlassian-acli:
-    kind: composite
     status: draft
-    path: components/composites/atlassian-acli/composite.yml
+version: '1'

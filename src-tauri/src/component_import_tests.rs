@@ -164,7 +164,8 @@ fn fixture_surface_source(
     rule: bool,
 ) -> Fixture {
     let temp = TempDir::new().unwrap();
-    let root = temp.path().join("checkout");
+    let temp_root = fs::canonicalize(temp.path()).unwrap();
+    let root = temp_root.join("checkout");
     fs::create_dir(&root).unwrap();
     let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..");
     for dir in ["components", "profiles", "schemas", "adapters", "scripts"] {
@@ -191,7 +192,7 @@ fn fixture_surface_source(
         .status()
         .unwrap()
         .success());
-    let private = temp.path().join("private");
+    let private = temp_root.join("private");
     fs::create_dir(&private).unwrap();
     let private = fs::canonicalize(private).unwrap();
     use std::os::unix::fs::PermissionsExt;
@@ -210,7 +211,7 @@ fn fixture_surface_source(
         "component-import-state",
     )
     .unwrap();
-    let home = temp.path().join("home");
+    let home = temp_root.join("home");
     let source_root = if project {
         home.join("workspace")
     } else {
@@ -959,6 +960,7 @@ fn project_rule_block_import_edit_adopt_and_protected_reapply() {
             .unwrap();
         assert!(!detail.managed);
         assert_eq!(detail.content, "Use the fixture.\n");
+        assert_eq!(detail.source_scope, "project");
         s = f
             .sot
             .save_imported_skill(&f.checkout_id, &s.snapshot_id, &id, "Edited rule.\n")
@@ -2084,6 +2086,7 @@ fn imported_standalone_skill_can_preview_without_changing_profiles() {
         )
         .unwrap();
     assert!(detail.content.contains("Use the fixture."));
+    assert_eq!(detail.source_scope, "user");
     assert!(!detail.managed);
     let changed = "---\nname: fixture-import\ndescription: Fixture skill import\n---\n# Changed canonical\nExplicit apply only.\n";
     let edited = f

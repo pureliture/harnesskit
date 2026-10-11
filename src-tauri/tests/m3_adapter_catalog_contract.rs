@@ -100,7 +100,7 @@ fn is_lower_hex(value: &str, length: usize) -> bool {
 fn descriptors_qualifications_and_fixture_manifests_are_cryptographically_bound() {
     let catalog = AdapterCatalog::load_embedded().unwrap();
     let expected = [
-        (ToolId::Antigravity, "antigravity", "2.8.1"),
+        (ToolId::Antigravity, "antigravity", "2.19.1"),
         (ToolId::AntigravityCli, "antigravity-cli", "1.1.22"),
         (ToolId::ClaudeCode, "claude-code", "2.1.202"),
         (ToolId::Codex, "codex", "0.150.1"),
@@ -114,6 +114,9 @@ fn descriptors_qualifications_and_fixture_manifests_are_cryptographically_bound(
             adapter.qualification.observed_runtime.tool_version,
             observed_version
         );
+        if tool_id == ToolId::Antigravity {
+            assert_eq!(adapter.descriptor.adapter_version, "1.1.0");
+        }
         assert_eq!(
             adapter.qualification.descriptor_canonical_sha256,
             adapter.descriptor_canonical_sha256

@@ -148,12 +148,20 @@ def _skills_yaml(target_options: dict[str, Any]) -> str:
 
 
 def _strip_frontmatter(text: str) -> str:
-    if not text.startswith("---\n"):
+    lines = text.splitlines(keepends=True)
+    if not lines or lines[0].rstrip("\r\n") != "---":
         return text
-    lines = text.splitlines()
     for index in range(1, len(lines)):
-        if lines[index].strip() == "---":
-            return "\n".join(lines[index + 1 :]).lstrip("\n")
+        if lines[index].rstrip("\r\n") == "---":
+            try:
+                fields = yaml.safe_load("".join(lines[1:index]))
+            except yaml.YAMLError:
+                return text
+            if not isinstance(fields, dict) or not all(
+                isinstance(fields.get(key), str) for key in ("name", "description")
+            ):
+                return text
+            return "".join(lines[index + 1 :]).lstrip("\r\n")
     return text
 
 
@@ -574,7 +582,7 @@ def _context(
         "description": description,
         "description_yaml": _yaml_scalar(description),
         "description_toml": json.dumps(description),
-        "body": body.rstrip(),
+        "body": (_strip_frontmatter(body) if manifest["kind"] == "skill" else body).rstrip(),
         "model": target_model,
         "model_toml_line": model_toml_line,
         "model_yaml_line": model_yaml_line,
@@ -737,7 +745,10 @@ def _render_component(
             output_abs_path = _safe_output_path(output_path, target=target, rel_manifest=rel_manifest)
 
             target_options = (manifest.get("adapter") or {}).get(target) or {}
-            body = body_path.read_text(encoding="utf-8")
+            with body_path.open(
+                encoding="utf-8", newline="" if kind == "skill" else None
+            ) as body_file:
+                body = body_file.read()
             context = _context(manifest, target, target_options, output_path, body)
             if kind == "hook":
                 if target_options.get("imported_hook"):

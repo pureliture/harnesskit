@@ -321,14 +321,15 @@ export function reduceInstallState(state, action) {
     if (state.subject.sotSnapshotId === nextSubject.sotSnapshotId
       && state.subject.componentId === nextSubject.componentId
       && state.form.profileId === profile
-      && state.form.targetId === target) return state;
+      && state.form.targetId === target
+      && (action.scope == null || state.form.scope === action.scope)) return state;
     return createInstallState({
       subject: nextSubject,
       form: {
         profileId: profile,
         targetId: target,
-        scope: state.form.scope,
-        targetRoot: state.form.targetRoot,
+        scope: action.scope ?? state.form.scope,
+        targetRoot: state.form.targetRoot === "import-source" ? "" : state.form.targetRoot,
       },
     });
   }
@@ -346,6 +347,8 @@ export function reduceInstallState(state, action) {
     return createInstallState({
       subject: state.subject,
       form,
+      sourceBinding: form.targetRoot === "import-source" && form.profileId === state.form.profileId
+        && form.scope === state.form.scope ? state.sourceBinding : null,
       message: state.preview ? "입력이 변경되어 기존 preview와 승인이 폐기되었습니다." : "",
     });
   }
@@ -404,6 +407,14 @@ export function reduceInstallState(state, action) {
       replaceManaged: action.replaceManaged === true,
       allowRuntimeHooks: action.allowRuntimeHooks === true,
     };
+  }
+  if (action.type === "cancel_preview" && state.phase === "preview-ready") {
+    return createInstallState({
+      subject: state.subject,
+      form: state.form,
+      sourceBinding: state.sourceBinding,
+      message: "이번 적용을 취소했습니다. 원본 파일은 변경하지 않았습니다.",
+    });
   }
   if (action.type === "keep_managed_source" && state.phase === "preview-ready") {
     return createInstallState({ subject: state.subject, form: state.form, message: "도구 쪽 변경을 유지했습니다. 이번 적용을 취소했습니다." });
