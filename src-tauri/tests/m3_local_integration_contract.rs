@@ -155,6 +155,16 @@ fn malformed_fixture_publishes_partial_snapshot_without_leaking_source_bodies() 
     assert!(!issue_codes.is_empty());
     assert_eq!(publication.snapshot.status, LocalSnapshotStatus::Partial);
     assert!(!publication.snapshot.instances.is_empty());
+    let antigravity_skill = publication
+        .snapshot
+        .instances
+        .iter()
+        .find(|instance| {
+            instance.tool_id == ToolId::Antigravity
+                && instance.stable_source_locator == ".gemini/config/skills/ide/SKILL.md"
+        })
+        .expect("qualified Antigravity 2.19.1 must discover its user skill surface");
+    assert_eq!(antigravity_skill.adapter_version, "1.1.0");
     assert!(publication.snapshot.coverage.iter().any(|coverage| {
         coverage.status == harness_desktop_lib::contexts::local::CoverageStatus::Partial
             && coverage

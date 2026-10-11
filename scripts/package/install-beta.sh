@@ -12,12 +12,12 @@
 # is removed at the end. Tools you installed yourself are never removed.
 set -euo pipefail
 
-TAG="${HARNESSKIT_TAG:-v0.1.0-beta.3}"
+TAG="${HARNESSKIT_TAG:-v0.1.0-beta.4}"
 DMG_NAME="HarnessKit_0.1.0_aarch64.dmg"
 DMG_URL="${HARNESSKIT_DMG_URL:-https://github.com/pureliture/harnesskit/releases/download/${TAG}/${DMG_NAME}}"
-DMG_SHA256="${HARNESSKIT_DMG_SHA256:-d0e3bd1eed8c277f8b08891e8557a5b5cee6dd85dd7ec0b13ba61cc04b5c886a}"
+DMG_SHA256="${HARNESSKIT_DMG_SHA256:-ede3e284f45ae8243cfef89ee54a7f4bad619f69aca151b547ee9e8b579c23fd}"
 REPO_URL="${HARNESSKIT_REPO_URL:-https://github.com/pureliture/harnesskit.git}"
-EXPECTED_SHA="${HARNESSKIT_EXPECTED_SHA:-a5bc523e7c304cdb6dba1c51f10a00a55cc1f76b}"
+EXPECTED_SHA="${HARNESSKIT_EXPECTED_SHA:-}"
 BUNDLE_ID="io.github.pureliture.harnesskit"
 DEST_DIR="${HARNESSKIT_INSTALL_DEST:-/Applications}"
 APP_NAME="HarnessKit.app"
@@ -43,7 +43,8 @@ Usage: install-beta.sh [--check] [--from-source] [--keep-work]
   --keep-work    Keep the temporary folder (for debugging a failure).
 
 Environment: HARNESSKIT_INSTALL_DEST changes the install folder
-(default /Applications).
+(default /Applications). Source builds require HARNESSKIT_EXPECTED_SHA to
+match the exact commit of the selected tag.
 USAGE
 }
 
@@ -178,6 +179,8 @@ prepare_tauri_cli() {
 }
 
 build_from_source() {
+  [ -n "$EXPECTED_SHA" ] \
+    || die "Source builds require HARNESSKIT_EXPECTED_SHA to match the exact commit for $TAG. Nothing was installed."
   log "Downloading source $TAG"
   git clone --quiet --depth 1 --branch "$TAG" "$REPO_URL" "$WORK/src"
   local actual
@@ -260,7 +263,9 @@ main() {
   fi
   verify_app "$NEW_APP"
   install_app
-  log "Done. Open HarnessKit from $DEST_DIR. This app is ad-hoc signed and not notarized by Apple."
+  log "Done. Open HarnessKit from $DEST_DIR. This app is ad-hoc signed; it has no Apple Developer ID signature and is not notarized."
+  log "If macOS blocks the first launch, click Done in the alert, then open System Settings > Privacy & Security > Security and choose Open Anyway for HarnessKit. Confirm the prompt and open the app again."
+  log "This is an app-specific approval and does not disable Gatekeeper. If your organization blocks it, stop and contact your administrator; do not remove quarantine or change global security settings."
 }
 
 main "$@"

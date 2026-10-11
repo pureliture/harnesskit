@@ -111,6 +111,14 @@ function safeOperationError(operation, error) {
     return "Public HarnessKit clone에 실패했습니다. 네트워크와 app data directory 상태를 확인하세요.";
   }
   if (operation === "preview") {
+    const code = typeof error === "string" ? error : error?.code ?? message;
+    const guidance = {
+      management_source_handle_required: "가져온 컴포넌트는 연결된 원본에 적용합니다. 원본을 다시 열어 편집·저장한 뒤 미리보기를 만드세요. 적용 경로를 직접 바꾸지 마세요.",
+      management_record_invalid: "가져온 원본의 Scope 또는 출처 연결을 확인하지 못했습니다. 원본을 다시 열어 출처를 확인하세요. 원본 파일은 변경하지 않았습니다.",
+      management_destination_collision: "같은 원본 파일을 관리하는 다른 컴포넌트가 있습니다. 중복 관리 연결을 확인하세요. 원본 파일은 변경하지 않았습니다.",
+      sot_snapshot_stale: "SoT가 변경되어 이전 선택을 사용할 수 없습니다. 목록을 새로 고치고 다시 미리보기를 만드세요.",
+    };
+    if (guidance[code]) return guidance[code];
     return "Install preview를 만들지 못했습니다. 입력값과 checkout 상태를 확인한 뒤 다시 시도하세요.";
   }
   return "Install 응답을 받지 못했습니다. 일부 변경이 남았을 수 있습니다. 대상 상태를 확인하세요.";
@@ -1751,6 +1759,7 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
         componentId: sotView.selectedComponentId,
         profileId: installProfileId(component, sotView.activeProfileId),
         targetId: firstTargetId(component),
+        scope: firstTargetId(component) === "project" ? "project" : undefined,
       });
       if (install !== state.install) installGeneration += 1;
       state = {
@@ -1948,6 +1957,13 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
     });
 
     shell?.addEventListener("click", (event) => {
+      if (event.target.closest?.("[data-cancel-install-preview]")) {
+        if (state.install.phase === "preview-ready") {
+          installGeneration += 1;
+          commitInstall(reduceInstallState(state.install, { type: "cancel_preview" }));
+        }
+        return;
+      }
       if (event.target.closest?.("[data-keep-managed-source]")) {
         if (state.install.phase === "preview-ready") {
           installGeneration += 1;
@@ -1975,7 +1991,7 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
         void Promise.resolve(backend.saveImportedSkill({ ...editor.binding, content: editor.content, document: editor.document })).then(snapshot => {
           if (destroyed || state.importedSkillEditor?.binding !== editor.binding) return;
           installGeneration += 1;
-          update({ ...state, importedSkillEditor: null, sot: { ...state.sot, snapshot, installEvidenceId: null }, install: createInstallState({ subject: { sotSnapshotId: snapshot.snapshot_id, componentId: editor.binding.componentId }, form: { ...state.install.form, profileId: `component:${editor.binding.componentId}`, targetRoot: "import-source" } }) });
+          update({ ...state, importedSkillEditor: null, sot: { ...state.sot, snapshot, installEvidenceId: null }, install: createInstallState({ subject: { sotSnapshotId: snapshot.snapshot_id, componentId: editor.binding.componentId }, sourceBinding: { scope: editor.sourceScope, locator: editor.sourceLocator }, form: { ...state.install.form, scope: editor.sourceScope ?? state.install.form.scope, profileId: `component:${editor.binding.componentId}`, targetRoot: "import-source" } }) });
         }).catch(error => { if (state.importedSkillEditor?.binding === editor.binding) update({ ...state, importedSkillEditor: { ...editor, busy: false, message: `저장 결과를 확인하세요: ${error?.code ?? error}` } }); });
         return;
       }

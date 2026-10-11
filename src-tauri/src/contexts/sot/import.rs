@@ -35,6 +35,7 @@ pub(crate) struct ImportedSkillDetail {
     pub content: String,
     pub managed: bool,
     pub source_locator: String,
+    pub source_scope: String,
     pub documents: Vec<ImportedDocument>,
 }
 #[derive(Serialize)]
@@ -97,6 +98,68 @@ pub(crate) struct ImportConfirmation {
 }
 fn digest(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
+}
+
+fn registry_with_component_entry(
+    registry_before: &[u8],
+    expected_registry: &serde_yaml::Value,
+    component_id: &str,
+    kind: &str,
+    directory: &str,
+) -> Result<Vec<u8>, String> {
+    let text = std::str::from_utf8(registry_before).map_err(|_| "import_registry_invalid")?;
+    if text
+        .lines()
+        .any(|line| matches!(line.trim(), "---" | "..."))
+    {
+        return Err("import_registry_shape_unsupported".into());
+    }
+
+    let mut components_found = false;
+    let mut insertion_offset = text.len();
+    let mut offset = 0;
+    for raw_line in text.split_inclusive('\n') {
+        let line = raw_line.trim_end_matches(|character| character == '\r' || character == '\n');
+        let root_line = !line.starts_with(' ') && !line.starts_with('\t');
+        if !components_found {
+            if root_line {
+                let key = line
+                    .split_once('#')
+                    .map_or(line, |(before_comment, _)| before_comment);
+                if key.trim() == "components:" {
+                    components_found = true;
+                }
+            }
+        } else {
+            let trimmed = line.trim();
+            if root_line && !trimmed.is_empty() && !trimmed.starts_with('#') {
+                insertion_offset = offset;
+                break;
+            }
+        }
+        offset += raw_line.len();
+    }
+    if !components_found {
+        return Err("import_registry_shape_unsupported".into());
+    }
+
+    let line_ending = if text.contains("\r\n") { "\r\n" } else { "\n" };
+    let needs_line_ending = insertion_offset > 0 && !text[..insertion_offset].ends_with('\n');
+    let prefix = if needs_line_ending { line_ending } else { "" };
+    let entry = format!(
+        "{prefix}  {component_id}:{line_ending}    kind: {kind}{line_ending}    status: draft{line_ending}    path: {directory}/component.yml{line_ending}"
+    );
+    let mut registry_after = Vec::with_capacity(registry_before.len() + entry.len());
+    registry_after.extend_from_slice(&registry_before[..insertion_offset]);
+    registry_after.extend_from_slice(entry.as_bytes());
+    registry_after.extend_from_slice(&registry_before[insertion_offset..]);
+
+    let reparsed: serde_yaml::Value =
+        serde_yaml::from_slice(&registry_after).map_err(|_| "import_registry_invalid")?;
+    if &reparsed != expected_registry {
+        return Err("import_registry_shape_unsupported".into());
+    }
+    Ok(registry_after)
 }
 
 // Standard metadata is retained on its source target; Claude extensions are not
@@ -605,23 +668,15 @@ pub(super) fn prepare(
         )
         .unwrap(),
     );
-    // Keep all existing registry comments, ordering and bytes; add one root mapping entry.
-    let registry_text =
-        std::str::from_utf8(&registry_before).map_err(|_| "import_registry_invalid")?;
-    if registry_text
-        .lines()
-        .any(|line| matches!(line.trim(), "---" | "..."))
-    {
-        return Err("import_registry_shape_unsupported".into());
-    }
-    let entry = format!("\n  {component_id}:\n    kind: {kind}\n    status: draft\n    path: {directory}/component.yml\n");
-    let mut registry_after = registry_before.clone();
-    registry_after.extend_from_slice(entry.as_bytes());
-    let reparsed: serde_yaml::Value =
-        serde_yaml::from_slice(&registry_after).map_err(|_| "import_registry_invalid")?;
-    if reparsed != registry {
-        return Err("import_registry_shape_unsupported".into());
-    }
+    // Preserve the source bytes while inserting inside the components mapping,
+    // even when the public projection places root metadata after that mapping.
+    let registry_after = registry_with_component_entry(
+        &registry_before,
+        &registry,
+        &component_id,
+        kind,
+        &directory,
+    )?;
     let checkout_revision = SourceRevisionManifest::observe_root(root)
         .map_err(|e| e.code())?
         .sha256();
@@ -896,14 +951,13 @@ fn prepare_rule(
         )
         .unwrap(),
     );
-    let mut registry_after = registry_before.clone();
-    registry_after.extend_from_slice(format!("\n  {component_id}:\n    kind: rule\n    status: draft\n    path: {directory}/component.yml\n").as_bytes());
-    if serde_yaml::from_slice::<serde_yaml::Value>(&registry_after)
-        .map_err(|_| "import_registry_invalid")?
-        != registry
-    {
-        return Err("import_registry_shape_unsupported".into());
-    }
+    let registry_after = registry_with_component_entry(
+        &registry_before,
+        &registry,
+        &component_id,
+        "rule",
+        &directory,
+    )?;
     let checkout_revision = SourceRevisionManifest::observe_root(root)
         .map_err(|e| e.code())?
         .sha256();
@@ -1049,14 +1103,13 @@ fn prepare_hook(
         )
         .unwrap(),
     );
-    let mut registry_after = registry_before.clone();
-    registry_after.extend_from_slice(format!("\n  {component_id}:\n    kind: hook\n    status: draft\n    path: {directory}/component.yml\n").as_bytes());
-    if serde_yaml::from_slice::<serde_yaml::Value>(&registry_after)
-        .map_err(|_| "import_registry_invalid")?
-        != registry
-    {
-        return Err("import_registry_shape_unsupported".into());
-    }
+    let registry_after = registry_with_component_entry(
+        &registry_before,
+        &registry,
+        &component_id,
+        "hook",
+        &directory,
+    )?;
     let checkout_revision = SourceRevisionManifest::observe_root(root)
         .map_err(|e| e.code())?
         .sha256();
@@ -1327,4 +1380,47 @@ pub(super) fn private_link_payload(
         before,
         serde_json::to_vec(&links).map_err(|_| "import_private_state_invalid")?,
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::registry_with_component_entry;
+
+    #[test]
+    fn registry_entry_is_inserted_before_later_root_metadata() {
+        let before = b"# Public registry\ncomponents:\n  harnesskit.skill.existing:\n    kind: skill\n    status: draft\n    path: components/skills/existing/component.yml\nversion: '1'\n# Keep this comment\n";
+        let mut expected: serde_yaml::Value = serde_yaml::from_slice(before).unwrap();
+        expected
+            .get_mut("components")
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap()
+            .insert(
+                serde_yaml::Value::String("harnesskit.skill.imported".into()),
+                serde_yaml::from_str(
+                    "kind: skill\nstatus: draft\npath: components/skills/imported/component.yml\n",
+                )
+                .unwrap(),
+            );
+
+        let after = registry_with_component_entry(
+            before,
+            &expected,
+            "harnesskit.skill.imported",
+            "skill",
+            "components/skills/imported",
+        )
+        .unwrap();
+        let after_text = std::str::from_utf8(&after).unwrap();
+        let component_offset = after_text.find("harnesskit.skill.imported:").unwrap();
+        let version_offset = after_text.find("version: '1'").unwrap();
+
+        assert!(component_offset < version_offset);
+        assert!(after_text.contains("# Public registry"));
+        assert!(after_text.contains("# Keep this comment"));
+        assert_eq!(
+            serde_yaml::from_slice::<serde_yaml::Value>(&after).unwrap(),
+            expected
+        );
+    }
 }

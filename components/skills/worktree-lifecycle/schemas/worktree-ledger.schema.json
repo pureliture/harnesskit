@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/pureliture/harnesskit/main/components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json",
+  "title": "Worktree Lifecycle Ledger Record",
+  "description": "Tool-neutral local handoff/cache record for a single worktree lifecycle task. Git truth remains authoritative.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "([Ss][Ee][Cc][Rr][Ee][Tt]|[Cc][Rr][Ee][Dd][Ee][Nn][Tt][Ii][Aa][Ll]|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]|[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]|[Aa][Cc][Cc][Ee][Ss][Ss][_-]?[Kk][Ee][Yy]|[Pp][Rr][Ii][Vv][Aa][Tt][Ee][_-]?[Kk][Ee][Yy]|[Rr][Aa][Ww][ _-]?[Ee][Nn][Vv]|[Ee][Nn][Vv][Ii][Rr][Oo][Nn][Mm][Ee][Nn][Tt][ _-]?[Dd][Uu][Mm][Pp]|[Rr][Aa][Ww][ _-]?[Cc][Oo][Mm][Mm][Aa][Nn][Dd]|[Cc][Oo][Mm][Mm][Aa][Nn][Dd][ _-]?[Ll][Oo][Gg]|[Rr][Aa][Ww][ _-]?[Ll][Oo][Gg])"
+    }
+  },
+  "$defs": {
+    "secretLikeValue": {
+      "type": "string",
+      "pattern": "([Ss][Ee][Cc][Rr][Ee][Tt]|[Cc][Rr][Ee][Dd][Ee][Nn][Tt][Ii][Aa][Ll]|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]|[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]|[Aa][Cc][Cc][Ee][Ss][Ss][_-]?[Kk][Ee][Yy]|[Pp][Rr][Ii][Vv][Aa][Tt][Ee][_-]?[Kk][Ee][Yy]|[Rr][Aa][Ww][ _-]?[Ee][Nn][Vv]|[Ee][Nn][Vv][Ii][Rr][Oo][Nn][Mm][Ee][Nn][Tt][ _-]?[Dd][Uu][Mm][Pp]|[Rr][Aa][Ww][ _-]?[Cc][Oo][Mm][Mm][Aa][Nn][Dd]|[Cc][Oo][Mm][Mm][Aa][Nn][Dd][ _-]?[Ll][Oo][Gg]|[Rr][Aa][Ww][ _-]?[Ll][Oo][Gg]|://[^\\s/@]+:[^\\s/@]+@)"
+    }
+  },
+  "required": [
+    "ledger_schema_version",
+    "record_version",
+    "updated_at",
+    "task_id",
+    "repository_root",
+    "worktree_path",
+    "branch_name",
+    "base_branch",
+    "owner_tool",
+    "lifecycle_state",
+    "last_observed_head",
+    "last_verified_at",
+    "last_verified_head",
+    "writer_tool",
+    "writer_session",
+    "handoff_note"
+  ],
+  "properties": {
+    "ledger_schema_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "record_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "repository_root": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "worktree_path": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "branch_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 250,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 250,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "owner_tool": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "lifecycle_state": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "handoff",
+        "blocked",
+        "ready_to_merge",
+        "merged",
+        "cleanup_candidate",
+        "abandoned"
+      ]
+    },
+    "last_observed_head": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{7,40}$"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_head": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{7,40}$"
+    },
+    "writer_tool": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "writer_session": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "handoff_note": {
+      "type": "string",
+      "maxLength": 4000,
+      "not": {
+        "$ref": "#/$defs/secretLikeValue"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "dirty_source_checkout",
+          "detached_head",
+          "missing_worktree",
+          "missing_branch",
+          "divergent_branch",
+          "failed_ancestry_check",
+          "stale_ledger",
+          "write_conflict",
+          "unmerged_commits",
+          "dirty_task_worktree",
+          "missing_version_token"
+        ]
+      },
+      "default": []
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status_checked",
+        "worktree_list_checked",
+        "ancestry_checked",
+        "worktrees_ignored_checked"
+      ],
+      "properties": {
+        "status_checked": {
+          "type": "boolean"
+        },
+        "worktree_list_checked": {
+          "type": "boolean"
+        },
+        "ancestry_checked": {
+          "type": "boolean"
+        },
+        "worktrees_ignored_checked": {
+          "type": "boolean"
+        },
+        "ancestry_result": {
+          "type": "string",
+          "enum": [
+            "merged",
+            "not_merged",
+            "not_applicable",
+            "failed"
+          ]
+        }
+      }
+    },
+    "write_conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed_record_version",
+        "attempted_record_version",
+        "decision"
+      ],
+      "properties": {
+        "observed_record_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "attempted_record_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "blocked",
+            "handoff"
+          ]
+        }
+      }
+    },
+    "tool_metadata": {
+      "type": "object",
+      "description": "Optional tool-specific extension data. Must not override canonical fields or contain secrets.",
+      "propertyNames": {
+        "not": {
+          "pattern": "([Ss][Ee][Cc][Rr][Ee][Tt]|[Cc][Rr][Ee][Dd][Ee][Nn][Tt][Ii][Aa][Ll]|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]|[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]|[Aa][Cc][Cc][Ee][Ss][Ss][_-]?[Kk][Ee][Yy]|[Pp][Rr][Ii][Vv][Aa][Tt][Ee][_-]?[Kk][Ee][Yy]|[Rr][Aa][Ww][ _-]?[Ee][Nn][Vv]|[Ee][Nn][Vv][Ii][Rr][Oo][Nn][Mm][Ee][Nn][Tt][ _-]?[Dd][Uu][Mm][Pp]|[Rr][Aa][Ww][ _-]?[Cc][Oo][Mm][Mm][Aa][Nn][Dd]|[Cc][Oo][Mm][Mm][Aa][Nn][Dd][ _-]?[Ll][Oo][Gg]|[Rr][Aa][Ww][ _-]?[Ll][Oo][Gg])"
+        }
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "not": {
+              "$ref": "#/$defs/secretLikeValue"
+            }
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lifecycle_state": {
+            "const": "cleanup_candidate"
+          }
+        },
+        "required": [
+          "lifecycle_state"
+        ]
+      },
+      "then": {
+        "required": [
+          "verification"
+        ],
+        "properties": {
+          "risks": {
+            "maxItems": 0
+          },
+          "verification": {
+            "required": [
+              "status_checked",
+              "worktree_list_checked",
+              "ancestry_checked",
+              "worktrees_ignored_checked",
+              "ancestry_result"
+            ],
+            "properties": {
+              "status_checked": {
+                "const": true
+              },
+              "worktree_list_checked": {
+                "const": true
+              },
+              "ancestry_checked": {
+                "const": true
+              },
+              "worktrees_ignored_checked": {
+                "const": true
+              },
+              "ancestry_result": {
+                "const": "merged"
+              }
+            }
+          }
+        },
+        "not": {
+          "required": [
+            "write_conflict"
+          ]
+        }
+      }
+    }
+  ]
+}

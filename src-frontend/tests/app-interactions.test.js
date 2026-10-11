@@ -1525,7 +1525,7 @@ test("support document selection edit reaches file-listed adoption apply", async
   const app = mountApp(root, {
     async getSotSessionState() { return { checkout_id: "checkout-import" }; },
     async loadSotSnapshot() { return imported; },
-    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".claude/skills/fixture-support/SKILL.md", documents: [{ path: "references/guide.md", content: "Original guide", managed: false }] }; },
+    async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: ".claude/skills/fixture-support/SKILL.md", sourceScope: "project", documents: [{ path: "references/guide.md", content: "Original guide", managed: false }] }; },
     async saveImportedSkill(r) { saved++; assert.equal(r.document, "references/guide.md"); assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
     async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "claude", destination: ".claude/settings.json" }] }; },
     async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "claude", destination: ".claude/settings.json", applyState: "changed", verifyState: "verified" }] }; },
@@ -1543,7 +1543,14 @@ test("support document selection edit reaches file-listed adoption apply", async
   await flushMicrotasks(24);
   assert.equal(saved, 1);
   assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
-  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "user", targetId: "claude", targetRoot: "import-source" }) });
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "project", targetId: "claude", targetRoot: "import-source" }) });
+  await flushMicrotasks(24);
+  root.shell.dispatch("click", { target: delegatedTarget("[data-cancel-install-preview]", {}) });
+  assert.equal(app.getState().install.preview, null);
+  assert.equal(app.getState().install.sourceBinding.scope, "project");
+  assert.equal(app.getState().install.message, "이번 적용을 취소했습니다. 원본 파일은 변경하지 않았습니다.");
+  assert.equal(applied, 0, "canceling the preview never calls applyInstall");
+  root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "project", targetId: "claude", targetRoot: "import-source" }) });
   await flushMicrotasks(24);
   root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
   root.shell.dispatch("change", { target: approvalTarget("overwrite", true) });
@@ -1660,7 +1667,7 @@ test("project rule body edit reaches handle-bound adoption apply", async () => {
     const app = mountApp(root, {
       async getSotSessionState() { return { checkout_id: "checkout-import" }; },
       async loadSotSnapshot() { return imported; },
-      async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceLocator: "AGENTS.md" }; },
+      async readImportedSkill(r) { assert.equal(r.componentId, id); return { content: "# Original canonical", managed: false, sourceScope: "project", sourceLocator: "AGENTS.md" }; },
       async saveImportedSkill(r) { saved++; assert.equal(r.content, "# Edited canonical"); assert.equal(r.sourcePath, undefined); return { ...imported, snapshot_id: "edited" }; },
       async previewInstall(r) { assert.equal(r.profileId, `component:${id}`); assert.equal(r.targetRoot, "import-source"); return { previewId: "adoption-review", fingerprint: "a".repeat(64), ...r, requiredApprovals: { overwrite: true, managementAdoption: true }, components: [id], artifacts: [{ componentId: id, target: "project", destination: "AGENTS.md" }] }; },
       async applyInstall(r) { applied++; assert.equal(r.approvals.adoptManagement, true); return { status: "complete", installEvidenceId: "verified", destinations: [{ target: "project", destination: "AGENTS.md", applyState: "changed", verifyState: "verified" }] }; },
@@ -1676,6 +1683,8 @@ test("project rule body edit reaches handle-bound adoption apply", async () => {
     await flushMicrotasks(24);
     assert.equal(saved, 1);
     assert.equal(app.getState().sot.snapshot.snapshot_id, "edited");
+    assert.equal(app.getState().install.form.scope, "project");
+    assert.equal(app.getState().install.sourceBinding.locator, "AGENTS.md");
     root.shell.dispatch("submit", { target: installForm({ profileId: `component:${id}`, scope: "project", targetId: "project", targetRoot: "import-source" }) });
     await flushMicrotasks(24);
     root.shell.dispatch("change", { target: approvalTarget("confirmed", true) });
@@ -1735,6 +1744,25 @@ test("imported unprofiled canonical edit reaches preview and explicit adoption a
   root.shell.dispatch("keydown", { key: "Escape", target: delegatedTarget("[data-cancel-imported-skill]", {}) });
   assert.equal(app.getState().importedSkillEditor, null, "Escape closes the canonical editor");
   app.destroy();
+});
+
+test("known import preview failures explain recovery without exposing backend details", async () => {
+  for (const error of ["management_source_handle_required", { code: "management_record_invalid" }]) {
+    const root = createMountRoot();
+    const app = mountApp(root, {
+      async getSotSessionState() { return { checkout_id: "checkout-import" }; },
+      async loadSotSnapshot() { return snapshot; },
+      async previewInstall() { throw error; },
+    });
+    await flushMicrotasks(24);
+    root.shell.dispatch("click", { target: delegatedTarget("[data-component-id]", { componentId: "harnesskit.skill.beta" }) });
+    root.shell.dispatch("submit", { target: installForm({ profileId: "component:harnesskit.skill.beta", scope: "project", targetId: "codex", targetRoot: "invalid-root" }) });
+    await flushMicrotasks(24);
+    assert.equal(app.getState().install.phase, "error");
+    assert.match(app.getState().install.message, /가져온.*원본/);
+    assert.doesNotMatch(app.getState().install.message, /management_/);
+    app.destroy();
+  }
 });
 
 test("imported canonical validation error can be corrected and saved without reopening", async () => {

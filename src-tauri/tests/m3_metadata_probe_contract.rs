@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use harness_desktop_lib::contexts::local::{
     collect_metadata_observations, evaluate_metadata_probe, AdapterCatalog,
-    MetadataProbeFilesystem, MetadataProbeOutcome, ToolId,
+    MetadataProbeFilesystem, MetadataProbeObservation, MetadataProbeOutcome, ToolId,
 };
 use tempfile::tempdir;
 
@@ -51,7 +51,7 @@ fn compiled_probes_read_exact_local_metadata_without_executing_tools() {
         applications.join("Antigravity.app/Contents/Info.plist"),
         r#"<?xml version="1.0" encoding="UTF-8"?>
         <plist version="1.0"><dict>
-          <key>CFBundleShortVersionString</key><string>2.8.1</string>
+          <key>CFBundleShortVersionString</key><string>2.19.1</string>
         </dict></plist>"#,
     );
     write(
@@ -70,7 +70,7 @@ fn compiled_probes_read_exact_local_metadata_without_executing_tools() {
 
     for (tool, expected) in [
         (ToolId::Codex, "0.150.1"),
-        (ToolId::Antigravity, "2.8.1"),
+        (ToolId::Antigravity, "2.19.1"),
         (ToolId::Hermes, "0.20.6"),
     ] {
         let adapter = catalog
@@ -85,6 +85,21 @@ fn compiled_probes_read_exact_local_metadata_without_executing_tools() {
             }
         );
     }
+    let antigravity = catalog.for_tool(ToolId::Antigravity).unwrap();
+    assert_eq!(
+        evaluate_metadata_probe(
+            antigravity,
+            &MetadataProbeObservation {
+                install_metadata_present: true,
+                declared_surface_present: true,
+                observed_tool_version: Some("2.8.1".to_string()),
+                observed_schema_digest: None,
+            },
+        ),
+        MetadataProbeOutcome::Unavailable {
+            reason: "version_mismatch"
+        }
+    );
     let claude = catalog.for_tool(ToolId::ClaudeCode).unwrap();
     assert_eq!(
         evaluate_metadata_probe(claude, observations.get(&ToolId::ClaudeCode).unwrap()),

@@ -3,11 +3,20 @@ source_profile: harnesskit.profile.harness-maintenance
 source_profile_path: profiles/harness-maintenance.yml
 public_workflows:
   - harnesskit.workflow.harness-creation
+public_components:
+  - harnesskit.skill.intent-guide
+  - harnesskit.skill.wayfinder
+  - harnesskit.skill.grill
+  - harnesskit.skill.grill-to-spec
+  - harnesskit.skill.agentic-execution
+  - harnesskit.skill.worktree-lifecycle
 registry_path: components/registry.yml
 policy:
-  closure: profile_components_plus_project_scope_components_plus_explicit_workflows
+  closure: profile_components_plus_project_scope_components_plus_explicit_components_plus_explicit_workflows
   manual_file_copying: prohibited
   content_writes: prohibited
+  content_write_exceptions:
+    components/registry.yml: selected_component_closure
 support_paths:
   - README.md
   - docs/images/*.svg
@@ -18,14 +27,24 @@ support_paths:
   - schemas/*.json
   - sources/*.md
   - sources/*.yml
+  - assets/branding/**
+  - assets/legal/**
+  - assets/packaging/**
+  - assets/tool-identities/**
   - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
   - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
   - publish/harnesskit.yml
+  - publish/public-port.yml
+  - publish/public-sanitation-allowlist.yml
   - adapters/claude/adapter.yml
   - adapters/claude/templates/*.hbs
   - adapters/project/adapter.yml
   - adapters/codex/adapter.yml
   - adapters/codex/templates/*.hbs
+  - adapters/antigravity-cli/adapter.yml
+  - adapters/antigravity/adapter.yml
+  - adapters/antigravity/templates/skill.hbs
+  - adapters/antigravity-cli/templates/skill.hbs
   - scripts/adapters/__init__.py
   - scripts/adapters/api.py
   - scripts/adapters/build.py
@@ -35,12 +54,31 @@ support_paths:
   - scripts/projection/*.py
   - scripts/authoring/*.py
   - scripts/authoring/commands/*.py
+  - scripts/package/*.py
+  - scripts/package/*.sh
+  - src-frontend/**
+  - src-tauri/**
+  - tests/install/**
+  - tests/projection/**
   - .github/workflows/projection-artifact.yml
 excluded_patterns:
   - profiles/engineering.yml
+  - profiles/development.yml
+  - profiles/scm.yml
+  - profiles/work.yml
   - profiles/minimal.yml
   - .codex/specs/**
   - docs/runtime-evidence/**
+  - src-frontend/node_modules/**
+  - src-frontend/assets/tool-identities/**
+  - src-frontend/.vite/**
+  - src-tauri/target/**
+  - src-tauri/gen/schemas/**
+  - tests/**/__pycache__/**
+  - tests/**/.pytest_cache/**
+  - src-frontend/tests/ai-explanation.test.js
+  - src-frontend/tests/local-view.test.js
+  - tests/projection/test_publish_manifest.py
   - dist/**
   - .harnesskit/optimal-response-out/**
   - .harnesskit/work/**

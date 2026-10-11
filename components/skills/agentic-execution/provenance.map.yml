@@ -1,0 +1,48 @@
+component_id: harnesskit.skill.agentic-execution
+provenance:
+  mode: rewritten
+  source_mode: local
+  runtime_dependency_on_sources: false
+  runtime_support_claimed: false
+  sources:
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'This is an owned local rewrite from the approved 2026-07-21 contract,
+    its blueprint, and a synthetic paired dataset. Earlier Agentic procedures and
+    VC-02 material are retained only as migration history: no external prose, fixed
+    mode, mandatory delegation record, universal TDD loop, or high-risk review policy
+    is copied or remains current behavior.
+
+    '
+  license_notes:
+  - All current behavior authority is repository-local.
+  - No third-party prose is copied into the canonical body.
+  copied_sections: []
+  adapted_sections:
+  - explicit implementation-authority admission
+  - observed-fact amendment comparison and smallest-solution boundary
+  - simple long-run state and honest completion boundary
+  new_sections:
+  - autonomous requirements-preserving amendment authority
+  - explicit paired-contract selection and direct-operation exclusion
+  excluded_influences:
+  - fixed token-efficient/normal/max mode matrix
+  - mandatory delegation decision record or single-executor justification
+  - universal TDD-first, review, worktree, or evidence-taxonomy procedure
+  - internal high-risk review ownership or a review runner
+  - generic default selection, hidden contract switching, or a routing core
+  - runtime discovery, installation, target dispatch, or support claim
+  review_triggers:
+  - condition: agentic_guided_execution_requirements_or_blueprint_changed
+    action: Recheck explicit authority, autonomous amendment, and AGE-01 boundaries.
+    severity: high
+  - condition: selected_execution_owner_contract_changed
+    action: Recheck only the handoff reference; do not copy TDD, review, worktree,
+      or operation procedures.
+    severity: medium
+  - condition: target_adapter_changed
+    action: Rebuild and review only declared Claude, Codex, and Antigravity static
+      outputs.
+    severity: medium

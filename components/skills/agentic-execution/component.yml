@@ -1,0 +1,44 @@
+component_id: harnesskit.skill.agentic-execution
+kind: skill
+status: draft
+domain: core
+title: Agentic Execution
+summary: '승인된 요구사항·설계와 최신 구현 허락 뒤 사용자가 명시적으로 선택한 장기 구현 계약이다. 관찰된 차단 요인이 요구사항을 보존하는
+  설계 수정을 요구할 때만 가장 작은 대안을 결정하고 기록할 수 있으며, 운영·작은 직접 수정·권한 경계·강제 TDD/위임/검토·런타임 주장은 소유하지
+  않는다.
+
+  '
+source_refs:
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/agentic-execution/component.yml
+- components/skills/agentic-execution/SKILL.md
+- components/skills/agentic-execution/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/agentic-execution/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/agentic-execution/SKILL.md
+  antigravity-cli:
+    output_path: dist/antigravity-cli/.agents/skills/agentic-execution/SKILL.md
+  antigravity:
+    output_path: dist/antigravity/.agents/skills/agentic-execution/SKILL.md
+entrypoints:
+  natural_language:
+    examples:
+    - agentic-execution으로 이 승인된 goal을 구현해줘
+    - 설계 변경도 requirements 안에서 자율 결정하는 계약으로 진행해줘
+routine_harness:
+  phase: adapter-authoring
+  upstream_phase: component-authoring
+  slice_id: AGE-01-paired-explicit-execution-authority
+  active_profile_selection: unchanged_engineering_selection
+  adapter_output_authoring_in_scope: true
+  live_runtime_probe_in_scope: false
+  runtime_gate_required: true
+  runtime_support_claimed: false
+  strict_runtime_truth: true
+provenance_mode: rewritten

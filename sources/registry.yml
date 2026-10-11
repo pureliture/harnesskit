@@ -60,6 +60,14 @@ sources:
     tags: [harnesskit, evaluation, blueprint]
     active_snapshot: null
 
+  harnesskit-public-skill-provenance:
+    kind: repository_local
+    path: sources/public-component-provenance.md
+    description: "Public provenance note for explicitly selected standalone skills"
+    license_hint: repository-local
+    tags: [harnesskit, public-projection, provenance]
+    active_snapshot: null
+
   harness-evaluation-local-reference:
     kind: repository_local
     path: sources/harness-evaluation-reference.yml

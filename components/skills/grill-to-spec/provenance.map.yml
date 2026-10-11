@@ -1,0 +1,57 @@
+component_id: harnesskit.skill.grill-to-spec
+provenance:
+  mode: adapted
+  source_mode: user_supplied_refs
+  runtime_dependency_on_sources: false
+  runtime_support_claimed: false
+  sources:
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'This is an owned, compact reconstruction from approved local
+    requirements, blueprint, completed Grill canonical, and a synthetic document-boundary
+    dataset. It does not copy upstream prose, legacy routing behavior, model output,
+    or runtime behavior.
+
+    '
+  license_notes:
+  - Approved local requirements, blueprint, and Grill canonical are repository-local
+    authority.
+  - The dataset is synthetic and contains no private runtime data or copied source
+    text.
+  - No third-party text is copied into the canonical body.
+  copied_sections: []
+  adapted_sections:
+  - fixed Grill composition
+  - document draft and per-document approval boundary
+  - source-of-truth and non-execution boundary
+  new_sections:
+  - explicit unavailable-Grill return without reimplementing clarification
+  - document type or location must be explicitly requested
+  - Codex build-only target boundary
+  excluded_influences:
+  - entry routing, owner catalog, recommendation, and anti-loop state
+  - fact lookup, solution comparison, user questioning, and Wayfinder mapping
+  - custom-implementation preflight and overengineering judgment
+  - mandatory requirements-to-design phase machine
+  - TDD, test portfolio, delegation, milestones, implementation, and operations execution
+  - frontier rounds, 42-case evaluator protocol, renderer, preview server, and browser
+    procedure
+  - new profile, adapter, installer, hook, compatibility path, or future platform
+  review_triggers:
+  - condition: layered_requirements_or_grill_canonical_changed
+    action: Recheck fixed composition, document-only, and terminal-return boundaries.
+    severity: high
+  - condition: document_wrapper_blueprint_or_dataset_changed
+    action: Recheck GTS-02 scope and distinct-risk coverage without restoring legacy
+      routing cases.
+    severity: high
+  - condition: codex_adapter_or_distribution_requested
+    action: Require separate adapter-authoring evidence before changing build-only
+      or composition availability claims.
+    severity: high
+  - condition: legacy_retirement_requested
+    action: Require replacement-slice evidence and coordinated Intent Guide and Wayfinder
+      review before deleting shared historical artifacts.
+    severity: high

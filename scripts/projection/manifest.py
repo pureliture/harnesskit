@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -27,6 +28,139 @@ KIND_PLURALS = {
 COMPONENT_REFERENCE_RE = re.compile(
     r"\bharnesskit\.(?:skill|agent|hook|rule|command|workflow)\.[A-Za-z0-9][A-Za-z0-9._-]*\b"
 )
+
+
+def registry_projection_bytes(projection: dict[str, Any] | None) -> bytes | None:
+    """Validate the single approved generated file before reporting or writing it."""
+    if projection is None:
+        return None
+    if not isinstance(projection, dict) or set(projection) != {"path", "content", "sha256"}:
+        raise ValueError("invalid registry_projection fields")
+    if projection["path"] != "components/registry.yml":
+        raise ValueError("registry_projection requires components/registry.yml")
+    if not isinstance(projection["content"], str):
+        raise ValueError("registry_projection content must be text")
+    data = projection["content"].encode("utf-8")
+    if hashlib.sha256(data).hexdigest() != projection["sha256"]:
+        raise ValueError("registry_projection sha256 mismatch")
+    return data
+
+
+PUBLIC_COMPONENT_PROVENANCE_SOURCE_ID = "harnesskit-public-skill-provenance"
+PUBLIC_COMPONENT_PROVENANCE_SOURCE_PATH = "sources/public-component-provenance.md"
+
+
+def public_metadata_projection_bytes(
+    projections: list[dict[str, Any]] | None,
+) -> dict[str, bytes]:
+    """Validate deterministic safe-metadata overlays for explicitly published skills."""
+    if projections is None:
+        return {}
+    if not isinstance(projections, list):
+        raise ValueError("public_metadata_projections must be a list")
+    result: dict[str, bytes] = {}
+    for projection in projections:
+        if not isinstance(projection, dict) or set(projection) != {"path", "content", "sha256"}:
+            raise ValueError("invalid public metadata projection fields")
+        path = projection["path"]
+        if (
+            not isinstance(path, str)
+            or not path
+            or Path(path).is_absolute()
+            or ".." in Path(path).parts
+            or "\\" in path
+        ):
+            raise ValueError("public metadata projection path must be repo-relative")
+        if path in result:
+            raise ValueError(f"duplicate public metadata projection path: {path}")
+        if not isinstance(projection["content"], str):
+            raise ValueError("public metadata projection content must be text")
+        data = projection["content"].encode("utf-8")
+        if hashlib.sha256(data).hexdigest() != projection["sha256"]:
+            raise ValueError(f"public metadata projection sha256 mismatch: {path}")
+        result[path] = data
+    return result
+
+
+def _public_source_refs(
+    refs: object,
+    source_registry: dict[str, Any],
+    included_paths: set[str],
+) -> list[dict[str, Any]]:
+    if refs is None:
+        refs = []
+    if not isinstance(refs, list) or not all(isinstance(ref, dict) for ref in refs):
+        raise ValueError("public skill source references must be a list of mappings")
+
+    public_refs: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for ref in refs:
+        source_id = ref.get("source_id")
+        source = source_registry.get(source_id) if isinstance(source_id, str) else None
+        if not isinstance(source, dict):
+            continue
+        if source.get("kind") == "repository_local":
+            source_path = source.get("path")
+            if not isinstance(source_path, str) or source_path not in included_paths:
+                continue
+        if source_id not in seen:
+            public_refs.append(ref)
+            seen.add(source_id)
+
+    note = {
+        "source_id": PUBLIC_COMPONENT_PROVENANCE_SOURCE_ID,
+        "path": PUBLIC_COMPONENT_PROVENANCE_SOURCE_PATH,
+        "used_for": ["public_standalone_component_provenance"],
+    }
+    if PUBLIC_COMPONENT_PROVENANCE_SOURCE_ID not in seen:
+        public_refs.append(note)
+    return public_refs
+
+
+def _public_skill_metadata_projections(
+    component_ids: list[str],
+    registry_components: dict[str, Any],
+    source_registry: dict[str, Any],
+    repo_root: Path,
+    included_paths: set[str],
+) -> list[dict[str, Any]]:
+    note = source_registry.get(PUBLIC_COMPONENT_PROVENANCE_SOURCE_ID)
+    if (
+        not isinstance(note, dict)
+        or note.get("kind") != "repository_local"
+        or note.get("path") != PUBLIC_COMPONENT_PROVENANCE_SOURCE_PATH
+        or PUBLIC_COMPONENT_PROVENANCE_SOURCE_PATH not in included_paths
+    ):
+        raise ValueError("public standalone skill provenance source is not registered and included")
+
+    projections: list[dict[str, Any]] = []
+    for component_id in component_ids:
+        entry = registry_components[component_id]
+        manifest_path = _normalize_repo_file(repo_root, entry.get("path"))
+        provenance_path = _optional_sibling(repo_root, manifest_path, "provenance.map.yml")
+        for rel_path, field in ((manifest_path, "source_refs"), (provenance_path, "sources")):
+            if rel_path is None:
+                continue
+            if rel_path not in included_paths:
+                raise ValueError(f"public skill metadata path is outside the projection: {rel_path}")
+            value = _load_yaml(repo_root / rel_path)
+            if field == "source_refs":
+                value[field] = _public_source_refs(value.get(field), source_registry, included_paths)
+            else:
+                provenance = value.get("provenance")
+                if not isinstance(provenance, dict):
+                    raise ValueError(f"public provenance map is missing its provenance mapping: {rel_path}")
+                provenance[field] = _public_source_refs(
+                    provenance.get(field), source_registry, included_paths
+                )
+            content = yaml.safe_dump(value, sort_keys=False, allow_unicode=True)
+            body = content.encode("utf-8")
+            projections.append({
+                "path": rel_path,
+                "content": content,
+                "sha256": hashlib.sha256(body).hexdigest(),
+            })
+    return sorted(projections, key=lambda item: item["path"])
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -153,7 +287,11 @@ def _source_revision(repo_root: Path) -> str | None:
     return revision or None
 
 
-def _support_paths(repo_root: Path, patterns: list[str]) -> list[str]:
+def _support_paths(
+    repo_root: Path,
+    patterns: list[str],
+    excluded_patterns: list[str],
+) -> list[str]:
     paths: set[str] = set()
     for raw_pattern in patterns:
         pattern = _validate_repo_glob(raw_pattern)
@@ -161,6 +299,8 @@ def _support_paths(repo_root: Path, patterns: list[str]) -> list[str]:
             if not path.is_file():
                 continue
             rel_path = _normalize_repo_file(repo_root, _repo_relative(repo_root, path))
+            if _matching_exclusion(rel_path, excluded_patterns) is not None:
+                continue
             paths.add(rel_path)
     return sorted(paths)
 
@@ -181,6 +321,41 @@ def _dedupe_preserving_order(values: list[str]) -> list[str]:
         seen.add(value)
         result.append(value)
     return result
+
+
+def _explicit_public_components(
+    policy: dict[str, Any],
+    repo_root: Path,
+    registry_components: dict[str, Any],
+    excluded_patterns: list[str],
+) -> list[str]:
+    raw_components = policy.get("public_components") or []
+    if not isinstance(raw_components, list) or not all(
+        isinstance(component_id, str) and component_id
+        for component_id in raw_components
+    ):
+        raise ValueError("public_components must be a list of non-empty component ids")
+    if len(raw_components) != len(set(raw_components)):
+        raise ValueError("duplicate public component identity")
+
+    for component_id in raw_components:
+        registry_entry = registry_components.get(component_id)
+        if not isinstance(registry_entry, dict):
+            raise ValueError(f"public component is not registered: {component_id}")
+        if registry_entry.get("kind") != "skill":
+            raise ValueError(
+                f"public component registry kind must be skill: {component_id}"
+            )
+        manifest_path = _normalize_repo_file(repo_root, registry_entry.get("path"))
+        _ensure_not_excluded(manifest_path, excluded_patterns)
+        manifest = _load_yaml(repo_root / manifest_path)
+        if manifest.get("component_id") != component_id:
+            raise ValueError(
+                f"public skill manifest identity does not match registry: {component_id}"
+            )
+        if manifest.get("kind") != "skill":
+            raise ValueError(f"public skill manifest kind must be skill: {component_id}")
+    return list(raw_components)
 
 
 def _public_component_ids(profile: dict[str, Any]) -> list[str]:
@@ -218,6 +393,9 @@ def _public_component_ids(profile: dict[str, Any]) -> list[str]:
 def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     policy = _load_yaml(policy_path)
+    exceptions = (policy.get("policy") or {}).get("content_write_exceptions", {})
+    if exceptions not in ({}, {"components/registry.yml": "selected_component_closure"}):
+        raise ValueError("unsupported content_write_exceptions")
     excluded_patterns = list(policy.get("excluded_patterns") or [])
 
     source_profile_path = _normalize_repo_file(repo_root, policy["source_profile_path"])
@@ -225,6 +403,8 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
         repo_root,
         policy.get("registry_path", "components/registry.yml"),
     )
+    if exceptions and registry_path != "components/registry.yml":
+        raise ValueError("registry exception requires components/registry.yml")
     _ensure_not_excluded(source_profile_path, excluded_patterns)
     _ensure_not_excluded(registry_path, excluded_patterns)
     profile = _load_yaml(repo_root / source_profile_path)
@@ -245,6 +425,19 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
             repo_root / _normalize_repo_file(repo_root, raw_path)
         ),
     )
+
+    explicit_public_components = _explicit_public_components(
+        policy,
+        repo_root,
+        registry_components,
+        excluded_patterns,
+    )
+    profile_component_ids = set(_public_component_ids(profile))
+    overlap = sorted(profile_component_ids.intersection(explicit_public_components))
+    if overlap:
+        raise ValueError(
+            "public components must not duplicate profile members: " + overlap[0]
+        )
 
     raw_public_workflows = policy.get("public_workflows") or []
     if not isinstance(raw_public_workflows, list) or not all(
@@ -278,7 +471,11 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
         "workflows": [],
     }
     ordered_component_ids = _dedupe_preserving_order(
-        [*_public_component_ids(profile), *explicit_public_workflows]
+        [
+            *_public_component_ids(profile),
+            *explicit_public_components,
+            *explicit_public_workflows,
+        ]
     )
     public_component_ids = set(ordered_component_ids)
     included_paths: set[str] = set()
@@ -289,6 +486,12 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
         registry_entry = registry_components.get(component_id)
         if not isinstance(registry_entry, dict):
             raise ValueError(f"profile component is not registered: {component_id}")
+
+        if exceptions:
+            _validate_component_dependencies(
+                component_id, registry_path, registry_entry,
+                registry_components, public_component_ids,
+            )
 
         manifest_path = _normalize_repo_file(repo_root, registry_entry["path"])
         _ensure_not_excluded(manifest_path, excluded_patterns)
@@ -333,19 +536,38 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
     support_paths = _support_paths(
         repo_root,
         list(policy.get("support_paths") or []),
+        excluded_patterns,
     )
     for rel_path in support_paths:
         _add_required_path(included_paths, rel_path, excluded_patterns)
 
-    return {
+    public_metadata_projections: list[dict[str, Any]] = []
+    if explicit_public_components:
+        source_registry_path = "sources/registry.yml"
+        _ensure_not_excluded(source_registry_path, excluded_patterns)
+        source_registry_data = _load_yaml(repo_root / source_registry_path)
+        source_registry = source_registry_data.get("sources") or {}
+        if not isinstance(source_registry, dict):
+            raise ValueError("sources/registry.yml must contain a sources mapping")
+        public_metadata_projections = _public_skill_metadata_projections(
+            explicit_public_components,
+            registry_components,
+            source_registry,
+            repo_root,
+            included_paths,
+        )
+
+    result = {
         "projection_id": policy["projection_id"],
         "source_profile": {
             "id": profile["profile_id"],
             "path": source_profile_path,
         },
+        "explicit_public_components": explicit_public_components,
         "explicit_public_workflows": explicit_public_workflows,
         "source_revision": _source_revision(repo_root),
         "registry_path": registry_path,
+        "public_metadata_projections": public_metadata_projections,
         "components": grouped_components,
         "closure_summary": {
             "agents": len(grouped_components["agents"]),
@@ -356,6 +578,21 @@ def build_manifest(policy_path: Path, repo_root: Path) -> dict[str, Any]:
         "included_paths": sorted(included_paths),
         "excluded_patterns": excluded_patterns,
     }
+    if exceptions:
+        public_registry = {
+            **({"version": registry["version"]} if "version" in registry else {}),
+            "components": {
+                component_id: registry_components[component_id]
+                for component_id in ordered_component_ids
+            },
+        }
+        content = yaml.safe_dump(public_registry, sort_keys=True, allow_unicode=True)
+        result["registry_projection"] = {
+            "path": registry_path,
+            "content": content,
+            "sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        }
+    return result
 
 
 def main() -> int:

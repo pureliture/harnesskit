@@ -1,0 +1,36 @@
+component_id: harnesskit.skill.intent-guide
+kind: skill
+status: draft
+domain: core
+title: Intent Guide
+summary: '사용자 요청의 안전한 시작 방식 하나를 짧은 근거와 함께 안내하고, 선택 전에는 그 경로를 실행하지 않는 사용자 표시 진입 스킬이다.
+  맞춤 구현을 기본값으로 삼지 않으며 조사, 해결책 선택, 문서, 코드, 운영 또는 전문 역할 라우팅을 수행하지 않는다.
+
+  '
+source_refs:
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/intent-guide/component.yml
+- components/skills/intent-guide/SKILL.md
+- components/skills/intent-guide/provenance.map.yml
+scopes:
+- user
+targets:
+  codex:
+    output_path: dist/codex/.agents/skills/intent-guide/SKILL.md
+    support_status: build_only
+adapter:
+  codex:
+    description: Use at the start of a user-facing task to choose one safe path before
+      any skill, operation, document, or implementation work begins.
+routine_harness:
+  phase: adapter-authoring
+  slice_id: IG-01-entry-guidance
+  runtime_gate_required: true
+  strict_runtime_truth: true
+  live_runtime_probe_in_scope: false
+  adapter_output_authoring_in_scope: true
+provenance_mode: local_migration

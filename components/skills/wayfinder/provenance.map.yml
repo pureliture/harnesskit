@@ -1,0 +1,73 @@
+component_id: harnesskit.skill.wayfinder
+provenance:
+  mode: adapted
+  source_mode: approved_local_sot_and_pattern_only_external_reference
+  runtime_dependency_on_sources: false
+  sources:
+  - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-07-16-main-9603c1c
+    source_url: https://github.com/mattpocock/skills
+    path: skills/engineering/wayfinder/SKILL.md
+    source_path: skills/engineering/wayfinder/SKILL.md
+    role: pattern_only_discovery_reference
+    influence:
+    - discovery map vocabulary pattern
+    - blocker and frontier framing
+    copied_content: false
+    adapted_content: true
+    runtime_dependency_on_sources: false
+    license_approved: false
+    source_quality_approved: false
+    runtime_support_claimed: false
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'Owned HarnessKit reconstruction. The approved local Wayfinder
+    requirements and blueprint are the active behavior authority. The named external
+    Wayfinder path influences only map vocabulary and framing; no upstream prose is
+    copied and it is not required at runtime. Older local routing requirements are
+    migration history, not target-oracle authority.
+
+    '
+  copied_sections: []
+  adapted_sections:
+  - discovery_map_vocabulary
+  - blocker_and_frontier_framing
+  new_sections:
+  - explicit_selection_and_admission
+  - smallest_decision_relevant_map
+  - evidence_first_return_control
+  - terminal_outcomes_and_latest_scope_control
+  excluded_concepts:
+  - direct entry fit and route recommendation
+  - reciprocal handoff, confirmation, and anti-loop route state
+  - skill catalog or next-skill recommendation
+  - research, prototype, operation, requirements, or implementation execution
+  - persistent map, route history, database, ledger, issue, label, or blocking relation
+  - runtime rule, agent, hook, command, controller, workflow, service, schema, or
+    API
+  - direct upstream prose
+  license_notes: 'mattpocock-skills license is recorded as unknown in sources/registry.yml.
+    No upstream source content is copied. License, source quality, adapter support,
+    and runtime support remain unapproved.
+
+    '
+  human_review_required: true
+  review_triggers:
+  - condition: requirements_or_blueprint_changed
+    action: Recheck admission, map scope, terminal return, and no-routing boundaries.
+    severity: high
+  - condition: intent_guide_contract_changed
+    action: Recheck entry-ownership boundary without adding a route catalog.
+    severity: high
+  - condition: joint_entry_migration_approved
+    action: Recheck direct-entry and historical artifact retirement separately.
+    severity: high
+  - condition: upstream_snapshot_or_license_changed
+    action: Recheck pattern-only attribution and copied_content remains false.
+    severity: medium
+  - condition: target_adapter_changed
+    action: Run adapter-authoring separately before claiming target output or runtime
+      support.
+    severity: medium

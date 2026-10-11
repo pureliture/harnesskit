@@ -497,6 +497,11 @@ impl SotContext {
                 .as_str()
                 .ok_or("management_record_invalid")?
                 .into(),
+            source_scope: matching[0]["scope"]
+                .as_str()
+                .filter(|scope| matches!(*scope, "user" | "project"))
+                .ok_or("management_record_invalid")?
+                .into(),
         })
     }
 

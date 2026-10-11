@@ -1,0 +1,53 @@
+component_id: harnesskit.skill.worktree-lifecycle
+provenance:
+  mode: adapted
+  source_mode: local_migration
+  runtime_dependency_on_sources: false
+  sources:
+  - source_id: harnesskit-public-skill-provenance
+    path: sources/public-component-provenance.md
+    used_for:
+    - public_standalone_component_provenance
+  attribution_note: 'Canonical HarnessKit skill authored from approved local requirements
+    and blueprint Slice 1. The supplied superpowers worktree skill influenced start-of-work
+    safety semantics only; no source text is required at runtime.
+
+    '
+  license_notes: 'Local migration from approved HarnessKit requirements. No license
+    suitability is claimed for the supplied local skill reference, and no substantial
+    wording was copied from it.
+
+    '
+  copied_sections: []
+  adapted_sections:
+  - tool-neutral lifecycle procedure
+  - main-clean and worktree-only write invariant
+  - dirty-state rescue procedure
+  - stale ledger and cleanup blocking rules
+  - record-version compare-and-swap write conflict handling
+  - cross-tool handoff contract
+  - proof artifact and testing expectations
+  - ledger schema required fields and lifecycle enum
+  new_sections:
+  - canonical policy artifact
+  - machine-checkable ledger record schema
+  - adapter/runtime deferral statements
+  review_triggers:
+  - condition: component_schema_changed
+    action: Revalidate component.yml and provenance.map.yml shape.
+    severity: high
+  - condition: registry_profile_slice_authorized
+    action: Add registry/profile wiring in a separate slice without changing canonical
+      policy semantics.
+    severity: high
+  - condition: using_git_worktrees_compatibility_decision_changed
+    action: Recheck alias or deprecation handling before profile wiring.
+    severity: high
+  - condition: ledger_schema_changed
+    action: Rerun schema fixtures for valid, invalid, stale, conflict, and no-secret
+      cases.
+    severity: high
+  - condition: adapter_authoring_started
+    action: Generate target outputs only through adapter-authoring and keep runtime
+      proof separate.
+    severity: medium

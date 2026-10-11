@@ -1,0 +1,36 @@
+component_id: harnesskit.skill.wayfinder
+kind: skill
+status: draft
+domain: core
+title: Wayfinder
+summary: '사용자가 명시적으로 선택한 실제 다중 세션 차단 요인 그래프를 대화 내부 지도로 정리하고, 근거 작업을 실행하거나 다음 스킬을 고르지
+  않은 채 제어권을 반환한다.
+
+  '
+source_refs:
+- source_id: mattpocock-skills
+  snapshot_id: mattpocock-skills/2026-07-16-main-9603c1c
+  path: skills/engineering/wayfinder/SKILL.md
+  used_for:
+  - discovery_map_vocabulary_pattern
+  - blocker_and_frontier_framing
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/wayfinder/component.yml
+- components/skills/wayfinder/SKILL.md
+- components/skills/wayfinder/provenance.map.yml
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/wayfinder/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/wayfinder/SKILL.md
+entrypoints:
+  natural_language:
+    examples:
+    - Wayfinder로 서로 막힌 release decision의 확인 순서만 map으로 정리해줘
+    - 여러 session의 evidence blocker가 어떤 결정을 막는지 Wayfinder로 보여줘
+    - use Wayfinder to map the interdependent evidence gaps before I decide
+provenance_mode: adapted

@@ -1,0 +1,33 @@
+component_id: harnesskit.skill.grill-to-spec
+kind: skill
+status: draft
+domain: core
+title: Grill to Spec
+summary: '사용자가 명시적으로 요청한 문서를 고정된 /grill 합의 뒤 초안으로 작성하고 문서별 명시 승인만 다루는 얇은 문서화 래퍼다.
+  합의된 내용을 기록하며 해결책 판단을 다시 수행하지 않는다.
+
+  '
+source_refs:
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/grill-to-spec/component.yml
+- components/skills/grill-to-spec/SKILL.md
+- components/skills/grill-to-spec/provenance.map.yml
+scopes:
+- user
+targets:
+  codex:
+    output_path: dist/codex/.agents/skills/grill-to-spec/SKILL.md
+    support_status: build_only
+    scopes:
+    - user
+adapter:
+  codex:
+    description: Use when a user explicitly asks to record an agreed Grill result
+      as a draft document requiring per-document approval.
+routine_harness:
+  phase: component-authoring
+provenance_mode: adapted

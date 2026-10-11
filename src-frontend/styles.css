@@ -665,11 +665,23 @@ dt {
 }
 
 .license-link {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.35rem;
   color: var(--quiet);
-  font-size: var(--text-meta);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  white-space: nowrap;
+  text-decoration: none;
+}
+
+.license-link:hover {
+  color: var(--text);
+  background: var(--surface-1);
+}
+
+.license-link__icon {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .command-meta {
@@ -2883,7 +2895,7 @@ button.tree-row {
 
 .app-statusbar {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) max-content;
+  grid-template-columns: auto minmax(0, 1fr) max-content auto;
   gap: var(--space-2);
   align-items: center;
   min-height: 1.7rem;
@@ -2902,7 +2914,7 @@ button.tree-row {
   white-space: nowrap;
 }
 
-.app-statusbar > span:last-child {
+.app-statusbar__snapshot {
   max-width: 36vw;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4529,12 +4541,12 @@ button.tree-row {
     grid-template-columns: 1fr;
   }
 
-  .app-statusbar > span:last-child {
+  .app-statusbar__snapshot {
     display: none;
   }
 
   .app-statusbar {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 }
 

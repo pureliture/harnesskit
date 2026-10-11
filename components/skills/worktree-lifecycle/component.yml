@@ -1,0 +1,76 @@
+component_id: harnesskit.skill.worktree-lifecycle
+kind: skill
+status: draft
+domain: core
+title: Worktree Lifecycle
+summary: '안전한 시작, 일시 중지, 인계, 완료, 정리 후보 검토를 위한 도구 중립 워크트리 수명 주기 절차다.
+
+  '
+source_refs:
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/worktree-lifecycle/component.yml
+- components/skills/worktree-lifecycle/SKILL.md
+- components/skills/worktree-lifecycle/provenance.map.yml
+- components/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+targets:
+  claude:
+    output_path: dist/claude/.claude/skills/worktree-lifecycle/SKILL.md
+  codex:
+    output_path: dist/codex/.agents/skills/worktree-lifecycle/SKILL.md
+  antigravity-cli:
+    output_path: dist/antigravity-cli/.agents/skills/worktree-lifecycle/SKILL.md
+  antigravity:
+    output_path: dist/antigravity/.agents/skills/worktree-lifecycle/SKILL.md
+adapter:
+  claude:
+    description: Tool-neutral worktree lifecycle procedure for safe start, pause,
+      handoff, finish, and cleanup review.
+  codex:
+    description: Tool-neutral worktree lifecycle procedure for safe start, pause,
+      handoff, finish, and cleanup review.
+  antigravity-cli:
+    description: Tool-neutral worktree lifecycle procedure for safe start, pause,
+      handoff, finish, and cleanup review.
+  antigravity:
+    description: Tool-neutral worktree lifecycle procedure for safe start, pause,
+      handoff, finish, and cleanup review.
+entrypoints:
+  natural_language:
+    examples:
+    - worktree lifecycle 상태를 확인하고 이어서 작업해줘
+    - 이 worktree를 handoff 가능한 상태로 정리해줘
+    - cleanup_candidate인지 안전하게 판정해줘
+provenance_mode: adapted
+bundled_files:
+- source: components/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  output_path: dist/claude/.claude/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- source: components/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  output_path: dist/codex/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- source: components/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  output_path: dist/antigravity-cli/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- source: components/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+  output_path: dist/antigravity/.agents/skills/worktree-lifecycle/policy/worktree-lifecycle-policy.md
+- source: components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  output_path: dist/claude/.claude/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- source: components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  output_path: dist/codex/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- source: components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  output_path: dist/antigravity-cli/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+- source: components/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+  output_path: dist/antigravity/.agents/skills/worktree-lifecycle/schemas/worktree-ledger.schema.json
+routine_harness:
+  phase: adapter-authoring
+  upstream_phase: component-authoring
+  ideation_in_scope: false
+  adapter_porting_in_scope: true
+  runtime_gate_required: true
+  strict_runtime_truth: true
+  live_runtime_probe_in_scope: false
+  adapter_output_authoring_in_scope: true
+  runtime_probe_in_scope: false
+  registry_profile_wiring_in_scope: false

@@ -1,0 +1,45 @@
+component_id: harnesskit.skill.grill
+kind: skill
+status: draft
+domain: core
+title: Grill
+summary: '선택된 제한적 계획 맥락에서 접근 가능한 사실을 먼저 사용하고, 남은 사용자 소유 결정 하나만 묻거나 공유된 이해, 정확한 근거
+  공백, 중지/연기 반환으로 끝내는 한 세션 명확화 핵심이다. 문서, 실행, 경로, 어댑터 또는 런타임 지원을 시작하거나 주장하지 않는다.
+
+  '
+source_refs:
+- source_id: mattpocock-skills
+  snapshot_id: mattpocock-skills/2026-07-16-main-9603c1c
+  path: skills/productivity/grilling/SKILL.md
+  used_for:
+  - fact_before_question_interaction_pattern
+  - one_question_then_wait_interaction_pattern
+- source_id: harnesskit-public-skill-provenance
+  path: sources/public-component-provenance.md
+  used_for:
+  - public_standalone_component_provenance
+owned_files:
+- components/skills/grill/component.yml
+- components/skills/grill/SKILL.md
+- components/skills/grill/provenance.map.yml
+scopes:
+- user
+target_support:
+  codex:
+    status: build_only
+    scopes:
+    - user
+    output_intent: manual development-profile static skill projection only
+targets:
+  codex:
+    output_path: dist/codex/.agents/skills/grill/SKILL.md
+    support_status: build_only
+    scopes:
+    - user
+adapter:
+  codex:
+    description: Use when an explicitly selected bounded planning context needs fact-first
+      clarification before one user-owned decision.
+routine_harness:
+  phase: component-authoring
+provenance_mode: adapted
