@@ -1,6 +1,6 @@
 component_id: harnesskit.skill.harness-requirements
 provenance:
-  mode: original
+  mode: adapted
   runtime_dependency_on_sources: false
   sources:
     - source_id: mattpocock-skills
@@ -37,27 +37,19 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - observable outcome requirements boundary
         - capability slice grouping deferred to blueprint
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - VC-01 requirements handoff contract
         - component and file grouping remains blueprint-owned
       copied_content: false
       adapted_content: true
-  attribution_note: >
-    Original HarnessKit harness-maintenance skill authored from the
-    approved harness creation body design. It references local review findings
-    from grill-to-spec, Superpowers brainstorming, Notion research patterns, and
-    existing HarnessKit authoring skills without copied source text. Slice E
-    adds Matt Pocock skills snapshot influence for context-first requirements
-    intake and PRD-like synthesis, adapted into HarnessKit requirements SoT
-    boundaries without issue publication or upstream runtime dependency.
   source_mode: referenced
   copied_sections: []
   rewritten_sections:
@@ -72,11 +64,16 @@ provenance:
     - context-first intake before user questioning
     - one materially changing decision at a time
     - PRD-like synthesis into HarnessKit requirements sections
-  license_notes: "Referenced local installed skill patterns only; no bundled third-party code copied."
+  license_notes: "The registered Matt Pocock snapshot is a pattern reference alongside repository-local sources; no bundled third-party code was copied."
   human_review_required: true
-  review_triggers:
-    - requirements_workflow_changed
-    - blueprint_handoff_contract_changed
-    - source_mode_policy_changed
-    - mattpocock_requirements_intake_reference_changed
-    - capability_slice_contract_changed
+attribution_note: >
+  HarnessKit harness-maintenance requirements skill authored from the approved
+  harness creation body design and adapted using the listed Matt Pocock skills
+  snapshot plus repository-local requirements and blueprint sources. No source
+  text was copied, and no upstream runtime dependency is claimed.
+review_triggers:
+  - condition: requirements_workflow_changed
+  - condition: blueprint_handoff_contract_changed
+  - condition: source_mode_policy_changed
+  - condition: mattpocock_requirements_intake_reference_changed
+  - condition: capability_slice_contract_changed

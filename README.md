@@ -14,7 +14,8 @@
   <a href="#내부-구조">내부 구조</a> ·
   <a href="#구성-요소는-어떻게-연결되나요">구성 요소</a> ·
   <a href="#적용-요청은-어떻게-처리되나요">동작 흐름</a> ·
-  <a href="#-desktop-앱">설치와 첫 사용</a>
+  <a href="#-desktop-앱">설치와 첫 사용</a> ·
+  <a href="docs/desktop-user-guide.md">Desktop 사용자 가이드</a>
 </p>
 
 </div>
@@ -44,7 +45,7 @@ HarnessKit Desktop은 **화면**, **원본 구성 조회**, **로컬 설치 상�
 
 **Install Context**는 원본과 대상, 사용자의 승인을 연결합니다. 앱에 포함된 Python runtime이 임시 workspace에서 계획을 만들고, Rust coordinator가 계획과 canonical 산출물을 대조합니다. 실제 대상 파일의 기록과 readback은 Rust writer와 verifier가 담당합니다.
 
-**Correlation projection**은 원본 정의, 로컬 관찰 결과, 파일 적용 evidence의 관계를 화면에 표시합니다. 선택적 AI 원문 설명 기능을 요청하면 해당 원문이 설정한 provider에 HTTPS로 전달됩니다.
+**Correlation projection**은 원본 정의, 로컬 관찰 결과, 파일 적용 evidence의 관계를 화면에 표시합니다. 선택적 AI 원문 설명 기능을 요청하면 해당 원문이 설정한 provider로 전달됩니다. 전송 방식과 위험은 아래의 **AI 설명과 데이터 전송** 안내를 확인하세요.
 
 ## 구성 요소는 어떻게 연결되나요?
 
@@ -102,7 +103,19 @@ HarnessKit Desktop은 파일과 YAML을 직접 오가며 확인해야 했던 정
 | **Harness Components** | HarnessKit에는 무엇이 있고 서로 어떻게 연결되는가? | 컴포넌트 탐색, Profile·Workflow 관계 확인, 원본 상세 조회 |
 | **PC 설치 하네스** | 내 Mac과 프로젝트에는 무엇이 설치되어 있는가? | Claude Code·Codex·Antigravity·Hermes 표면 탐색, 정의 위치와 원문 확인 |
 
-SoT 조회는 read-only가 기본입니다. 파일을 쓰는 설치·제거 동작은 별도의 계획과 명시적 확인을 거쳐야 하며, 화면에 보였다는 이유만으로 적용 성공이나 runtime 동작을 주장하지 않습니다.
+**앱 사용법은 [Desktop 사용자 가이드](docs/desktop-user-guide.md)를 참고하세요.** 저장소 연결, 컴포넌트 탐색, 설치·검증, PC 설치 하네스 검색·가져오기·제거와 문제 해결을 단계별로 설명합니다.
+
+SoT 조회는 read-only가 기본입니다. 로컬 하네스 스캔과 원문 미리보기는 발견된 도구 파일을 읽기만 하며 원본을 수정하지 않습니다. 설치·제거처럼 파일을 쓰는 동작은 별도 계획과 명시적 확인을 거쳐야 하며, 화면에 나타났다는 이유만으로 적용 성공이나 runtime 동작을 주장하지 않습니다.
+
+### AI 설명과 데이터 전송
+
+사용자가 선택한 파일에서 AI 설명 생성을 직접 요청할 때만 AI 설명 요청을 보냅니다. 요청에는 선택한 파일의 전체 원문이 포함되며, 저장된 API key가 있으면 함께 전송됩니다. 현재 원문 한도는 256 KiB입니다. 이 한도를 넘으면 원문 일부만 잘라 보내지 않고 요청을 거부합니다.
+
+로컬 스캔, 원문 미리보기, 컴포넌트 가져오기와 편집은 원문을 설정된 AI provider로 보내지 않습니다. AI 설명 생성만 선택한 원문을 provider에 전달합니다.
+
+원격 provider에는 HTTPS를 사용하세요. 현재 앱은 HTTP endpoint도 허용합니다. http://127.0.0.1:11434/v1 같은 로컬 loopback HTTP provider도 사용할 수 있습니다. Loopback이 아닌 HTTP endpoint에서는 전체 원문과 API key가 암호화되지 않은 채 전송될 수 있습니다. 앱은 이 위험을 경고하지만 요청을 차단하지 않습니다.
+
+provider의 데이터 처리와 보존은 해당 provider의 정책을 따릅니다. HarnessKit은 provider의 사용·보존 방식을 보장하지 않습니다. AI가 만든 설명은 참고용 텍스트이며, 실제 AI 도구가 파일을 읽거나 설정을 실행했는지 검증한 결과가 아닙니다.
 
 ### beta.6 시작하기
 
@@ -123,7 +136,7 @@ shasum -a 256 -c HarnessKit_0.1.0_aarch64.dmg.sha256
 ```
 
 - **체크섬 확인의 의미:** `shasum -a 256 -c HarnessKit_0.1.0_aarch64.dmg.sha256`는 내려받은 DMG 파일이 공식 체크섬 파일의 해시값과 정확히 일치하는지 확인하는 안전 확인 절차입니다.
-- **`OK`의 의미:** `OK`는 두 파일의 SHA-256 해시가 일치하여 다운로드 도중 파일이 손상되거나 변조되지 않았음을 의미합니다. 악성코드 검사 결과나 Apple 공증 확인을 뜻하지는 않습니다.
+- **`OK`의 의미:** `OK`는 DMG에서 계산한 SHA-256 값이 체크섬 파일에 적힌 값과 일치한다는 뜻입니다. 악성코드 검사 결과나 Apple 공증 확인을 뜻하지는 않습니다.
 - **보안 승인과의 관계:** 체크섬 확인은 macOS에서 '확인 없이 열기(`Open Anyway`)'를 선택하기 위한 기술적 필수 전제 조건은 아닙니다. 체크섬 검사를 건너뛰어도 첫 실행 시도와 Open Anyway 절차를 진행할 수는 있지만, 공식 릴리스 파일과 일치하는지 검증하지 않은 상태가 됩니다. 신뢰할 수 있는 공식 Release에서 두 파일을 모두 받고 해시 일치를 먼저 확인한 뒤 설치를 진행하세요. 값이 다르거나 검증에 실패하면 설치하지 말고 두 파일을 다시 다운로드하세요.
 
 확인이 완료되면 DMG를 열고 `HarnessKit.app`을 `/Applications` 폴더로 드래그해 복사합니다.
@@ -185,7 +198,57 @@ SoT 연결에는 Git이 필요합니다. `components/registry.yml`을 포함한 
 
 Preview만 생성하면 대상 파일은 바뀌지 않습니다. 적용을 승인하면 표시된 대상 파일이 수정됩니다. Apply는 원자적이지 않으며 자동 rollback을 제공하지 않으므로, 실패하면 각 파일의 결과를 확인하세요.
 
+### 가져오기와 적용
+
+가져오기 후보를 미리 보고 확인하면 연결한 HarnessKit checkout에 canonical component와 registry 파일이 만들어지고, 앱이 발견한 원본과 연결하는 출처 기록을 남길 수 있습니다. 가져온 컴포넌트 편집은 그 checkout의 canonical 파일을 수정합니다. 가져오기와 편집 자체는 발견된 도구 원본 파일을 수정하지 않습니다.
+
+대상 도구 파일은 Install preview에 표시된 적용 위치와 변경 내용을 검토하고 Apply를 명시적으로 승인한 뒤에만 바뀝니다. Preview 자체는 파일을 쓰지 않습니다.
+
+처음 Apply는 실제 프로젝트와 설정 파일이 아니라 복사본을 대상으로 해보세요. 실제 대상에 적용하기 전에는 영향을 받는 파일을 백업하세요. Apply 전체는 원자적이지 않고 자동 rollback을 제공하지 않으므로 실패해도 일부 대상 파일이 바뀐 채 남을 수 있습니다. 실패 후에는 결과 화면의 각 destination별 Apply·Verify 상태와 오류를 확인하고, 필요하면 백업 복사본에서 사용자가 직접 복구한 뒤 다시 Preview와 Apply를 진행하세요.
+
 포함된 의존성의 라이선스 고지는 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)와 앱 하단의 **오픈소스 라이선스** 아이콘에서 확인할 수 있습니다.
+
+<details>
+<summary>개발자용 CLI 사용</summary>
+
+CLI는 Desktop 앱과 별도로 사용할 수 있습니다. Node.js 20 이상, Python 3.11 이상과 `uv`가 필요합니다. 실제 프로젝트에 적용하기 전에 비어 있는 테스트 폴더에서 계획을 검토하세요.
+
+### 방법 1 — source checkout
+
+공개 저장소 checkout에서 의존성을 준비하고 명령 도움말을 확인합니다.
+
+```bash
+uv sync --frozen
+node bin/harnesskit.mjs --help
+```
+
+### 방법 2 — 로컬 npm tarball
+
+공개 저장소 checkout에서 로컬 패키지를 만들고, 그 파일을 지정해 설치 계획을 생성합니다. 아래 `plan` 명령은 계획을 만드는 단계이며 대상 폴더에 적용하지 않습니다.
+
+```bash
+npm pack
+TARBALL="$PWD/harnesskit-0.1.0.tgz"
+PLAN="$PWD/harnesskit-plan.json"
+TARGET_ROOT="$PWD/harnesskit-cli-test"
+mkdir -p "$TARGET_ROOT"
+
+npx --yes --package "$TARBALL" harnesskit plan \
+  --profile harness-maintenance --mode apply --format json > "$PLAN"
+```
+
+`harnesskit-plan.json`의 대상 파일과 변경 내용, 경고와 필요한 승인을 먼저 확인하세요. 적용을 결정한 경우에만 아래 명령을 실행합니다. 추가 승인 옵션을 요구하면 해당 동작을 검토한 뒤 선택하고, 자동으로 모든 승인을 허용하지 마세요.
+
+```bash
+npx --yes --package "$TARBALL" harnesskit apply "$PLAN" \
+  --target-root "$TARGET_ROOT"
+npx --yes --package "$TARBALL" harnesskit verify "$PLAN" \
+  --target-root "$TARGET_ROOT"
+```
+
+`verify`는 대상 파일과 계획의 일치를 검사하며 AI 도구의 실제 실행을 증명하지 않습니다. 실제 설정에 적용하기 전에는 백업하세요. Apply는 원자적이지 않고 자동 rollback을 제공하지 않습니다.
+
+</details>
 
 ## 더 살펴보기
 

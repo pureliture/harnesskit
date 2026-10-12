@@ -19,7 +19,10 @@ policy:
     components/registry.yml: selected_component_closure
 support_paths:
   - README.md
+  - THIRD_PARTY_NOTICES.md
+  - docs/desktop-user-guide.md
   - docs/images/*.svg
+  - docs/images/*.png
   - package.json
   - pyproject.toml
   - uv.lock
@@ -27,12 +30,11 @@ support_paths:
   - schemas/*.json
   - sources/*.md
   - sources/*.yml
+  - sources/harness-authoring-provenance.md
   - assets/branding/**
   - assets/legal/**
   - assets/packaging/**
   - assets/tool-identities/**
-  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
   - publish/harnesskit.yml
   - publish/public-port.yml
   - publish/public-sanitation-allowlist.yml
@@ -67,6 +69,11 @@ excluded_patterns:
   - profiles/scm.yml
   - profiles/work.yml
   - profiles/minimal.yml
+  - install-plans/engineering.project.yml
+  - install-plans/engineering.user.yml
+  - scripts/public_port/**
+  - scripts/publish/**
+  - tests/public_port/**
   - .codex/specs/**
   - docs/runtime-evidence/**
   - src-frontend/node_modules/**
@@ -78,7 +85,6 @@ excluded_patterns:
   - tests/**/.pytest_cache/**
   - src-frontend/tests/ai-explanation.test.js
   - src-frontend/tests/local-view.test.js
-  - tests/projection/test_publish_manifest.py
   - dist/**
   - .harnesskit/optimal-response-out/**
   - .harnesskit/work/**

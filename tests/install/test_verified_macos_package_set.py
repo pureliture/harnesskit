@@ -244,6 +244,7 @@ def test_builds_exactly_one_arm64_app_and_dmg_set_and_reports_static_boundary(
         "HARNESS_VERIFIED_PACKAGE_BUILD": "1",
         "MACOSX_DEPLOYMENT_TARGET": "13.0",
     }
+    assert "--remap-path-prefix=" in environment["RUSTFLAGS"]
     assert "CARGO_TARGET_DIR" not in environment
     assert app == (package_fixture.repo / package.APP_RELATIVE).resolve()
     assert dmg.name == "HarnessKit_0.1.0_aarch64.dmg"

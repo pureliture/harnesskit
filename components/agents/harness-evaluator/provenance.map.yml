@@ -26,8 +26,8 @@ provenance:
         - static_failures_not_runtime_deferrals
         - no_mutation_no_live_probe_boundary
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-      role: approved_requirements_sot
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_requirements_influence
       copied_content: false
       adapted_content: true
       license: Repository local SoT
@@ -37,8 +37,8 @@ provenance:
         - pass_only_progression_boundary
         - non_pass_current_slice_retention_report
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
-      role: approved_blueprint_vc03
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_blueprint_influence
       copied_content: false
       adapted_content: true
       license: Repository local SoT
@@ -48,7 +48,7 @@ provenance:
         - cross_slice_evidence_rejection
         - evaluator_no_advancement_boundary
     - source_id: harness-evaluation-requirements
-      path: sources/requirements.md
+      source_path: sources/requirements.md
       role: approved_requirements_sot
       copied_content: false
       adapted_content: false
@@ -61,7 +61,7 @@ provenance:
         - profile_contamination_failure_contract
         - provider_model_selection_policy_gate
     - source_id: harness-evaluation-blueprint
-      path: sources/blueprint.md
+      source_path: sources/blueprint.md
       role: slice_1_authoring_contract
       copied_content: false
       adapted_content: false
@@ -73,7 +73,7 @@ provenance:
         - non_responsibilities
         - deferred_adapter_and_runtime_work
     - source_id: harness-evaluation-local-reference
-      path: sources/harness-evaluation-reference.yml
+      source_path: sources/harness-evaluation-reference.yml
       role: local_pattern_reference
       copied_content: false
       adapted_content: false
@@ -84,7 +84,7 @@ provenance:
         - static_validation_coordination_patterns
         - runtime_evidence_requirements
     - source_id: skill-evaluation
-      path: components/skills/skill-evaluation/SKILL.md
+      source_path: components/skills/skill-evaluation/SKILL.md
       role: reused_gate_procedure
       copied_content: false
       adapted_content: false
@@ -95,7 +95,7 @@ provenance:
         - gate_report_structure
         - runtime_truth_boundary
     - source_id: harness-evaluation-oss-reference
-      path: sources/harness-evaluation-oss-reference.yml
+      source_path: sources/harness-evaluation-oss-reference.yml
       role: structure_only_oss_reference_packet
       copied_content: false
       adapted_content: false
@@ -143,18 +143,6 @@ provenance:
       runtime_dependency_on_sources: false
       used_for:
         - review_axis_separation_and_evidence_reporting_checks
-  attribution_note: >
-    Original HarnessKit evaluator agent authored from approved local requirements
-    and blueprint Slice 1. Local and OSS references influenced only structural
-    evaluation patterns. No reference code or prose was copied, no adapter output
-    was generated, and no runtime support is claimed. The reference provenance
-    gates update adapts approved local requirements and blueprint Slice 4 into
-    static source/provenance reporting guidance. The Matt Pocock skills
-    assimilation Slice D update adds orchestration/reporting visibility for
-    skill authoring quality gates without copying source text or expanding
-    runtime responsibilities. The vertical capability slice update adapts the
-    approved local requirements and blueprint VC-03 into whole-slice closure
-    checks without adding execution or progression authority.
   copied_sections: []
   adapted_sections: []
   rewritten_sections:
@@ -178,18 +166,30 @@ provenance:
     pattern-only from the registered snapshot; copied_content is false and
     runtime_dependency_on_sources is false.
   human_review_required: true
-  review_triggers:
-    - requirements_changed
-    - blueprint_slice_changed
-    - skill_evaluation_gate_changed
-    - source_registry_snapshot_contract_changed
-    - provenance_linkage_gate_changed
-    - static_traceability_failure_reporting_changed
-    - upstream_freshness_model_changed
-    - profile_closure_policy_changed
-    - model_budget_policy_changed
-    - runtime_probe_runner_policy_changed
-    - adapter_phase_started
-    - oss_reference_license_review_required
-    - skill_authoring_quality_gate_changed
-    - capability_slice_contract_changed
+attribution_note: >
+  Original HarnessKit evaluator agent authored from approved local requirements
+  and blueprint Slice 1. Local and OSS references influenced only structural
+  evaluation patterns. No reference code or prose was copied, no adapter output
+  was generated, and no runtime support is claimed. The reference provenance
+  gates update adapts approved local requirements and blueprint Slice 4 into
+  static source/provenance reporting guidance. The Matt Pocock skills
+  assimilation Slice D update adds orchestration/reporting visibility for
+  skill authoring quality gates without copying source text or expanding
+  runtime responsibilities. The vertical capability slice update adapts the
+  then-approved, now-retired local requirements and blueprint VC-03 into
+  whole-slice closure checks without adding execution or progression authority.
+review_triggers:
+  - condition: requirements_changed
+  - condition: blueprint_slice_changed
+  - condition: skill_evaluation_gate_changed
+  - condition: source_registry_snapshot_contract_changed
+  - condition: provenance_linkage_gate_changed
+  - condition: static_traceability_failure_reporting_changed
+  - condition: upstream_freshness_model_changed
+  - condition: profile_closure_policy_changed
+  - condition: model_budget_policy_changed
+  - condition: runtime_probe_runner_policy_changed
+  - condition: adapter_phase_started
+  - condition: oss_reference_license_review_required
+  - condition: skill_authoring_quality_gate_changed
+  - condition: capability_slice_contract_changed

@@ -35,28 +35,19 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - current-slice canonical write boundary
         - one component unit per invocation
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - VC-02 component authoring handoff packet
         - same slice id and remaining-units report
       copied_content: false
       adapted_content: true
-  attribution_note: >
-    HarnessKit harness-maintenance skill authored from the approved
-    component-authoring design and public Agent Skills/Codex/Claude Code
-    documentation references. No source text was copied verbatim. The M5 merge
-    adds authoring-side prose craft rules adapted from the superpowers
-    writing-skills craft (authoring-side share). Slice E adds Matt Pocock
-    skills snapshot influence for predictable skill-body structure, teaching
-    posture toward the next agent, and compact redacted handoffs when canonical
-    authoring cannot finish in one session.
   source_mode: referenced
   copied_sections: []
   rewritten_sections:
@@ -76,16 +67,21 @@ provenance:
     - future-agent teaching posture from mattpocock teach
     - compact artifact-reference handoff and redaction from mattpocock handoff
   license_notes: >
-    Referenced public documentation only; no bundled third-party code.
-    writing-skills craft influence is pattern-only with license_hint unknown on
-    obra-superpowers; runtime_dependency_on_sources is false.
+    The recorded upstream references are pattern-only and no bundled third-party
+    code or verbatim source text was copied. License hints remain unresolved for
+    the referenced writing-skills craft and Matt Pocock snapshots.
   human_review_required: true
-  review_triggers:
-    - target_adapter_changed
-    - component_schema_changed
-    - provenance_schema_changed
-    - prompt_submit_hook_contract_changed
-    - prose_craft_rules_changed
-    - mattpocock_authoring_quality_reference_changed
-    - component_authoring_handoff_contract_changed
-    - capability_slice_contract_changed
+attribution_note: >
+  HarnessKit harness-maintenance skill authored from the approved
+  component-authoring design. The source map records the writing-skills craft,
+  Matt Pocock skills snapshot, and repository-local requirements and blueprint
+  slices as its influences. No source text was copied verbatim.
+review_triggers:
+  - condition: target_adapter_changed
+  - condition: component_schema_changed
+  - condition: provenance_schema_changed
+  - condition: prompt_submit_hook_contract_changed
+  - condition: prose_craft_rules_changed
+  - condition: mattpocock_authoring_quality_reference_changed
+  - condition: component_authoring_handoff_contract_changed
+  - condition: capability_slice_contract_changed
