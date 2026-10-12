@@ -179,6 +179,21 @@ pub enum CoverageStatus {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+pub enum AdapterVersionStatus {
+    BaselineMatch,
+    BestEffort,
+    Unknown,
+    Absent,
+}
+
+impl Default for AdapterVersionStatus {
+    fn default() -> Self {
+        Self::Unknown
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SurfacePresence {
     Present,
     NotPresent,
@@ -189,6 +204,14 @@ pub enum SurfacePresence {
 pub struct CoverageRecord {
     pub adapter_id: String,
     pub adapter_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub baseline_tool_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_tool_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub observed_schema_digest: Option<String>,
+    #[serde(default)]
+    pub version_status: AdapterVersionStatus,
     pub surface_id: String,
     pub root_id: Option<String>,
     pub scope: Scope,

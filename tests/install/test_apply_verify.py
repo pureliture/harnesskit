@@ -1641,14 +1641,26 @@ def test_merge_toml_agents_replaces_only_owned_existing_table():
         '[agents."doc_curator"]\n'
         'description = "STALE"\n'
         'config_file = "agents/doc_curator.toml"\n'
+        '[agents."doc_curator".tools]\n'
+        'stale_tool = true\n'
         '[agents."foo"]\n'
         'description = "user authored agent"\n'
+        '[agents."foo".tools]\n'
+        'foreign_tool = "keep"\n'
     )
     merged = merge_toml_agents(stale, SYNTHETIC_HARNESS_SOURCE_TOML, _TOML_MERGE_ARTIFACT)
     assert "STALE" not in merged
+    assert "stale_tool" not in merged
     assert "harness doc curator" in merged
     assert '[agents."foo"]' in merged
     assert "user authored agent" in merged
+    assert "foreign_tool = \"keep\"" in merged
+
+    import tomllib
+
+    parsed = tomllib.loads(merged)
+    assert "tools" not in parsed["agents"]["doc_curator"]
+    assert parsed["agents"]["foo"]["tools"]["foreign_tool"] == "keep"
 
 
 def test_merge_toml_agents_writes_owned_tables_into_empty_destination():

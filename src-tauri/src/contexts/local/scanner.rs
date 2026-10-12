@@ -146,6 +146,10 @@ impl LocalScanner {
                     result.coverage.push(CoverageRecord {
                         adapter_id: adapter.adapter_id.clone(),
                         adapter_version: adapter.descriptor.adapter_version.clone(),
+                        baseline_tool_version: None,
+                        observed_tool_version: None,
+                        observed_schema_digest: None,
+                        version_status: super::domain::AdapterVersionStatus::Unknown,
                         surface_id: surface.surface_id.clone(),
                         root_id: None,
                         scope: surface.scope,
@@ -201,6 +205,10 @@ impl LocalScanner {
                     result.coverage.push(CoverageRecord {
                         adapter_id: adapter.adapter_id.clone(),
                         adapter_version: adapter.descriptor.adapter_version.clone(),
+                        baseline_tool_version: None,
+                        observed_tool_version: None,
+                        observed_schema_digest: None,
+                        version_status: super::domain::AdapterVersionStatus::Unknown,
                         surface_id: surface.surface_id.clone(),
                         root_id: Some(root.root_id.clone()),
                         scope: root.scope,

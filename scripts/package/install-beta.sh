@@ -12,10 +12,10 @@
 # is removed at the end. Tools you installed yourself are never removed.
 set -euo pipefail
 
-TAG="${HARNESSKIT_TAG:-v0.1.0-beta.4}"
+TAG="${HARNESSKIT_TAG:-v0.1.0-beta.5}"
 DMG_NAME="HarnessKit_0.1.0_aarch64.dmg"
 DMG_URL="${HARNESSKIT_DMG_URL:-https://github.com/pureliture/harnesskit/releases/download/${TAG}/${DMG_NAME}}"
-DMG_SHA256="${HARNESSKIT_DMG_SHA256:-ede3e284f45ae8243cfef89ee54a7f4bad619f69aca151b547ee9e8b579c23fd}"
+DMG_SHA256="${HARNESSKIT_DMG_SHA256:-48afc19eaf53dafbf1a6f3713f67250f34b0c9c319fbba378f085806b3ff0a91}"
 REPO_URL="${HARNESSKIT_REPO_URL:-https://github.com/pureliture/harnesskit.git}"
 EXPECTED_SHA="${HARNESSKIT_EXPECTED_SHA:-}"
 BUNDLE_ID="io.github.pureliture.harnesskit"

@@ -136,6 +136,12 @@ class TestCompositeExpansion:
 
 
 class TestMemberBlock:
+    def test_composite_id_cannot_use_standalone_component_plan(self):
+        with pytest.raises(ValueError, match="use --composite for composite ids"):
+            install_plan.build_component_plan(
+                COMPOSITE_ID, scope="project", mode="dry-run"
+            )
+
     @pytest.mark.parametrize("component_id", BLOCKED_MEMBERS)
     def test_blocked_member_cannot_install_standalone(self, component_id: str):
         with pytest.raises(

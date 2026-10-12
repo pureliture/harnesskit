@@ -6,7 +6,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/status-beta-f59e0b?style=for-the-badge" alt="상태: beta" />
-  <img src="https://img.shields.io/badge/version-0.1.0--beta.4-ea580c?style=for-the-badge" alt="버전: 0.1.0-beta.4" />
+  <img src="https://img.shields.io/badge/version-0.1.0--beta.5-ea580c?style=for-the-badge" alt="버전: 0.1.0-beta.5" />
   <img src="https://img.shields.io/badge/Desktop-macOS_13%2B_arm64-1c1917?style=for-the-badge&logo=apple" alt="Desktop: macOS 13 이상 Apple Silicon" />
 </p>
 
@@ -104,13 +104,14 @@ HarnessKit Desktop은 파일과 YAML을 직접 오가며 확인해야 했던 정
 
 SoT 조회는 read-only가 기본입니다. 파일을 쓰는 설치·제거 동작은 별도의 계획과 명시적 확인을 거쳐야 하며, 화면에 보였다는 이유만으로 적용 성공이나 runtime 동작을 주장하지 않습니다.
 
-### beta.4 시작하기
+### beta.5 시작하기
 
 macOS 13 이상 Apple Silicon Mac용입니다. Intel Mac과 다른 운영체제용 Desktop 앱은 이번 베타에 포함되지 않습니다.
 
+<a id="installation-guide"></a>
 #### 1. 앱 다운로드와 설치
 
-[GitHub Release v0.1.0-beta.4](https://github.com/pureliture/harnesskit/releases/tag/v0.1.0-beta.4)에서 아래 두 파일을 같은 폴더에 받습니다.
+[GitHub Release v0.1.0-beta.5](https://github.com/pureliture/harnesskit/releases/tag/v0.1.0-beta.5)에서 아래 두 파일을 같은 폴더에 받습니다.
 
 - `HarnessKit_0.1.0_aarch64.dmg`
 - `HarnessKit_0.1.0_aarch64.dmg.sha256`
@@ -137,17 +138,18 @@ shasum -a 256 -c HarnessKit_0.1.0_aarch64.dmg.sha256
 
 앱은 원본 구성 저장소를 읽어 컴포넌트와 설치 계획을 표시합니다. 앱 설치와 저장소 연결은 별도 단계입니다.
 
-Git을 사용할 수 있는 환경에서 beta4 태그의 저장소를 받습니다.
+Git을 사용할 수 있는 환경에서 beta5 태그의 저장소를 받습니다.
 
 ```bash
-git clone --branch v0.1.0-beta.4 --depth 1 \
-  https://github.com/pureliture/harnesskit.git harnesskit-beta4
+git clone --branch v0.1.0-beta.5 --depth 1 \
+  https://github.com/pureliture/harnesskit.git harnesskit-beta5
 ```
 
 앱 상단의 **로컬 checkout 경로**에 이 폴더의 절대 경로를 입력하고 **HarnessKit 폴더 연결**을 선택합니다. 저장소 폴더 선택 버튼으로 연결해도 됩니다. DMG나 앱의 경로를 이 입력란에 넣지 않습니다.
 
 SoT 연결에는 Git이 필요합니다. `components/registry.yml`을 포함한 Git checkout 폴더를 선택하세요.
 
+<a id="usage-guide"></a>
 #### 4. 테스트 프로젝트에 첫 적용
 
 먼저 비어 있는 테스트 폴더를 만들어 실제 프로젝트의 파일과 분리해 확인합니다.

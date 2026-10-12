@@ -1102,6 +1102,8 @@ def build_component_plan(
     component marked standalone_installable: false may not be installed here
     and must go through --composite or --profile instead.
     """
+    if _is_composite_id(component_id):
+        raise ValueError(f"use --composite for composite ids: {component_id}")
     _validate_member_block_for_standalone([component_id])
     return _selection_plan(
         [component_id],

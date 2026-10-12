@@ -25,8 +25,8 @@ CLAUDE_SETTINGS_JSON_MERGE_KEY = "claude-settings-hooks"
 CODEX_HOOKS_JSON_MERGE_KEY = "codex-hooks"
 CODEX_AGENTS_TOML_MERGE_KEY = "codex-agents"
 
-_TOML_AGENTS_TABLE_HEADER = re.compile(
-    r'^[ \t]*\[agents\.("(?:[^"\\]|\\.)*"|\'[^\']*\')\][ \t]*(?:#.*)?$'
+_TOML_AGENTS_TABLE_FAMILY_HEADER = re.compile(
+    r'^[ \t]*\[\[?agents\.("(?:[^"\\]|\\.)*"|\'[^\']*\')(?=\.|\])'
 )
 _TOML_TABLE_HEADER = re.compile(r"^[ \t]*\[\[?[^\]]")
 
@@ -352,9 +352,9 @@ def prune_retired_codex_agent_registrations(
 def _toml_owned_agent_names(body: str) -> set[str]:
     owned: set[str] = set()
     for line in body.splitlines():
-        match = _TOML_AGENTS_TABLE_HEADER.match(line)
-        if match is not None:
-            owned.add(match.group(1))
+        name = _toml_agent_family_name(line)
+        if name is not None:
+            owned.add(name)
     return owned
 
 
@@ -365,8 +365,8 @@ def _toml_strip_owned_agent_regions(current: str, owned_names: set[str]) -> str:
     total = len(lines)
     while index < total:
         line = lines[index]
-        match = _TOML_AGENTS_TABLE_HEADER.match(line.rstrip("\n"))
-        if match is not None and match.group(1) in owned_names:
+        name = _toml_agent_family_name(line)
+        if name is not None and name in owned_names:
             index += 1
             while index < total and not _TOML_TABLE_HEADER.match(
                 lines[index].rstrip("\n")
@@ -385,8 +385,8 @@ def _toml_strip_agent_regions_by_name(current: str, names: set[str]) -> str:
     total = len(lines)
     while index < total:
         line = lines[index]
-        match = _TOML_AGENTS_TABLE_HEADER.match(line.rstrip("\n"))
-        if match is not None and _toml_agent_header_name(match.group(1)) in names:
+        name = _toml_agent_family_name(line)
+        if name is not None and name in names:
             if kept and not kept[-1].strip():
                 kept.pop()
             index += 1
@@ -398,6 +398,14 @@ def _toml_strip_agent_regions_by_name(current: str, names: set[str]) -> str:
         kept.append(line)
         index += 1
     return "".join(kept)
+
+
+def _toml_agent_family_name(line: str) -> str | None:
+    """Return the owning agent name for a table or descendant table header."""
+    match = _TOML_AGENTS_TABLE_FAMILY_HEADER.match(line.rstrip("\n"))
+    if match is None:
+        return None
+    return _toml_agent_header_name(match.group(1))
 
 
 def _toml_agent_header_name(raw_name: str) -> str:

@@ -469,14 +469,15 @@ use crate::contexts::correlation::{
 use crate::contexts::local::domain::{ParseState, SafeIssue, SafeSetting, Scope, SkippedPath};
 use crate::contexts::local::MarkdownSemanticNode as DomainMarkdownSemanticNode;
 use crate::contexts::local::{
-    CoverageStatus, IgnoreSaveRescanOutcome, LocalAttemptReport, LocalAttemptState,
-    LocalInstanceDetail, LocalKindCount, LocalPathAction, LocalPathActionOutcome, LocalQueryCounts,
-    LocalQueryItem, LocalQueryRequest, LocalQueryResult, LocalRemovalApplyOutcome,
-    LocalRemovalEffectKind, LocalRemovalMemberSummary, LocalRemovalPlanPreview,
-    LocalRemovalReconciliation, LocalRemovalReconciliationState, LocalRemovalRescanState,
-    LocalRemovalSourceGroupOutcome, LocalRemovalSourceGroupState, LocalScanProgress,
-    LocalSessionState, LocalSnapshotHeader, LocalSnapshotStatus, LocalSnapshotSummary,
-    LocationFilter, LocationScope, MarkdownBlockFragment as DomainMarkdownBlockFragment,
+    AdapterVersionStatus, CoverageStatus, IgnoreSaveRescanOutcome, LocalAttemptReport,
+    LocalAttemptState, LocalInstanceDetail, LocalKindCount, LocalPathAction,
+    LocalPathActionOutcome, LocalQueryCounts, LocalQueryItem, LocalQueryRequest, LocalQueryResult,
+    LocalRemovalApplyOutcome, LocalRemovalEffectKind, LocalRemovalMemberSummary,
+    LocalRemovalPlanPreview, LocalRemovalReconciliation, LocalRemovalReconciliationState,
+    LocalRemovalRescanState, LocalRemovalSourceGroupOutcome, LocalRemovalSourceGroupState,
+    LocalScanProgress, LocalSessionState, LocalSnapshotHeader, LocalSnapshotStatus,
+    LocalSnapshotSummary, LocationFilter, LocationScope,
+    MarkdownBlockFragment as DomainMarkdownBlockFragment,
     MarkdownBlockKind as DomainMarkdownBlockKind, OpenSourceRequest, ProjectIgnoreSource,
     ProjectIgnoreSummary, ProjectLocationRecord, QualifiedTool, ReadSourceChunkRequest,
     SourceFormat as DomainSourceFormat, SourceIssue as DomainSourceIssue,
@@ -512,6 +513,8 @@ pub struct LocalAttemptReportDto {
     pub state: LocalAttemptStateDto,
     pub error_code: Option<String>,
     pub progress: Option<LocalScanProgressDto>,
+    pub coverage: Vec<CoverageSummaryDto>,
+    pub issues: Vec<SafeIssueSummaryDto>,
 }
 
 impl From<LocalAttemptReport> for LocalAttemptReportDto {
@@ -521,6 +524,8 @@ impl From<LocalAttemptReport> for LocalAttemptReportDto {
             state: value.state.into(),
             error_code: value.error_code,
             progress: value.progress.map(Into::into),
+            coverage: value.coverage.into_iter().map(Into::into).collect(),
+            issues: value.issues.into_iter().map(Into::into).collect(),
         }
     }
 }
@@ -1187,6 +1192,10 @@ pub enum SurfacePresenceDto {
 pub struct CoverageSummaryDto {
     pub adapter_id: String,
     pub adapter_version: String,
+    pub baseline_tool_version: Option<String>,
+    pub observed_tool_version: Option<String>,
+    pub observed_schema_digest: Option<String>,
+    pub version_status: AdapterVersionStatus,
     pub surface_id: String,
     pub root_id: Option<String>,
     pub scope: ScopeDto,
@@ -1332,6 +1341,10 @@ impl From<crate::contexts::local::domain::CoverageRecord> for CoverageSummaryDto
         Self {
             adapter_id: value.adapter_id,
             adapter_version: value.adapter_version,
+            baseline_tool_version: value.baseline_tool_version,
+            observed_tool_version: value.observed_tool_version,
+            observed_schema_digest: value.observed_schema_digest,
+            version_status: value.version_status,
             surface_id: value.surface_id,
             root_id: value.root_id,
             scope: value.scope.into(),
@@ -1350,6 +1363,73 @@ impl From<crate::contexts::local::domain::CoverageRecord> for CoverageSummaryDto
             skipped_count: value.skipped_count,
             issue_codes: value.issue_codes,
         }
+    }
+}
+
+#[cfg(test)]
+mod coverage_version_observation_dto_tests {
+    use super::*;
+    use crate::contexts::local::domain::CoverageRecord;
+
+    fn best_effort_coverage() -> CoverageRecord {
+        CoverageRecord {
+            adapter_id: "antigravity".to_string(),
+            adapter_version: "1.1.0".to_string(),
+            baseline_tool_version: Some("2.19.1".to_string()),
+            observed_tool_version: Some("2.21.1".to_string()),
+            observed_schema_digest: None,
+            version_status: AdapterVersionStatus::BestEffort,
+            surface_id: "antigravity_user".to_string(),
+            root_id: None,
+            scope: Scope::User,
+            project_id: None,
+            status: CoverageStatus::Partial,
+            presence: SurfacePresence::Present,
+            item_count: 1,
+            skipped_count: 0,
+            issue_codes: vec!["malformed_document".to_string()],
+        }
+    }
+
+    #[test]
+    fn coverage_dto_exposes_baseline_and_observed_tool_versions() {
+        let value = serde_json::to_value(CoverageSummaryDto::from(best_effort_coverage()))
+            .expect("serialize coverage version DTO");
+
+        assert_eq!(value["baselineToolVersion"], "2.19.1");
+        assert_eq!(value["observedToolVersion"], "2.21.1");
+        assert_eq!(value["versionStatus"], "best_effort");
+    }
+
+    #[test]
+    fn failed_attempt_dto_keeps_coverage_versions_and_safe_issues() {
+        let report = LocalAttemptReport {
+            attempt_id: "attempt-version-warning".to_string(),
+            state: LocalAttemptState::Failed,
+            started_at: "2026-10-12T00:00:00Z".to_string(),
+            ended_at: Some("2026-10-12T00:00:01Z".to_string()),
+            app_version: Some("0.1.0".to_string()),
+            adapter_set_fingerprint: None,
+            coverage: vec![best_effort_coverage()],
+            skipped_paths: Vec::new(),
+            issues: vec![SafeIssue {
+                project_id: None,
+                code: "malformed_document".to_string(),
+                safe_message: "A harness definition could not be parsed".to_string(),
+                safe_relative_locator: None,
+            }],
+            error_code: Some("scan_failed".to_string()),
+            progress: None,
+        };
+        let value = serde_json::to_value(LocalAttemptReportDto::from(report))
+            .expect("serialize failed-attempt DTO");
+
+        assert_eq!(value["coverage"][0]["baselineToolVersion"], "2.19.1");
+        assert_eq!(value["coverage"][0]["observedToolVersion"], "2.21.1");
+        assert_eq!(
+            value["issues"][0]["safeMessage"],
+            "A harness definition could not be parsed"
+        );
     }
 }
 

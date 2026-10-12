@@ -30,19 +30,21 @@ def validate_profile_selection(
     registry_components: Mapping[str, Any],
     *,
     load_manifest: ManifestLoader,
-) -> None:
-    """Reject Workflow identities selected by an install Profile.
+) -> list[str]:
+    """Validate a Profile and return its ordered component closure.
 
     Structural/schema and unknown-reference validation remain owned by their
-    existing callers. This validator owns only the cross-domain invariant that
-    Profile selection may contain installable Component or Composite identities,
-    never Workflow identities, including members reached through a Composite.
+    existing callers. This resolver owns the cross-domain invariant that Profile
+    selection may contain installable Component or Composite identities, never
+    Workflow identities, including members reached through a Composite. Composite
+    identities are expanded to their ordered component members for adapter output.
     """
 
     profile_id = profile.get("profile_id")
     if not isinstance(profile_id, str):
         profile_id = "<unknown-profile>"
 
+    resolved_components: list[str] = []
     for candidate, field_path in _selection_candidates(profile):
         _validate_candidate(
             candidate,
@@ -51,7 +53,9 @@ def validate_profile_selection(
             registry_components=registry_components,
             load_manifest=load_manifest,
             active_composites=set(),
+            resolved_components=resolved_components,
         )
+    return list(dict.fromkeys(resolved_components))
 
 
 def _selection_candidates(profile: Mapping[str, Any]):
@@ -83,9 +87,11 @@ def _validate_candidate(
     registry_components: Mapping[str, Any],
     load_manifest: ManifestLoader,
     active_composites: set[str],
+    resolved_components: list[str],
 ) -> None:
     entry = registry_components.get(candidate)
     if not isinstance(entry, Mapping):
+        resolved_components.append(candidate)
         return
 
     kind = entry.get("kind")
@@ -97,6 +103,7 @@ def _validate_candidate(
             component_id=candidate,
         )
     if kind != "composite":
+        resolved_components.append(candidate)
         return
 
     if candidate in active_composites:
@@ -120,4 +127,5 @@ def _validate_candidate(
             registry_components=registry_components,
             load_manifest=load_manifest,
             active_composites=nested_active,
+            resolved_components=resolved_components,
         )

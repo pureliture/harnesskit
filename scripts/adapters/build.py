@@ -61,6 +61,9 @@ STALE_PROJECT_CONTEXT_OUTPUTS = (
     "dist/project/GEMINI.md",
 )
 CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT = "harnesskit.hook.optimal-response-prompt-submit"
+HARNESS_MAINTENANCE_PROJECT_CONTEXT_RULE = (
+    "harnesskit.rule.harness-maintenance-project-context"
+)
 CODEX_OPTIMAL_RESPONSE_COMMAND = (
     'OPTIMAL_RESPONSE_SURFACE=codex '
     'node "${CODEX_HOME:-$HOME/.codex}/skills/optimal-response/hooks/stop-prompt-submit.cjs"'
@@ -429,7 +432,13 @@ def _resolve_bundle_family(
     """
     parts = path.parts
     if parts[:1] == ("dist",) and len(parts) >= 3:
-        return "dist", parts[1]
+        dist_target = parts[1]
+        if not (ADAPTERS_DIR / dist_target / "adapter.yml").is_file():
+            raise ValueError(
+                f"{rel_manifest}: bundled_files.output_path uses an unknown dist target "
+                f"{dist_target!r}: {raw}"
+            )
+        return "dist", dist_target
     project_runtime_roots = _project_runtime_roots()
     if parts[:1] and parts[0] in project_runtime_roots:
         return "project-runtime", None
@@ -630,7 +639,7 @@ def _component_ids_from_profiles(profile_ids: list[str]) -> list[str]:
         if not profile_path.is_file():
             raise FileNotFoundError(f"Missing profile: {profile_id}")
         profile = _load_yaml(profile_path)
-        validate_profile_selection(
+        expanded_profile_components = validate_profile_selection(
             profile,
             registry_components,
             load_manifest=lambda rel_path: _load_yaml(REPO_ROOT / rel_path),
@@ -643,7 +652,6 @@ def _component_ids_from_profiles(profile_ids: list[str]) -> list[str]:
                 raise ValueError(
                     f"{profile_path.relative_to(REPO_ROOT)}: component ids must be strings"
                 )
-            component_ids.append(component_id)
         install_policy = profile.get("install_policy") or {}
         scope_components = install_policy.get("scope_components") or {}
         if not isinstance(scope_components, dict):
@@ -664,7 +672,7 @@ def _component_ids_from_profiles(profile_ids: list[str]) -> list[str]:
                     raise ValueError(
                         f"{profile_path.relative_to(REPO_ROOT)}: scoped component ids must be strings"
                     )
-                component_ids.append(component_id)
+        component_ids.extend(expanded_profile_components)
     return component_ids
 
 
@@ -1883,8 +1891,15 @@ def build(
             hermes_output_root = REPO_ROOT / str(_hermes_adapter()["output_root"])
             _clean_generic_hermes_output_root(hermes_output_root)
         if not hermes_external_package:
-            _cleanup_unexpected_shared_hook_outputs(expected_outputs, target_ids=target_filter)
-            _cleanup_stale_project_context_outputs(expected_outputs, target_ids=target_filter)
+            selected_ids = set(selected_component_ids)
+            if CODEX_OPTIMAL_RESPONSE_PROMPT_SUBMIT in selected_ids:
+                _cleanup_unexpected_shared_hook_outputs(
+                    expected_outputs, target_ids=target_filter
+                )
+            if HARNESS_MAINTENANCE_PROJECT_CONTEXT_RULE in selected_ids:
+                _cleanup_stale_project_context_outputs(
+                    expected_outputs, target_ids=target_filter
+                )
         cleanup_dirs = {
             output_path.parent
             for output_path in expected_outputs
