@@ -65,22 +65,8 @@ ported_authored:
     - tests/projection/test_publish_manifest.py
     - tests/public_port/**
 
-# Remove unselected Profiles, Workflows and their installer plans from the public catalog.
-intentional_removals:
-  - components/workflows/review-gated-implementation/card.md
-  - components/workflows/review-gated-implementation/provenance.map.yml
-  - components/workflows/review-gated-implementation/workflow.yml
-  - components/workflows/spec-to-tdd/.gitkeep
-  - components/workflows/spec-to-tdd/card.md
-  - components/workflows/spec-to-tdd/provenance.map.yml
-  - components/workflows/spec-to-tdd/workflow.yml
-  - install-plans/engineering.project.yml
-  - install-plans/engineering.user.yml
-  - profiles/development.yml
-  - profiles/engineering.yml
-  - profiles/minimal.yml
-  - profiles/scm.yml
-  - profiles/work.yml
+# Current public main already omits the unselected Profiles, Workflows and plans.
+intentional_removals: []
 
 # Generator execution support is implemented and tested in M7A. Production
 # rules are added only with the hermetic tool bootstrap in the package/release

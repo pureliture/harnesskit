@@ -12,7 +12,7 @@ use rustix::fs::{openat, readlinkat, Mode, OFlags, CWD};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha512};
 
-use super::adapter::{EvidenceDigestAlgorithm, ToolId, VersionSupportKind};
+use super::adapter::{EvidenceDigestAlgorithm, ToolId};
 use super::catalog::{AdapterCatalog, CatalogAdapter};
 
 const MAX_METADATA_BYTES: u64 = 1_048_576;
@@ -452,42 +452,19 @@ fn sha512_file(path: &Path) -> Option<String> {
 }
 
 pub fn evaluate_metadata_probe(
-    adapter: &CatalogAdapter,
+    _adapter: &CatalogAdapter,
     observation: &MetadataProbeObservation,
 ) -> MetadataProbeOutcome {
     if !observation.install_metadata_present && !observation.declared_surface_present {
         return MetadataProbeOutcome::ToolAbsent;
     }
-
-    let supported = &adapter.descriptor.supported_tool_versions;
-    match supported.kind {
-        VersionSupportKind::SchemaFingerprint => observation
-            .observed_schema_digest
-            .as_ref()
-            .filter(|digest| *digest == &supported.value)
-            .map(|digest| MetadataProbeOutcome::ToolPresent {
-                current_tool_version_or_schema_digest: digest.clone(),
-            })
-            .unwrap_or(MetadataProbeOutcome::Unavailable {
-                reason: "version_unknown",
-            }),
-        VersionSupportKind::Exact | VersionSupportKind::SemverRange => observation
+    MetadataProbeOutcome::ToolPresent {
+        current_tool_version_or_schema_digest: observation
             .observed_tool_version
             .as_ref()
-            .map(|version| {
-                if version == &supported.value {
-                    MetadataProbeOutcome::ToolPresent {
-                        current_tool_version_or_schema_digest: version.clone(),
-                    }
-                } else {
-                    MetadataProbeOutcome::Unavailable {
-                        reason: "version_mismatch",
-                    }
-                }
-            })
-            .unwrap_or(MetadataProbeOutcome::Unavailable {
-                reason: "version_unknown",
-            }),
+            .or(observation.observed_schema_digest.as_ref())
+            .cloned()
+            .unwrap_or_else(|| "unknown".to_string()),
     }
 }
 

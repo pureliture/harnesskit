@@ -3,10 +3,11 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use harness_desktop_lib::contexts::local::domain::Scope;
 use harness_desktop_lib::contexts::local::{
-    AdapterCatalog, DiscoveryScanExecutor, LocalAttemptState, LocalContext, LocalScanExecutor,
-    LocalScanExecutorResult, LocalScanProgress, LocalScanProgressPort, LocalSnapshotStatus,
-    MetadataProbeObservation, ScanEnvironment, StartLocalScanOutcome, ToolId,
+    AdapterCatalog, AdapterVersionStatus, DiscoveryScanExecutor, LocalAttemptState, LocalContext,
+    LocalScanExecutor, LocalScanExecutorResult, LocalScanProgress, LocalScanProgressPort,
+    LocalSnapshotStatus, MetadataProbeObservation, ScanEnvironment, StartLocalScanOutcome, ToolId,
 };
 use tempfile::tempdir;
 
@@ -235,8 +236,15 @@ fn project_ignore_summary_survives_discovery_engine_snapshot_publication() {
 }
 
 #[test]
-fn all_runtime_mismatches_fail_without_publishing_a_snapshot() {
+fn version_mismatch_attempts_scan_and_reports_baseline_and_observed_version() {
     let home = tempdir().unwrap();
+    let skill = home.path().join(".codex/skills/version-drift/SKILL.md");
+    std::fs::create_dir_all(skill.parent().unwrap()).unwrap();
+    std::fs::write(
+        &skill,
+        "---\nname: Version Drift\ndescription: Best effort scan fixture\n---\n\nContent.\n",
+    )
+    .unwrap();
     let catalog = AdapterCatalog::load_embedded().unwrap();
     let observations = catalog
         .adapters()
@@ -245,9 +253,10 @@ fn all_runtime_mismatches_fail_without_publishing_a_snapshot() {
             (
                 adapter.descriptor.tool_id,
                 MetadataProbeObservation {
-                    install_metadata_present: true,
-                    declared_surface_present: true,
-                    observed_tool_version: Some("unsupported-version".to_string()),
+                    install_metadata_present: adapter.descriptor.tool_id == ToolId::Codex,
+                    declared_surface_present: adapter.descriptor.tool_id == ToolId::Codex,
+                    observed_tool_version: (adapter.descriptor.tool_id == ToolId::Codex)
+                        .then(|| "0.137.0".to_string()),
                     observed_schema_digest: None,
                 },
             )
@@ -263,19 +272,34 @@ fn all_runtime_mismatches_fail_without_publishing_a_snapshot() {
         ),
     );
 
-    let LocalScanExecutorResult::Failed {
-        code,
-        diagnostics: Some(diagnostics),
-    } = executor.execute_once("attempt-failed")
+    let LocalScanExecutorResult::Complete(publication) =
+        executor.execute_once("attempt-best-effort")
     else {
-        panic!("all mismatches must retain a failed report without a snapshot");
+        panic!("a readable mismatched-version adapter must still publish its scan");
     };
-    assert_eq!(code, "no_publishable_coverage");
-    assert_eq!(diagnostics.coverage.len(), 10);
-    assert!(diagnostics.coverage.iter().all(|coverage| {
-        coverage.status == harness_desktop_lib::contexts::local::CoverageStatus::Failed
-            && coverage.presence == harness_desktop_lib::contexts::local::SurfacePresence::Unknown
+    let snapshot = publication.snapshot;
+    assert_eq!(snapshot.status, LocalSnapshotStatus::Complete);
+    assert!(snapshot.instances.iter().any(|instance| {
+        instance.tool_id == ToolId::Codex
+            && instance.stable_source_locator == ".codex/skills/version-drift/SKILL.md"
     }));
+    let codex_coverage = snapshot
+        .coverage
+        .iter()
+        .find(|coverage| coverage.adapter_id == "codex" && coverage.scope == Scope::User)
+        .expect("Codex user coverage");
+    assert_eq!(
+        codex_coverage.baseline_tool_version.as_deref(),
+        Some("0.150.1")
+    );
+    assert_eq!(
+        codex_coverage.observed_tool_version.as_deref(),
+        Some("0.137.0")
+    );
+    assert_eq!(
+        codex_coverage.version_status,
+        AdapterVersionStatus::BestEffort
+    );
 }
 
 #[test]

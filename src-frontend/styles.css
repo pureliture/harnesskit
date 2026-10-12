@@ -3542,6 +3542,14 @@ button.tree-row {
   font-size: var(--text-meta);
 }
 
+.local-coverage-version {
+  display: block;
+  margin-top: 0.14rem;
+  color: var(--quiet);
+  font-size: var(--text-meta);
+  overflow-wrap: anywhere;
+}
+
 .local-evidence-list--issues li {
   border-color: var(--warning-border);
 }
@@ -3767,6 +3775,43 @@ button.tree-row {
   color: var(--text);
   background: var(--surface-0);
   box-shadow: 0 1.2rem 3.4rem rgb(0 0 0 / 0.34);
+}
+
+.local-version-warning__surface {
+  display: grid;
+  gap: var(--space-3);
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.local-version-warning__surface h2,
+.local-version-warning__surface p {
+  margin: 0;
+}
+
+.local-version-warning__adapters {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.local-version-warning__adapters li {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--warning-border);
+  border-radius: 0.35rem;
+  background: var(--surface-1);
+  overflow-wrap: anywhere;
+}
+
+.local-version-warning__adapters li strong {
+  color: var(--text);
+}
+
+.local-version-warning__surface .ai-provider-actions {
+  justify-content: flex-end;
 }
 
 .authoring-flow-surface {

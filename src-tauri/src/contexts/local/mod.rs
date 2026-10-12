@@ -38,7 +38,8 @@ pub use context::{
     LocalScanPublication, StartLocalScanOutcome,
 };
 pub use domain::{
-    CoverageStatus, ProjectIgnoreSummary, ProjectLocationRecord, QualifiedTool, SurfacePresence,
+    AdapterVersionStatus, CoverageStatus, ProjectIgnoreSummary, ProjectLocationRecord,
+    QualifiedTool, SurfacePresence,
 };
 pub use engine::{DiscoveryScanExecutor, ScanEnvironment};
 pub use path_action::{

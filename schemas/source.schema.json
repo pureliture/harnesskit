@@ -51,10 +51,22 @@
           "description": "Reason the observed identity is unavailable or unknown."
         }
       },
-      "oneOf": [
-        { "required": ["value"] },
-        { "required": ["reason"] }
-      ]
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": ["unavailable", "unknown"]
+          }
+        },
+        "required": ["kind"]
+      },
+      "then": {
+        "required": ["reason"],
+        "not": { "required": ["value"] }
+      },
+      "else": {
+        "required": ["value"],
+        "not": { "required": ["reason"] }
+      }
     },
     "observed_at": {
       "type": "string",

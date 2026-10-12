@@ -19,6 +19,8 @@ function normalizeAttempt(value) {
     state: String(value.state ?? "").toLowerCase() || "running",
     errorCode: asOptionalId(value.errorCode ?? value.error_code),
     progress,
+    coverage: Array.isArray(value.coverage) ? value.coverage : [],
+    issues: Array.isArray(value.issues) ? value.issues : [],
   };
 }
 
@@ -112,6 +114,7 @@ export function createLocalDataState(overrides = {}) {
     latestComplete: null,
     latestPartial: null,
     queryResult: null,
+    versionWarningDismissedKey: null,
     qualifiedTools: [],
     projects: [],
     selectedDetail: null,
@@ -356,6 +359,12 @@ export function reduceLocalScanState(state, action) {
       queryResult: null,
       message: "로컬 하네스 검색 결과를 불러오지 못했습니다.",
     };
+  }
+
+  if (action.type === "dismiss_version_warning") {
+    const key = asOptionalId(action.key);
+    if (!key) return state;
+    return { ...state, versionWarningDismissedKey: key };
   }
 
   if (action.type === "detail_result") {

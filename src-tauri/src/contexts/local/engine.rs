@@ -10,7 +10,8 @@ use super::context::{
     LocalScanProgressPort, LocalScanPublication,
 };
 use super::domain::{
-    CoverageRecord, CoverageStatus, LocalScanResult, QualifiedTool, SafeIssue, SurfacePresence,
+    AdapterVersionStatus, CoverageRecord, CoverageStatus, LocalScanResult, QualifiedTool,
+    SafeIssue, SurfacePresence,
 };
 use super::probe::{
     collect_metadata_observations, evaluate_metadata_probe, MetadataProbeFilesystem,
@@ -82,10 +83,49 @@ impl DiscoveryScanExecutor {
     pub fn execute_once(&self, attempt_id: &str) -> LocalScanExecutorResult {
         match self.scan(attempt_id, &NoopProgressPort) {
             Ok(result) => result,
-            Err(code) => LocalScanExecutorResult::Failed {
-                code,
-                diagnostics: None,
-            },
+            Err(code) => self.failed_result(code),
+        }
+    }
+
+    fn failed_result(&self, code: String) -> LocalScanExecutorResult {
+        let mut result = LocalScanResult::default();
+        for adapter in self.catalog.adapters() {
+            let observation = self
+                .environment
+                .observations
+                .get(&adapter.descriptor.tool_id)
+                .cloned()
+                .unwrap_or(MetadataProbeObservation {
+                    install_metadata_present: false,
+                    declared_surface_present: true,
+                    observed_tool_version: None,
+                    observed_schema_digest: None,
+                });
+            match evaluate_metadata_probe(adapter, &observation) {
+                MetadataProbeOutcome::ToolAbsent => add_absent_coverage(adapter, &mut result),
+                MetadataProbeOutcome::ToolPresent { .. } => {
+                    add_scan_failure_coverage(adapter, &code, &mut result)
+                }
+                MetadataProbeOutcome::Unavailable { reason } => {
+                    add_unavailable_coverage(adapter, reason, &mut result)
+                }
+            }
+        }
+        apply_version_observations(
+            self.catalog.adapters(),
+            &self.environment.observations,
+            &mut result.coverage,
+        );
+        normalize(&mut result);
+        LocalScanExecutorResult::Failed {
+            code,
+            diagnostics: Some(LocalScanDiagnostics {
+                app_version: Some(self.environment.app_version.clone()),
+                adapter_set_fingerprint: None,
+                coverage: result.coverage,
+                skipped_paths: result.skipped_paths,
+                issues: result.issues,
+            }),
         }
     }
 
@@ -161,6 +201,11 @@ impl DiscoveryScanExecutor {
                 }
             }
         }
+        apply_version_observations(
+            self.catalog.adapters(),
+            &self.environment.observations,
+            &mut result.coverage,
+        );
         normalize(&mut result);
         validate_normalized_result(&result)?;
         fingerprint_entries.sort_by(|left, right| left.adapter_id.cmp(&right.adapter_id));
@@ -240,10 +285,7 @@ impl LocalScanExecutor for DiscoveryScanExecutor {
     ) -> LocalScanExecutorResult {
         match self.scan(attempt_id, progress) {
             Ok(result) => result,
-            Err(code) => LocalScanExecutorResult::Failed {
-                code,
-                diagnostics: None,
-            },
+            Err(code) => self.failed_result(code),
         }
     }
 }
@@ -300,6 +342,10 @@ fn add_absent_coverage(adapter: &CatalogAdapter, result: &mut LocalScanResult) {
         result.coverage.push(CoverageRecord {
             adapter_id: adapter.adapter_id.clone(),
             adapter_version: adapter.descriptor.adapter_version.clone(),
+            baseline_tool_version: Some(adapter.descriptor.supported_tool_versions.value.clone()),
+            observed_tool_version: None,
+            observed_schema_digest: None,
+            version_status: AdapterVersionStatus::Absent,
             surface_id: surface.surface_id.clone(),
             root_id: None,
             scope: surface.scope,
@@ -338,6 +384,10 @@ fn add_unavailable_coverage(
         result.coverage.push(CoverageRecord {
             adapter_id: adapter.adapter_id.clone(),
             adapter_version: adapter.descriptor.adapter_version.clone(),
+            baseline_tool_version: Some(adapter.descriptor.supported_tool_versions.value.clone()),
+            observed_tool_version: None,
+            observed_schema_digest: None,
+            version_status: AdapterVersionStatus::Unknown,
             surface_id: surface.surface_id.clone(),
             root_id: None,
             scope: surface.scope,
@@ -348,6 +398,74 @@ fn add_unavailable_coverage(
             skipped_count: 0,
             issue_codes: vec![code.clone()],
         });
+    }
+}
+
+fn add_scan_failure_coverage(adapter: &CatalogAdapter, code: &str, result: &mut LocalScanResult) {
+    result.issues.push(SafeIssue {
+        project_id: None,
+        code: code.to_string(),
+        safe_message: "A discovered tool could not be scanned".to_string(),
+        safe_relative_locator: None,
+    });
+    for surface in &adapter.descriptor.surfaces {
+        result.coverage.push(CoverageRecord {
+            adapter_id: adapter.adapter_id.clone(),
+            adapter_version: adapter.descriptor.adapter_version.clone(),
+            baseline_tool_version: Some(adapter.descriptor.supported_tool_versions.value.clone()),
+            observed_tool_version: None,
+            observed_schema_digest: None,
+            version_status: AdapterVersionStatus::Unknown,
+            surface_id: surface.surface_id.clone(),
+            root_id: None,
+            scope: surface.scope,
+            project_id: None,
+            status: CoverageStatus::Failed,
+            presence: SurfacePresence::Unknown,
+            item_count: 0,
+            skipped_count: 0,
+            issue_codes: vec![code.to_string()],
+        });
+    }
+}
+
+fn apply_version_observations(
+    adapters: &[CatalogAdapter],
+    observations: &BTreeMap<ToolId, MetadataProbeObservation>,
+    coverage: &mut [CoverageRecord],
+) {
+    for adapter in adapters {
+        let observation = observations.get(&adapter.descriptor.tool_id);
+        let version_status = observation.map_or(AdapterVersionStatus::Unknown, |observation| {
+            if !observation.install_metadata_present && !observation.declared_surface_present {
+                AdapterVersionStatus::Absent
+            } else {
+                observation
+                    .observed_tool_version
+                    .as_ref()
+                    .or(observation.observed_schema_digest.as_ref())
+                    .map(|observed| {
+                        if observed == &adapter.descriptor.supported_tool_versions.value {
+                            AdapterVersionStatus::BaselineMatch
+                        } else {
+                            AdapterVersionStatus::BestEffort
+                        }
+                    })
+                    .unwrap_or(AdapterVersionStatus::Unknown)
+            }
+        });
+        for record in coverage
+            .iter_mut()
+            .filter(|record| record.adapter_id == adapter.adapter_id)
+        {
+            record.baseline_tool_version =
+                Some(adapter.descriptor.supported_tool_versions.value.clone());
+            record.observed_tool_version =
+                observation.and_then(|value| value.observed_tool_version.clone());
+            record.observed_schema_digest =
+                observation.and_then(|value| value.observed_schema_digest.clone());
+            record.version_status = version_status;
+        }
     }
 }
 

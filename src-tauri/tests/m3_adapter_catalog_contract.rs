@@ -328,8 +328,8 @@ fn metadata_probe_never_executes_a_tool_and_tool_absent_keeps_static_qualificati
                 observed_schema_digest: None,
             }
         ),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_mismatch"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "0.150.2".to_string(),
         }
     );
 
@@ -406,8 +406,8 @@ fn claude_metadata_probe_requires_qualified_digest_and_rejects_outside_target() 
     assert_eq!(observation.observed_tool_version, None);
     assert_eq!(
         evaluate_metadata_probe(catalog.for_tool(ToolId::ClaudeCode).unwrap(), &observation),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_unknown"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "unknown".to_string(),
         }
     );
 
@@ -423,8 +423,8 @@ fn claude_metadata_probe_requires_qualified_digest_and_rejects_outside_target() 
     assert_eq!(escaped.observed_tool_version, None);
     assert_eq!(
         evaluate_metadata_probe(catalog.for_tool(ToolId::ClaudeCode).unwrap(), &escaped),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_unknown"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "unknown".to_string(),
         }
     );
 }

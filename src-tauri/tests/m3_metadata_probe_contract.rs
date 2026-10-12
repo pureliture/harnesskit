@@ -96,15 +96,15 @@ fn compiled_probes_read_exact_local_metadata_without_executing_tools() {
                 observed_schema_digest: None,
             },
         ),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_mismatch"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "2.8.1".to_string(),
         }
     );
     let claude = catalog.for_tool(ToolId::ClaudeCode).unwrap();
     assert_eq!(
         evaluate_metadata_probe(claude, observations.get(&ToolId::ClaudeCode).unwrap()),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_unknown"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "unknown".to_string(),
         }
     );
     let cli = catalog
@@ -119,7 +119,7 @@ fn compiled_probes_read_exact_local_metadata_without_executing_tools() {
 }
 
 #[test]
-fn a_declared_cli_surface_without_verified_binary_is_not_called_absent_or_supported() {
+fn a_declared_cli_surface_without_verified_binary_is_attempted_with_unknown_version() {
     let fixture = tempdir().unwrap();
     let home = fixture.path().join("home");
     write(home.join(".gemini/antigravity-cli/settings.json"), "{}");
@@ -136,8 +136,8 @@ fn a_declared_cli_surface_without_verified_binary_is_not_called_absent_or_suppor
 
     assert_eq!(
         evaluate_metadata_probe(cli, observations.get(&ToolId::AntigravityCli).unwrap()),
-        MetadataProbeOutcome::Unavailable {
-            reason: "version_unknown"
+        MetadataProbeOutcome::ToolPresent {
+            current_tool_version_or_schema_digest: "unknown".to_string(),
         }
     );
 }

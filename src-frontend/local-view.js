@@ -29,6 +29,15 @@ function optionalText(value) {
   return normalized || null;
 }
 
+function safeVersionText(value) {
+  const normalized = String(value ?? "")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) return null;
+  return normalized.length <= 80 ? normalized : `${normalized.slice(0, 77)}…`;
+}
+
 function queryResult(data) {
   return data?.queryResult ?? null;
 }
@@ -418,7 +427,7 @@ export function renderLocalWorkbench(data, view, removalState = null) {
         <span><strong>Verified SoT context</strong><code title="${escapeHtml(view.verifiedComponentId)}">${escapeHtml(view.verifiedComponentId)}</code></span>
         <button type="button" class="button button--quiet" data-clear-local-correlation>전체 Local 검색으로 돌아가기</button>
       </div>` : ""}
-      <div class="local-workspace-title"><div><p class="eyebrow">Qualified discovery adapters</p><h2 id="local-workspace-title">Local Harness Atlas</h2></div><span>${localResultCount(data)} results</span></div>
+      <div class="local-workspace-title"><div><p class="eyebrow">Local discovery adapters</p><h2 id="local-workspace-title">Local Harness Atlas</h2></div><span>${localResultCount(data)} results</span></div>
       <div class="local-tool-rail" role="toolbar" aria-label="AI tool filter">
         ${toolButton(null, "전체", view.toolId === null)}
         ${tools.map(({ toolId, label }) => toolButton(toolId, label, view.toolId === toolId)).join("")}
@@ -531,7 +540,87 @@ function renderProjectIgnoreIssue(data, projectId) {
 function renderCoverage(summary) {
   const coverage = summaryArray(summary, "coverage", "coverage");
   if (!coverage.length) return '<p class="local-inspector-empty">Coverage summary 없음</p>';
-  return `<ul class="local-evidence-list">${coverage.map((record) => `<li><strong>${escapeHtml(record.adapterId ?? record.adapter_id ?? "adapter")}</strong><span>${escapeHtml(record.status ?? "unknown")} · ${escapeHtml(record.presence ?? "unknown")}</span><span>${escapeHtml(record.itemCount ?? record.item_count ?? 0)} items</span></li>`).join("")}</ul>`;
+  return `<ul class="local-evidence-list">${coverage.map((record) => {
+    const versionStatus = optionalText(record.versionStatus ?? record.version_status);
+    const baseline = safeVersionText(record.baselineToolVersion ?? record.baseline_tool_version);
+    const observed = safeVersionText(record.observedToolVersion ?? record.observed_tool_version)
+      ?? safeVersionText(record.observedSchemaDigest ?? record.observed_schema_digest);
+    const versionCopy = versionStatus === "baseline_match"
+      ? `기준 ${baseline ?? "데이터 없음"} · 현재 ${observed ?? baseline ?? "확인 불가"}`
+      : versionStatus === "best_effort"
+        ? `기준 ${baseline ?? "데이터 없음"} · 현재 ${observed ?? "확인 불가"} · best-effort`
+        : versionStatus === "unknown"
+          ? `기준 ${baseline ?? "데이터 없음"} · 현재 버전 확인 불가`
+          : "";
+    return `<li><strong>${escapeHtml(record.adapterId ?? record.adapter_id ?? "adapter")}</strong><span>${escapeHtml(record.status ?? "unknown")} · ${escapeHtml(record.presence ?? "unknown")}${versionCopy ? `<small class="local-coverage-version">${escapeHtml(versionCopy)}</small>` : ""}</span><span>${escapeHtml(record.itemCount ?? record.item_count ?? 0)} items</span></li>`;
+  }).join("")}</ul>`;
+}
+
+function versionIssueGroups(coverage) {
+  const groups = new Map();
+  for (const record of Array.isArray(coverage) ? coverage : []) {
+    const versionStatus = optionalText(record.versionStatus ?? record.version_status);
+    if (!["baseline_match", "best_effort", "unknown"].includes(versionStatus)) continue;
+    const issueCodes = record.issueCodes ?? record.issue_codes;
+    const codes = Array.isArray(issueCodes)
+      ? issueCodes.map(optionalText).filter(Boolean)
+      : [];
+    const coverageStatus = String(record.status ?? "").toLowerCase();
+    if (codes.length === 0 && !["partial", "failed"].includes(coverageStatus)) continue;
+    const adapterId = optionalText(record.adapterId ?? record.adapter_id) ?? "adapter";
+    const baseline = safeVersionText(record.baselineToolVersion ?? record.baseline_tool_version);
+    const observed = safeVersionText(record.observedToolVersion ?? record.observed_tool_version)
+      ?? safeVersionText(record.observedSchemaDigest ?? record.observed_schema_digest);
+    const previous = groups.get(adapterId) ?? {
+      adapterId,
+      label: TOOL_LABELS[adapterId.replaceAll("-", "_")] ?? TOOL_LABELS[adapterId] ?? adapterId,
+      baseline,
+      observed,
+      issueCodes: new Set(),
+    };
+    if (!previous.baseline && baseline) previous.baseline = baseline;
+    if (!previous.observed && observed) previous.observed = observed;
+    codes.forEach((code) => previous.issueCodes.add(code));
+    groups.set(adapterId, previous);
+  }
+  return [...groups.values()].map((group) => ({
+    ...group,
+    issueCount: group.issueCodes.size,
+    issueCodes: [...group.issueCodes],
+  }));
+}
+
+export function localVersionWarning(data) {
+  if (data?.currentAttempt?.state === "running" || data?.scanStartPending) return null;
+  const terminal = data?.latestTerminalReport;
+  const terminalState = String(terminal?.state ?? "").toLowerCase();
+  if (["partial", "failed"].includes(terminalState)) {
+    const entries = versionIssueGroups(terminal.coverage);
+    if (entries.length > 0) {
+      return {
+        key: `attempt:${terminal.attemptId ?? terminal.attempt_id ?? "latest"}`,
+        failed: terminalState === "failed",
+        entries,
+      };
+    }
+  }
+  const snapshot = activeLocalSnapshotHeader(data);
+  if (!snapshot) return null;
+  const summary = snapshotSummary(data);
+  const entries = versionIssueGroups(summary.coverage);
+  if (entries.length === 0) return null;
+  return { key: `snapshot:${snapshot.snapshotId}`, failed: false, entries };
+}
+
+export function renderLocalVersionWarningDialog(data) {
+  const warning = localVersionWarning(data);
+  if (!warning || data?.versionWarningDismissedKey === warning.key) return "";
+  const rows = warning.entries.map((entry) => `<li><strong>${escapeHtml(entry.label)}</strong><span>기준 버전: ${escapeHtml(entry.baseline ?? "데이터 없음")}</span><span>현재 PC 버전: ${escapeHtml(entry.observed ?? "확인 불가")}</span></li>`).join("");
+  const title = warning.failed ? "이번 스캔을 완료하지 못했습니다" : "일부 하네스를 읽지 못했습니다";
+  const description = warning.failed
+    ? "읽기 전용 스캔을 끝내지 못했습니다. 도구별 버전과 하네스 상세의 오류 내용을 확인하세요."
+    : "읽기 전용 스캔 중 일부 항목을 확인하지 못했습니다. 도구별 버전과 하네스 상세의 오류 내용을 확인하세요.";
+  return `<div class="modal-backdrop local-version-warning" data-local-version-warning-dialog role="dialog" aria-modal="true" aria-labelledby="local-version-warning-title" aria-describedby="local-version-warning-description" data-version-warning-key="${escapeHtml(warning.key)}"><section class="modal-surface local-version-warning__surface"><header><p class="eyebrow">PC 설치 하네스 스캔</p><h2 id="local-version-warning-title">${escapeHtml(title)}</h2></header><p id="local-version-warning-description">${escapeHtml(description)}</p><ul class="local-version-warning__adapters">${rows}</ul><p>다른 버전에서 읽기가 되더라도 해당 도구 버전의 호환성이 검증된 것은 아닙니다.</p><div class="ai-provider-actions"><button type="button" class="button button--primary" data-dismiss-local-version-warning>닫기</button></div></section></div>`;
 }
 
 function renderSkipped(summary) {

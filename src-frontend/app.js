@@ -1259,6 +1259,11 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
     typographyMenuBinding.release();
     graphSession?.detach();
     root.innerHTML = renderAppShell(state);
+    const localVersionWarningDialog = root.querySelector("[data-local-version-warning-dialog]");
+    if (localVersionWarningDialog
+      && !localVersionWarningDialog.contains(root.ownerDocument?.activeElement)) {
+      localVersionWarningDialog.querySelector("[data-dismiss-local-version-warning]")?.focus();
+    }
     workspaceLayoutController.syncAfterRender?.();
     typographyMenuBinding = bindTypographyMenu({
       trigger: root.querySelector("#typography-menu-trigger"),
@@ -2040,6 +2045,23 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
         return;
       }
 
+      const dismissVersionWarning = event.target.closest?.("[data-dismiss-local-version-warning]");
+      if (dismissVersionWarning) {
+        const dialog = root.querySelector("[data-local-version-warning-dialog]");
+        const key = dialog?.dataset?.versionWarningKey;
+        if (key) {
+          update({
+            ...state,
+            localData: reduceLocalScanState(state.localData, {
+              type: "dismiss_version_warning",
+              key,
+            }),
+          });
+          root.querySelector("#dashboard-refresh")?.focus();
+        }
+        return;
+      }
+
       const cancelLocalRemovalSelection = event.target.closest?.("[data-cancel-local-removal-selection]");
       if (cancelLocalRemovalSelection && !cancelLocalRemovalSelection.disabled) {
         exitLocalRemovalSelection();
@@ -2364,6 +2386,30 @@ export function mountApp(root, backend = createBackendClient(), options = {}) {
             event.preventDefault();
             (event.shiftKey ? last : first)?.focus();
           }
+        }
+        return;
+      }
+      const localVersionWarningDialog = root.querySelector("[data-local-version-warning-dialog]");
+      if (localVersionWarningDialog) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          localVersionWarningDialog.querySelector("[data-dismiss-local-version-warning]")?.click();
+          return;
+        }
+        if (event.key === "Tab") {
+          const focusable = [...(localVersionWarningDialog.querySelectorAll?.(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ) ?? [])];
+          const first = focusable[0];
+          const last = focusable.at(-1);
+          const active = root.ownerDocument?.activeElement;
+          if (first && (!localVersionWarningDialog.contains(active)
+            || (event.shiftKey && active === first)
+            || (!event.shiftKey && active === last))) {
+            event.preventDefault();
+            (event.shiftKey ? last : first).focus();
+          }
+          return;
         }
         return;
       }
