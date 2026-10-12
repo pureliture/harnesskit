@@ -591,6 +591,16 @@ def build_verified_macos_package(
             "MACOSX_DEPLOYMENT_TARGET": DEPLOYMENT_TARGET,
         }
     )
+    home_dir = str(Path.home())
+    repo_dir = str(repo_root.resolve())
+    remap_args = [f"--remap-path-prefix={home_dir}=/workspace"]
+    if not repo_dir.startswith(home_dir):
+        remap_args.append(f"--remap-path-prefix={repo_dir}=/workspace")
+    remap_str = " ".join(remap_args)
+    if "RUSTFLAGS" in environment and environment["RUSTFLAGS"]:
+        environment["RUSTFLAGS"] = f"{environment['RUSTFLAGS']} {remap_str}"
+    else:
+        environment["RUSTFLAGS"] = remap_str
     try:
         clean_dmg_outputs(repo_root)
         run_command(

@@ -21,8 +21,8 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-      role: approved_requirements_sot
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_requirements_influence
       influence:
         - same-slice evidence and PASS-only progression gate
         - non-PASS current-slice retention and reporting contract
@@ -30,8 +30,8 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
-      role: approved_blueprint_vc03
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_blueprint_influence
       influence:
         - current capability slice identity and closure contract
         - cross-slice evidence rejection
@@ -69,18 +69,6 @@ provenance:
       copied_content: false
       adapted_content: true
       runtime_dependency_on_sources: false
-  attribution_note: >
-    HarnessKit harness-maintenance skill authored from the approved body design.
-    It references verification-before-completion, TDD, systematic-debugging,
-    code-review, and doc-audit patterns without copied source text. The M5 merge
-    adds skill craft evaluation heuristics adapted from the superpowers
-    writing-skills craft (evaluation-side share). The Matt Pocock skills
-    assimilation Slice D update adapts writing-great-skills, teach, and review
-    material into HarnessKit-native quality gates without copying upstream text.
-    The reference provenance gates update adapts approved local requirements and
-    blueprint Slice 4 into static traceability reporting guidance. The vertical
-    capability slice update adapts the approved local requirements and blueprint
-    VC-03 into same-slice closure and progression-gate guidance.
   source_mode: referenced
   copied_sections: []
   rewritten_sections:
@@ -95,7 +83,7 @@ provenance:
     - source/provenance gate reporting from approved reference provenance gates requirements and blueprint
     - skill craft heuristics (CSO description quality; baseline / pressure-test evidence) from writing-skills craft
     - skill authoring quality rubric from Matt Pocock writing-great-skills, teach, and review-oriented material
-    - current capability slice closure from approved local VC-03 requirements and blueprint
+    - current capability slice closure from then-approved, now-retired local VC-03 requirements and blueprint
   license_notes: >
     Referenced local installed skill patterns and approved repository-local
     requirements/blueprint only; no bundled third-party code copied.
@@ -104,14 +92,19 @@ provenance:
     registered snapshot with license_hint unknown; copied_content is false and
     runtime_dependency_on_sources is false.
   human_review_required: true
-  review_triggers:
-    - evaluation_gate_changed
-    - source_registry_snapshot_contract_changed
-    - provenance_linkage_gate_changed
-    - static_traceability_failure_reporting_changed
-    - upstream_freshness_model_changed
-    - runtime_truth_policy_changed
-    - adapter_output_contract_changed
-    - skill_craft_heuristics_changed
-    - skill_authoring_quality_gate_changed
-    - capability_slice_contract_changed
+attribution_note: >
+  HarnessKit skill-evaluation authored from the approved body design. Its
+  provenance records the local requirements and blueprint, reference-provenance
+  gates, writing-skills craft, and Matt Pocock skills snapshot used as design
+  influences. No source text was copied verbatim.
+review_triggers:
+  - condition: evaluation_gate_changed
+  - condition: source_registry_snapshot_contract_changed
+  - condition: provenance_linkage_gate_changed
+  - condition: static_traceability_failure_reporting_changed
+  - condition: upstream_freshness_model_changed
+  - condition: runtime_truth_policy_changed
+  - condition: adapter_output_contract_changed
+  - condition: skill_craft_heuristics_changed
+  - condition: skill_authoring_quality_gate_changed
+  - condition: capability_slice_contract_changed

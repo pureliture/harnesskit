@@ -94,16 +94,16 @@ sources:
 
   harness-authoring-vertical-capability-slice-requirements:
     kind: repository_local
-    path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-    description: "Approved requirements SoT for vertical capability-slice authoring"
+    path: sources/harness-authoring-provenance.md
+    description: "Historical provenance for retired vertical capability-slice authoring requirements; not active requirements SoT"
     license_hint: repository-local
     tags: [harnesskit, authoring, requirements, vertical-slice]
     active_snapshot: null
 
   harness-authoring-vertical-capability-slice-blueprint:
     kind: repository_local
-    path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
-    description: "Approved blueprint SoT for vertical capability-slice authoring"
+    path: sources/harness-authoring-provenance.md
+    description: "Historical provenance for retired vertical capability-slice authoring blueprint; not active blueprint SoT"
     license_hint: repository-local
     tags: [harnesskit, authoring, blueprint, vertical-slice]
     active_snapshot: null

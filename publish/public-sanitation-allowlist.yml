@@ -2052,77 +2052,237 @@ entries:
   value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
   justification_sha256: 19fea8e115c09de69e49463f13f1eecd780883d7f155299b1b9f408ab95cf680
   approved_by: pureliture
+# These beta5 PR, merge, and release records are already public and bound by the previously approved MutationPlan.
+# MutationPlan SHA-256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
 # PR #16 was reviewed and merged. Its exact author, committer, and co-author metadata are already visible in the public PR and commit history.
 - rule_id: email-review-required
   surface: git.commit.message
   locator_sha256: 6a2e65fdbbf4f871d43486d656873331f7d9d5dc03af487165ecbbd051cf86cf
   value_sha256: a6861aef596fd63e044171950e63d848013fa11807a565cafb966251cbb6fb16
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.author_email
   locator_sha256: 8bb9d9b3084569c21e5f15bcd2ceb3bbaadf0d13e1260ec8ec3e0e9d0b01448d
   value_sha256: 71ef47937fc3052abcc4259a31b0a282ae32d724fac354c556856626f9cf328f
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.author_email
   locator_sha256: a4216976a54700f7a8892de671522c9b7eed1949934a128ed32a0178c49bfc51
   value_sha256: 3f77336f2159591b82b6bad7dbe85dab5777329cae7753da422f8abc320fbeb2
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.author_name
   locator_sha256: 168acb38d843b64417eb72595be26c33841050bc127e8de5acc2075c7503373c
   value_sha256: 7939b256efa35528cf1a3fd551f02259d6eba24ff36dc2f6e46cbed77e559e15
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.author_name
   locator_sha256: 50b657caaa521cfe0fe93b106629b7eb6ada2bc8064d69a34e51ed6eed9f4886
   value_sha256: 724312a89b376612002c0ac24f9e306ec76795a401b8e004f448d134a517f6a8
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.committer_email
   locator_sha256: b8c6db1383493ca806a1c433b63d89fbefaa7e2015c4483b5c8a3c8fdf8a70eb
   value_sha256: 3c205d8fc749f72977b9331e3179773c315bb1f4860c366de2abe9ec9337730b
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.committer_email
   locator_sha256: d8107897ac2af7c7b709273d1520e8e8a8eb164275c720fab767b136314a8ceb
   value_sha256: 3f77336f2159591b82b6bad7dbe85dab5777329cae7753da422f8abc320fbeb2
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
-  approved_by: pureliture
-- rule_id: public-identity-review-required
-  surface: git.commit.committer_name
-  locator_sha256: d18a338c0a3e1995f4831318c47a5e8ed0f1c689c5c1a0dcfe766e5ae9b9334a
-  value_sha256: f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: git.commit.committer_name
   locator_sha256: 37233a7dc684fb191f297fa2adb04fed112590519a32ee915ca31ab07cf6a7b2
   value_sha256: 724312a89b376612002c0ac24f9e306ec76795a401b8e004f448d134a517f6a8
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
-  surface: github.pull_request.author_name
-  locator_sha256: f74dbec4166558e0516108b33b8ae4177834a0e3313e78de67caba7b1f544f5f
-  value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
-  justification_sha256: d15e10c429cf14f1bae1def8ee46821b9b338958f8e1401e94b712456492c3cb
+  surface: git.commit.committer_name
+  locator_sha256: d18a338c0a3e1995f4831318c47a5e8ed0f1c689c5c1a0dcfe766e5ae9b9334a
+  value_sha256: f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 # The exact beta5 DMG hash is already published in release v0.1.0-beta.5, and matches the verified arm64 package report and installed-runtime report.
 - rule_id: binary-content-review-required
   surface: github.release.asset
   locator_sha256: 41c60db180f0d460849ab61feeba81cf6e41fe28839e8a80771a536f4c1caa87
   value_sha256: 48afc19eaf53dafbf1a6f3713f67250f34b0c9c319fbba378f085806b3ff0a91
-  justification_sha256: bc1c2cf23f949ce559d0b5a444ac58a9d2ea10d148c06c4ac9ff4b28651ee0a3
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: github.pull_request.author_name
+  locator_sha256: f74dbec4166558e0516108b33b8ae4177834a0e3313e78de67caba7b1f544f5f
+  value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
   approved_by: pureliture
 - rule_id: public-identity-review-required
   surface: github.release.author_name
   locator_sha256: d7512f6b304b3353fad01af2c11ae81b245f1dfd7baf7051649a2e0d680e289f
   value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
-  justification_sha256: bc1c2cf23f949ce559d0b5a444ac58a9d2ea10d148c06c4ac9ff4b28651ee0a3
+  justification_sha256: f454ab8f6133e2097a8c74b236fa93a33768151ee5f1c54a0cc8077c819e6641
+  approved_by: pureliture
+
+# 2026-10-12 review: exact macOS Open Anyway screenshot, generic security UI with no personal identity; PNG has only IHDR, IDAT and IEND chunks.
+- rule_id: binary-content-review-required
+  surface: git.blob
+  locator_sha256: 4261ec3516a180da44903199a1a5fe8e34ad5072778e73b0ce0550888fa004ff
+  value_sha256: 6d70e88a5c881cb09cdf73244c261f2c6ffe20b33c5b8f227ceaf79e51325078
+  justification_sha256: 12baf2f2132b9f0f6a9f9c0bab202a990df313c0e660559538d90043d6a977b0
+  approved_by: junie
+# 2026-10-12 review: exact public beta6 merge message contains only the HarnessKit Contributors GitHub noreply coauthor attribution.
+- rule_id: email-review-required
+  surface: git.commit.message
+  locator_sha256: 9b9ceb9c386b30ed572962fb50623f8d99b48dc6c35f90e917b424217c0a4cbe
+  value_sha256: da3553d7aa32b88c03d9910970900172864aa86ae7ef0af2cba9b01ec73a4bba
+  justification_sha256: eadf3fdd8d864487b604bf7439eb26ae12734c0c11163d39c452a3d0371a2563
+  approved_by: junie
+# 2026-10-12 review: exact Desktop guide candidate message contains only the explicitly requested Junie JetBrains public coauthor attribution; no other contact, credential or private context.
+- rule_id: email-review-required
+  surface: git.commit.message
+  locator_sha256: 17c08d87b351b6c9203e9aff683bc2314b8a5c71c17b4ca5a6a6a5531198fbd5
+  value_sha256: 6a8ddc80d6b9c6a69f7bfc759c9ac4641799094115cc0f530f4f8e3b5c24436e
+  justification_sha256: d9b94bb182fc505d92382e4cc1c131a13589beeeb858ec9048d7d711d734a1ff
+  approved_by: junie
+# 2026-10-12 review: exact previously reviewed GitHub noreply/web-merge and HarnessKit Contributors identities on beta6/README public commits; pureliture authors of public PRs 18 and 20 and release beta6. No unapproved beta6 author/tagger identity is covered.
+- rule_id: public-identity-review-required
+  surface: git.commit.author_email
+  locator_sha256: 6255d08d6741694b9a2a75c6ed445f261928a365998b5c8bd3cfacb263803bf2
+  value_sha256: 71ef47937fc3052abcc4259a31b0a282ae32d724fac354c556856626f9cf328f
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.author_email
+  locator_sha256: 90072a7d2d9c0277f274c5d7c0194656aa57be1818418747ea6c3e7d8ea85ae9
+  value_sha256: 71ef47937fc3052abcc4259a31b0a282ae32d724fac354c556856626f9cf328f
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.author_email
+  locator_sha256: d544da82f69a4ee1eb2dff2c71b61b1a429f1300e2a9bb3e1b4ed8bf81b801ab
+  value_sha256: 3f77336f2159591b82b6bad7dbe85dab5777329cae7753da422f8abc320fbeb2
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.author_name
+  locator_sha256: 1328a8ed4c94ffd5d24d048cf94a48fd719b741b5d3b20e23300ef7ed71c1084
+  value_sha256: 7939b256efa35528cf1a3fd551f02259d6eba24ff36dc2f6e46cbed77e559e15
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.author_name
+  locator_sha256: c83f89713fe5dcb9878fc9016e9e186894e2fe774f444364c6d5f871402905fe
+  value_sha256: 7939b256efa35528cf1a3fd551f02259d6eba24ff36dc2f6e46cbed77e559e15
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.author_name
+  locator_sha256: d577007e437b1f865894043b3b7b8cf395b8dc194ef281888cbff2d257db4c0b
+  value_sha256: 724312a89b376612002c0ac24f9e306ec76795a401b8e004f448d134a517f6a8
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_email
+  locator_sha256: 4eeb71b3bda5e2ae04eac4b93290fb477a3207688c3675896bc29573f303b1d2
+  value_sha256: 3c205d8fc749f72977b9331e3179773c315bb1f4860c366de2abe9ec9337730b
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_email
+  locator_sha256: d3369b7aaebb34d00f82bf78dd735419bd1a2628c475c3ea3d0e2e166a88e7d7
+  value_sha256: 3c205d8fc749f72977b9331e3179773c315bb1f4860c366de2abe9ec9337730b
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_email
+  locator_sha256: e6f1fc5284436ef65e9e3b01e89fb7e840f7c59fef10ff281c541b26864862b3
+  value_sha256: 3f77336f2159591b82b6bad7dbe85dab5777329cae7753da422f8abc320fbeb2
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_name
+  locator_sha256: 4ccda42f3daa7d794109bd73e7f6d2f6d6642aad0a614f2d88d0d4fa672bacaf
+  value_sha256: f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_name
+  locator_sha256: afc46ff289c4b2e066032fd5ff6cc78b6bf710b5a3da6bf3bf09de0f15d595f1
+  value_sha256: f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_name
+  locator_sha256: b9abac2db0197af6945dd80db9685a1c21eed8feaeca50edba6c397bd7951f71
+  value_sha256: 724312a89b376612002c0ac24f9e306ec76795a401b8e004f448d134a517f6a8
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: github.pull_request.author_name
+  locator_sha256: 09ac90d2c5260f1fc4844ced321a036e5787958595150cda3bc337c521a25ea2
+  value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: github.pull_request.author_name
+  locator_sha256: 853a49eb5eab9f2120ea81ee2b613ff1a02e1f5c3f33884c4015dbcae6f54901
+  value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+- rule_id: public-identity-review-required
+  surface: github.release.author_name
+  locator_sha256: c669c4be518f902bd37ec93668ea93ea9f534c3a721d78fc28312b476baa5ee3
+  value_sha256: 9221d452d474ead28e2e31b135cd4215c41b534e3adf0376d54f639d0b46ad94
+  justification_sha256: 7f7720ebe95e7a637b05b2f7b35f3194840c988a78304e1a0786c81df7feec3c
+  approved_by: junie
+
+# 2026-10-13 review: exact user-approved clearance for beta.6 release author/committer/tagger identities.
+- rule_id: public-identity-review-required
+  surface: git.commit.author_email
+  locator_sha256: 331e94d08969a1afde045be267fed6a74647066333ef8c164ccb778ef2839773
+  value_sha256: 64db8deacec7bd4b26931055fc3e2b1479ca42ee06ed0fa4fed9d64246c46e01
+  justification_sha256: ee23af750d856defce304fe2a00e26fcb4fef432656c601f81cc9cf0d3482738
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: git.commit.author_name
+  locator_sha256: 0e75179243773eb880b7e82feb112408058cae943eb8153a11542a097078db31
+  value_sha256: fcb876a57c786f8500af7069adc2ac609bd1658a8880adf471840bbefead87df
+  justification_sha256: da2b3b9a632aa54850b16800658d56d86ec0ba466ce90855b8de94b0b5d883fb
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_email
+  locator_sha256: 10d13bce07d7932008248c0f9258b12009c911a92e2b4b076a43568372b8f42f
+  value_sha256: 64db8deacec7bd4b26931055fc3e2b1479ca42ee06ed0fa4fed9d64246c46e01
+  justification_sha256: d61e1614bc37d27e085e4da177fd825cae1776ee70b0af15889211e9b0ec9c16
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: git.commit.committer_name
+  locator_sha256: c9b47c4077a60c3bdb63ced0ed1b7456094622b6d9bd07447b6b16ed738546cc
+  value_sha256: fcb876a57c786f8500af7069adc2ac609bd1658a8880adf471840bbefead87df
+  justification_sha256: 34e023259903b1feffd372aaf2c682e20968a57b79b44574b04b21b45a1d22d8
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: git.tag.tagger_email
+  locator_sha256: 2a2e9ba719237a7e5e47eb8cd5722ed857fe34c89d8673c6aaf8fd9779eb837b
+  value_sha256: 64db8deacec7bd4b26931055fc3e2b1479ca42ee06ed0fa4fed9d64246c46e01
+  justification_sha256: 96435d17979339257b840613a1b37964cb3abba8d57d5fe4725d5aefee837a23
+  approved_by: pureliture
+- rule_id: public-identity-review-required
+  surface: git.tag.tagger_name
+  locator_sha256: 4673554d5fa9a9130177cc9a28caa75810ffb7dec14b678261ec08de43990237
+  value_sha256: fcb876a57c786f8500af7069adc2ac609bd1658a8880adf471840bbefead87df
+  justification_sha256: 8cb51991a6a3def2367b81e2dab9eb7a31438cb3dc4dde7d78e483c7c209567f
+  approved_by: pureliture
+# 2026-10-13 review: exact verified clean macOS package for v0.1.0-beta.6 release without developer home paths.
+- rule_id: binary-content-review-required
+  surface: github.release.asset
+  locator_sha256: fff1f4db901c70f3c92786f99a0cbda8bcf4d8d56e0b92b6f6db677481aaa175
+  value_sha256: edd55ba3e06fc7b0f74c67cf30e4259c510c51c0a7036bd5d29a7c5a7357ed81
+  justification_sha256: eb259c7e61700fe4603c8643a393ca89df965ecb1e1e1ffdbe22962f34b04138
   approved_by: pureliture

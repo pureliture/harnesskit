@@ -17,8 +17,8 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-      role: approved_requirements_sot
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_requirements_influence
       influence:
         - one-current-slice manual workflow boundary
         - PASS-only next-slice progression
@@ -26,8 +26,8 @@ provenance:
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
-      role: approved_blueprint_vc03
+      source_path: sources/harness-authoring-provenance.md
+      role: historical_blueprint_influence
       influence:
         - exact select-current-slice and advance-after-pass records
         - declarative capability slice contract
@@ -37,9 +37,9 @@ provenance:
   attribution_note: >
     Original HarnessKit harness-maintenance workflow card authored from
     the approved body design and local installed skill review. No source text
-    was copied verbatim. The vertical capability slice update adapts approved
-    local requirements and blueprint VC-03 into manual selection and PASS-only
-    progression instructions.
+    was copied verbatim. The vertical capability slice update adapts
+    then-approved, now-retired local requirements and blueprint VC-03 into manual
+    selection and PASS-only progression instructions.
   source_mode: referenced
   copied_sections: []
   rewritten_sections:

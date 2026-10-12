@@ -29,15 +29,18 @@ source_refs:
       - structure_only_evaluation_patterns
       - copied_content_boundary
   - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
     path: skills/productivity/writing-great-skills
     used_for:
       - skill_authoring_quality_gate_orchestration
       - trigger_scope_progressive_disclosure_checks
   - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
     path: skills/productivity/teach
     used_for:
       - bounded_instruction_and_feedback_quality_checks
   - source_id: mattpocock-skills
+    snapshot_id: mattpocock-skills/2026-06-27-main-5d78bd0
     path: skills/in-progress/review
     used_for:
       - review_axis_separation_and_evidence_reporting_checks

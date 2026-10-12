@@ -4,14 +4,14 @@ provenance:
   runtime_dependency_on_sources: false
   sources:
     - source_id: harness-authoring-vertical-capability-slice-requirements
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - validated same-slice adapter input boundary
         - future output and horizontal batching prohibition
       copied_content: false
       adapted_content: true
     - source_id: harness-authoring-vertical-capability-slice-blueprint
-      source_path: docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+      source_path: sources/harness-authoring-provenance.md
       influence:
         - VC-02 current-slice adapter target contract
         - component-scoped static output evidence

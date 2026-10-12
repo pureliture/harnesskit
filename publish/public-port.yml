@@ -2,9 +2,7 @@ schema_version: 1
 target_repository_url: https://github.com/pureliture/harnesskit.git
 retain_public_baseline: true
 canonical_component_projection: publish/harnesskit.yml
-public_authored_exceptions:
-  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+public_authored_exceptions: []
 
 # Each include names a reviewed top-level public slice. The generated manifest
 # expands these patterns to exact tracked paths and hashes at one clean source
@@ -29,15 +27,28 @@ ported_authored:
     - assets/tool-identities/**
     - bin/harnesskit.mjs
     - components/registry.yml
+    - components/agents/adapter-author/**
+    - components/agents/component-author/**
+    - components/agents/harness-blueprint-author/**
+    - components/agents/harness-evaluator/**
+    - components/agents/harness-requirements-analyst/**
+    - components/agents/reference-curator/**
+    - components/rules/harness-maintenance-project-context/**
+    - components/skills/adapter-authoring/**
     - components/skills/agentic-execution/**
+    - components/skills/component-authoring/**
     - components/skills/grill/**
     - components/skills/grill-to-spec/**
+    - components/skills/harness-blueprint/**
+    - components/skills/harness-requirements/**
     - components/skills/intent-guide/**
+    - components/skills/skill-evaluation/**
     - components/skills/wayfinder/**
     - components/skills/worktree-lifecycle/**
+    # The reviewed public workflow closure has only harness-creation.
+    - components/workflows/harness-creation/**
+    - docs/desktop-user-guide.md
     - docs/images/**
-    - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
-    - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
     - profiles/harness-maintenance.yml
     - migrations/**
     - install-plans/harness-maintenance.project.yml
@@ -62,11 +73,81 @@ ported_authored:
     - src-frontend/assets/tool-identities/**
     - src-frontend/tests/ai-explanation.test.js
     - src-frontend/tests/local-view.test.js
-    - tests/projection/test_publish_manifest.py
+    # Private maintenance tools are not imported by the public CLI, projection
+    # manifest, package coordinator, or the retained install/projection tests.
+    - scripts/public_port/**
+    - scripts/publish/**
     - tests/public_port/**
+    - scripts/adapters/probe_*.py
+    - scripts/adapters/mattpocock_engineering_refresh_evidence.py
+    # Public closure has only the maintenance profile; other presets/plans
+    # require private components. Keep their canonical sources private.
+    - profiles/development.yml
+    - profiles/engineering.yml
+    - profiles/minimal.yml
+    - profiles/scm.yml
+    - profiles/work.yml
+    - install-plans/engineering.project.yml
+    - install-plans/engineering.user.yml
+    # These proposal/mirror/server slices are not public runtime dependencies.
+    - docs/openclaw/**
+    - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/**
+    - knowledge/antigravity-2.0/**
+    - scripts/render-server/**
 
-# Current public main already omits the unselected Profiles, Workflows and plans.
-intentional_removals: []
+# Exact paths audited in the public tracked baseline on 2026-10-12. Exclusions
+# alone do not remove previously published files while baseline retention is on.
+intentional_removals:
+  # Approved obsolete proposal/spec documents; reference metadata is retired
+  # separately without removing canonical components or their attribution.
+  - docs/openclaw/README.md
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/requirements.md
+  - docs/harness-requirements/20260716-harness-authoring-vertical-capability-slice/blueprint.md
+  # Only these READMEs were public: their mirror pages/server entrypoints were
+  # never shipped. Preserve all real private mirror and server files.
+  - knowledge/antigravity-2.0/README.md
+  - scripts/render-server/README.md
+  # Private runtime-evidence collection has no public package/static consumer.
+  # Core adapter API, builder, Hermes serializer, and descriptors stay public.
+  - scripts/adapters/mattpocock_engineering_refresh_evidence.py
+  - scripts/adapters/probe_antigravity_cli_runtime.py
+  - scripts/adapters/probe_codex_runtime.py
+  - scripts/adapters/probe_github_workflow_runtime.py
+  - scripts/adapters/probe_harness_creation_runtime.py
+  - scripts/adapters/probe_mattpocock_engineering_refresh_codex.py
+  - scripts/adapters/probe_optimal_response_behavior.py
+  - scripts/adapters/probe_reference_curator_github.py
+  # Public CI runs npm packaging, projection-manifest verification, and the
+  # tarball CLI smoke, not the private-to-public publisher. No retained support
+  # imports this package; keep its complete implementation/tests private.
+  - scripts/public_port/__init__.py
+  - scripts/public_port/candidate.py
+  - scripts/public_port/content_policy.py
+  - scripts/public_port/gate1.py
+  - scripts/public_port/git_environment.py
+  - scripts/public_port/git_surface.py
+  - scripts/public_port/github_surface.py
+  - scripts/public_port/manifest.py
+  - scripts/public_port/materialize.py
+  - scripts/public_port/policy.py
+  - scripts/public_port/regenerate.py
+  - scripts/public_port/sanitize.py
+  - scripts/public_port/secure_tree.py
+  - tests/public_port/__init__.py
+  - tests/public_port/support.py
+  - tests/public_port/test_candidate.py
+  - tests/public_port/test_content_policy.py
+  - tests/public_port/test_gate1.py
+  - tests/public_port/test_git_environment.py
+  - tests/public_port/test_git_surface.py
+  - tests/public_port/test_github_rest_client.py
+  - tests/public_port/test_github_surface.py
+  - tests/public_port/test_manifest.py
+  - tests/public_port/test_materialize.py
+  - tests/public_port/test_policy.py
+  - tests/public_port/test_regenerate.py
+  - tests/public_port/test_sanitize.py
+  - tests/public_port/test_secure_tree.py
 
 # Generator execution support is implemented and tested in M7A. Production
 # rules are added only with the hermetic tool bootstrap in the package/release

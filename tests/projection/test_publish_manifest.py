@@ -10,6 +10,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from scripts.projection.manifest import _support_paths, public_metadata_projection_bytes
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,6 +29,12 @@ PUBLIC_COMPONENT_IDS = {
     "harnesskit.skill.skill-evaluation",
     "harnesskit.workflow.harness-creation",
     "harnesskit.rule.harness-maintenance-project-context",
+    "harnesskit.skill.intent-guide",
+    "harnesskit.skill.wayfinder",
+    "harnesskit.skill.grill",
+    "harnesskit.skill.grill-to-spec",
+    "harnesskit.skill.agentic-execution",
+    "harnesskit.skill.worktree-lifecycle",
 }
 
 PUBLIC_COMPONENT_FILES = {
@@ -45,21 +53,6 @@ PUBLIC_COMPONENT_FILES = {
     "components/rules/harness-maintenance-project-context/component.yml",
     "components/rules/harness-maintenance-project-context/PROJECT_CONTEXT.md",
     "components/rules/harness-maintenance-project-context/provenance.map.yml",
-}
-
-PRIVATE_OR_GENERATED_PATHS = {
-    "profiles/engineering.yml",
-    "profiles/minimal.yml",
-    "scripts/adapters/probe_codex_runtime.py",
-    "scripts/adapters/probe_harness_creation_runtime.py",
-    "scripts/adapters/probe_optimal_response_behavior.py",
-    "dist/codex/.codex/agents/reference_curator.toml",
-    ".codex/specs/platform-authoring-ux.md",
-    "docs/runtime-evidence/harnesskit.json",
-    ".routine-harness/optimal-response-out/content/report.html",
-    ".harnesskit/optimal-response-out/content/report.html",
-    ".harnesskit/work/skill-foo/intent.md",
-    ".harnesskit/private/foo",
 }
 
 
@@ -106,7 +99,15 @@ def test_manifest_uses_public_source_profile(manifest: dict):
     }
 
 
-def test_manifest_records_explicit_public_workflows(manifest: dict):
+def test_manifest_records_explicit_public_roots(manifest: dict):
+    assert manifest["explicit_public_components"] == [
+        "harnesskit.skill.intent-guide",
+        "harnesskit.skill.wayfinder",
+        "harnesskit.skill.grill",
+        "harnesskit.skill.grill-to-spec",
+        "harnesskit.skill.agentic-execution",
+        "harnesskit.skill.worktree-lifecycle",
+    ]
     assert manifest["explicit_public_workflows"] == [
         "harnesskit.workflow.harness-creation"
     ]
@@ -116,7 +117,7 @@ def test_manifest_closure_counts_and_component_ids(manifest: dict):
     assert manifest["closure_summary"] == {
         "agents": 6,
         "rules": 1,
-        "skills": 5,
+        "skills": 11,
         "workflows": 1,
     }
 
@@ -144,8 +145,13 @@ def test_manifest_includes_readme_local_image_assets(manifest: dict):
     assert local_assets.issubset(included_paths)
 
 
-def _public_source_refs_from_file(rel_path: str) -> list[tuple[str, str | None]]:
-    data = yaml.safe_load((REPO_ROOT / rel_path).read_text(encoding="utf-8"))
+def _public_source_refs_from_file(
+    rel_path: str,
+    root: Path = REPO_ROOT,
+    overlays: dict[str, bytes] | None = None,
+) -> list[tuple[str, str | None]]:
+    body = (overlays or {}).get(rel_path)
+    data = yaml.safe_load(body if body is not None else (root / rel_path).read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         return []
 
@@ -184,20 +190,20 @@ def test_manifest_includes_public_source_refs_and_registry(manifest: dict):
     included_paths = set(manifest["included_paths"])
 
     assert "sources/registry.yml" in included_paths
+    overlays = public_metadata_projection_bytes(manifest["public_metadata_projections"])
     source_registry = yaml.safe_load((REPO_ROOT / "sources/registry.yml").read_text(encoding="utf-8"))
     registered_sources = source_registry.get("sources") or {}
     registered_source_ids = set(registered_sources)
 
     public_source_refs: list[tuple[str, str | None]] = []
     for rel_path in sorted(included_paths):
-        # Components are stored flat under components/<kind>/<name>/; gather the
-        # per-component manifest/provenance YAMLs, skipping the registry itself.
+        # Inspect public YAML overlays so private canonical references remain in the source repository.
         if (
             rel_path.startswith("components/")
             and rel_path != "components/registry.yml"
             and rel_path.endswith((".yml", ".yaml"))
         ):
-            public_source_refs.extend(_public_source_refs_from_file(rel_path))
+            public_source_refs.extend(_public_source_refs_from_file(rel_path, overlays=overlays))
 
     missing_ids = sorted(
         source_id
@@ -254,21 +260,24 @@ def test_manifest_paths_do_not_match_exclusions(manifest: dict):
     ]
 
 
+def test_support_globs_skip_excluded_generated_files(tmp_path: Path):
+    (tmp_path / "src" / "app").mkdir(parents=True)
+    (tmp_path / "src" / "node_modules" / "pkg").mkdir(parents=True)
+    (tmp_path / "src" / "app" / "main.js").write_text("source\n", encoding="utf-8")
+    (tmp_path / "src" / "node_modules" / "pkg" / "index.js").write_text(
+        "generated\n", encoding="utf-8"
+    )
+
+    assert _support_paths(
+        tmp_path,
+        ["src/**"],
+        ["src/node_modules/**"],
+    ) == ["src/app/main.js"]
+
+
 def test_manifest_has_projection_identity_and_revision(manifest: dict):
     assert manifest["projection_id"]
     assert manifest["source_revision"]
-
-
-def test_manifest_excludes_private_profiles_and_generated_artifacts(manifest: dict):
-    included_paths = set(manifest["included_paths"])
-
-    assert PRIVATE_OR_GENERATED_PATHS.isdisjoint(included_paths)
-    assert "profiles/engineering.yml" in manifest["excluded_patterns"]
-    assert "profiles/minimal.yml" in manifest["excluded_patterns"]
-    assert "dist/**" in manifest["excluded_patterns"]
-    assert ".codex/specs/**" in manifest["excluded_patterns"]
-    assert ".harnesskit/work/**" in manifest["excluded_patterns"]
-    assert ".harnesskit/private/**" in manifest["excluded_patterns"]
 
 
 def test_cli_rejects_malicious_owned_file_without_traceback(tmp_path: Path):
