@@ -434,11 +434,13 @@ export function renderLocalWorkbench(data, view, removalState = null) {
       </div>
       <div class="local-search-row">
         <label for="local-search">설치된 하네스 검색</label>
-        <input id="local-search" type="search" value="${escapeHtml(view.query)}" placeholder="name, description, safe locator" autocomplete="off" spellcheck="false" />
+        <div class="local-search-controls${hasRemovalEntry ? " local-search-controls--with-removal" : ""}">
+          <input id="local-search" type="search" value="${escapeHtml(view.query)}" placeholder="name, description, safe locator" autocomplete="off" spellcheck="false" />
+          ${hasRemovalEntry ? `<button type="button" class="button button--quiet local-removal-entry" data-enter-local-removal${canEnterRemoval ? "" : " disabled"}>설치 하네스 제거</button>` : ""}
+        </div>
       </div>
       <div class="local-badge-row" aria-label="Scope and kind filters">
         <span class="local-scope-badge">${escapeHtml(scopeLabel)}</span>
-        ${hasRemovalEntry ? `<button type="button" class="button button--quiet local-removal-entry" data-enter-local-removal${canEnterRemoval ? "" : " disabled"}>설치 하네스 제거</button>` : ""}
         ${ignoreSummary}
         ${selectedProjectId ? '<button id="project-ignore-open" type="button" class="button button--quiet local-ignore-editor-trigger" data-open-project-ignore>스캔 제외 규칙 편집</button>' : ""}
         ${kindButton(null, "All kinds", localResultCount(data), view.kind === null)}

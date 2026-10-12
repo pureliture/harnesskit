@@ -3156,8 +3156,26 @@ button.tree-row {
 
 .local-search-row input {
   width: 100%;
+  min-width: 0;
   min-height: 2.35rem;
   background: var(--surface-input);
+}
+
+.local-search-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.local-search-controls--with-removal {
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.local-search-controls .local-removal-entry {
+  min-height: 2.35rem;
+  white-space: nowrap;
 }
 
 .local-badge-row {
@@ -4539,6 +4557,14 @@ button.tree-row {
 }
 
 @media (max-width: 44rem) {
+  .local-search-controls--with-removal {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .local-search-controls .local-removal-entry {
+    justify-self: end;
+  }
+
   .authoring-flow-modal {
     padding: 0.5rem;
   }
